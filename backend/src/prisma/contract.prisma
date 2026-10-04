@@ -1,0 +1,158 @@
+// use prisma-8
+
+model organisasi {
+  id        Int               @id @default(autoincrement())
+  kode      String
+  nama      String
+  alamat    String?
+  website   String?
+  createdAt TimestamptzString @default(now())
+  updatedAt TimestamptzString @updatedAt
+}
+
+model user {
+  id            Int                @id @default(autoincrement())
+  username      String             @unique
+  name          String?
+  password      String
+  role          Role
+  organisasi_id Int?
+  organisasi    organisasi?        @relation(fields: [organisasi_id], references: [id])
+  createdAt     TimestamptzString  @default(now())
+  updatedAt     TimestamptzString  @updatedAt
+  latestLogin   TimestamptzString?
+}
+
+model jenis_iuran {
+  id            Int               @id @default(autoincrement())
+  judul         String
+  periode_iuran PeriodeIuran
+  nominal       Float
+  tanggal_awal  Date
+  tanggal_akhir Date
+  isActive      Boolean
+  organisasi_id Int
+  organisasi    organisasi?       @relation(fields: [organisasi_id], references: [id])
+  createdAt     TimestamptzString @default(now())
+  updatedAt     TimestamptzString @updatedAt
+}
+
+/**
+ * Model peserta
+ * model ini digunakan sebagai parent dari model detail_peserta dimana ini dimaksudkan untuk menghubungkan grup peserta
+ * contoh : Rumah dan Daftar Keluarga.
+ * Rumah adalah model peserta, dan Daftar Keluarga adalah model detail_peserta.
+ */
+model peserta {
+  id            Int               @id @default(autoincrement())
+  kode          String            @unique
+  nomor_kk      String?
+  nomor_rumah   String?
+  alamat        String
+  deskripsi     String?
+  qr_code       String?
+  isActive      Boolean
+  organisasi_id Int
+  organisasi    organisasi?       @relation(fields: [organisasi_id], references: [id])
+  user_id       Int?
+  user          user?             @relation(fields: [user_id], references: [id])
+  createdAt     TimestamptzString @default(now())
+  updatedAt     TimestamptzString @updatedAt
+
+  @@index([kode])
+}
+
+model detail_peserta {
+  id              Int               @id @default(autoincrement())
+  peserta_id      Int
+  peserta         peserta?          @relation(fields: [peserta_id], references: [id])
+  nama            String
+  status_keluarga String?
+  isActive        Boolean
+  user_id         Int?
+  user            user?             @relation(fields: [user_id], references: [id])
+  organisasi_id   Int
+  organisasi      organisasi?       @relation(fields: [organisasi_id], references: [id])
+  createdAt       TimestamptzString @default(now())
+  updatedAt       TimestamptzString @updatedAt
+}
+
+model pembayaran_iuran {
+  id             Int               @id @default(autoincrement())
+  organisasi_id  Int
+  organisasi     organisasi?       @relation(fields: [organisasi_id], references: [id])
+  jenis_iuran_id Int
+  jenis_iuran    jenis_iuran?      @relation(fields: [jenis_iuran_id], references: [id])
+  peserta_id     Int
+  peserta        peserta?          @relation(fields: [peserta_id], references: [id])
+  tahun_bayar    Int
+  bulan_bayar    Int
+  nominal_bayar  Float
+  tanggal_bayar  Date
+  status         StatusBayar
+  isPosting      Boolean
+  user_id        Int?
+  user           user?             @relation(fields: [id], references: [id])
+  createdAt      TimestamptzString @default(now())
+  updatedAt      TimestamptzString @updatedAt
+}
+
+model keuangan {
+  id             Int               @id @default(autoincrement())
+  organisasi_id  Int
+  organisasi     organisasi?       @relation(fields: [organisasi_id], references: [id])
+  total          Float
+  tanggal        Date
+  user_id        Int?
+  user           user?             @relation(fields: [user_id], references: [id])
+  keterangan     String?
+  jenis_keuangan JenisKeuangan
+  createdAt      TimestamptzString @default(now())
+  updatedAt      TimestamptzString @updatedAt
+}
+
+model keuangan_detail {
+  id                  Int               @id @default(autoincrement())
+  keuangan_id         Int
+  keuangan            keuangan?         @relation(fields: [keuangan_id], references: [id])
+  nominal             Float
+  pembayaran_iuran_id Int?
+  pembayaran_iuran    pembayaran_iuran? @relation(fields: [pembayaran_iuran_id], references: [id])
+  keterangan          String?
+}
+
+model log {
+  id               Int               @id @default(autoincrement())
+  organisasi_id    Int
+  organisasi       organisasi?       @relation(fields: [organisasi_id], references: [id])
+  user_id          Int?
+  user             user?             @relation(fields: [user_id], references: [id])
+  transaction_type String
+  keterangan       String
+  createdAt        TimestamptzString @default(now())
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum PeriodeIuran {
+  HARIAN
+  MINGGUAN
+  BULANAN
+  TAHUNAN
+}
+
+enum StatusBayar {
+  BELUM_BAYAR
+  SUDAH_BAYAR
+  CANCELLED
+  PARTIAL
+  OVERDUE
+}
+
+enum JenisKeuangan {
+  PEMASUKAN
+  PENGELUARAN
+}
