@@ -7,7 +7,7 @@ This project is set up for PostgreSQL. Prisma ORM also supports other databases.
 ## Requirements
 
 - **PostgreSQL 15 or newer.** Older servers are not supported. Run `SELECT version()` against your server to verify.
-- The CLI never connects to your database without explicit consent. Pass `--probe-db` to `npx prisma orm init` if you want `init` to verify the server version itself.
+- The CLI never connects to your database without explicit consent. Pass `--probe-db` to `bun prisma orm init` if you want `init` to verify the server version itself.
 
 ## Your data contract
 
@@ -40,7 +40,7 @@ Your contract has two companion files in the same directory:
 - **`contract.json`** — this tells your application what models exist, just like `package-lock.json` tells your package manager what dependencies your project has
 - **`contract.d.ts`** — this powers autocomplete and type checking in your editor
 
-Commit both files to git. When you change your contract, run `npx prisma contract emit` to update them.
+Commit both files to git. When you change your contract, run `bun prisma contract emit` to update them.
 
 If you use a framework like Next.js or Vite, the Prisma ORM plugin will do this for you automatically.
 
@@ -76,9 +76,9 @@ You can customize how your environment variables are loaded by changing or remov
 ### Commands
 
 ```bash
-npx prisma contract emit       # Update contract.json and contract.d.ts
-npx prisma db init             # Create tables in the database
-npx prisma migration status    # Show migration status
+bun prisma contract emit       # Update contract.json and contract.d.ts
+bun prisma db init             # Create tables in the database
+bun prisma migration status    # Show migration status
 ```
 
 ### Files
@@ -94,7 +94,7 @@ npx prisma migration status    # Show migration status
 ### Workflow
 
 1. Edit [`src/prisma/contract.prisma`](src/prisma/contract.prisma) to add or change models.
-2. Run `npx prisma contract emit` to regenerate the contract.
+2. Run `bun prisma contract emit` to regenerate the contract.
 3. Query your models — your IDE will autocomplete everything.
 
 ## Monorepo notes (pnpm workspaces)
