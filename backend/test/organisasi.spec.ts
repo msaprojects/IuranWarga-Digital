@@ -19,13 +19,34 @@ beforeEach(() => {
     jest.spyOn(orgService, "getByKode").mockImplementation(async (kode) =>
         kode === organisasi.kode ? organisasi : null
     );
+    jest.spyOn(orgService, "create").mockResolvedValue(organisasi);
+    jest.spyOn(orgService, "updateByKode").mockResolvedValue(organisasi);
+    jest.spyOn(orgService, "deactivateByKode").mockResolvedValue({
+        ...organisasi,
+        isActive: false,
+    });
 });
 
 afterEach(() => {
     jest.restoreAllMocks();
 });
 
-describe("Get Organisasi by Kode", () => {
+describe("Organisasi API", () => {
+    it("seharusnya menyediakan OpenAPI spec, Swagger UI, dan Redoc", async () => {
+        const specResponse = await request(app).get("/api-docs.json");
+        const uiResponse = await request(app).get("/api-docs/");
+        const redocResponse = await request(app).get("/redoc");
+
+        expect(specResponse.status).toBe(200);
+        expect(specResponse.body.openapi).toBe("3.1.0");
+        expect(specResponse.body.paths["/organisasi/{kode}"].patch).toBeDefined();
+        expect(uiResponse.status).toBe(200);
+        expect(uiResponse.text).toContain("Swagger UI");
+        expect(redocResponse.status).toBe(200);
+        expect(redocResponse.text).toContain("/api-docs.json");
+        expect(redocResponse.text.toLowerCase()).toContain("redoc");
+    });
+
     it("seharusnya mengembalikan data organisasi dengan kode yang valid", async () => {
         const kode = "ORG001";
         const response = await request(app).get(`/api/organisasi/${kode}`);
@@ -86,5 +107,68 @@ describe("Get Organisasi by Kode", () => {
 
         expect(response.status).toBe(404);
         expect(response.body.message).toBe("Route not found");
+    });
+
+    it("seharusnya membuat organisasi dengan nilai opsional default", async () => {
+        const response = await request(app)
+            .post("/api/organisasi")
+            .send({ kode: " ORG001 ", nama: " Organisasi " });
+
+        expect(response.status).toBe(201);
+        expect(orgService.create).toHaveBeenCalledWith({
+            kode: "ORG001",
+            nama: "Organisasi",
+            alamat: null,
+            website: null,
+            isActive: true,
+            activeAt: null,
+        });
+    });
+
+    it("seharusnya menolak pembuatan organisasi dengan body tidak valid", async () => {
+        const response = await request(app)
+            .post("/api/organisasi")
+            .send({ kode: "ORG001" });
+
+        expect(response.status).toBe(400);
+        expect(orgService.create).not.toHaveBeenCalled();
+    });
+
+    it("seharusnya memperbarui organisasi berdasarkan kode", async () => {
+        const response = await request(app)
+            .patch("/api/organisasi/ORG001")
+            .send({ nama: "Nama Baru" });
+
+        expect(response.status).toBe(200);
+        expect(orgService.updateByKode).toHaveBeenCalledWith("ORG001", {
+            nama: "Nama Baru",
+        });
+    });
+
+    it("seharusnya menolak update kosong", async () => {
+        const response = await request(app)
+            .patch("/api/organisasi/ORG001")
+            .send({});
+
+        expect(response.status).toBe(400);
+        expect(orgService.updateByKode).not.toHaveBeenCalled();
+    });
+
+    it("seharusnya mengembalikan 404 saat organisasi tidak ditemukan untuk update", async () => {
+        jest.spyOn(orgService, "updateByKode").mockResolvedValueOnce(null);
+
+        const response = await request(app)
+            .patch("/api/organisasi/ORG999")
+            .send({ nama: "Nama Baru" });
+
+        expect(response.status).toBe(404);
+    });
+
+    it("seharusnya menonaktifkan organisasi melalui DELETE", async () => {
+        const response = await request(app).delete("/api/organisasi/ORG001");
+
+        expect(response.status).toBe(200);
+        expect(response.body.data.isActive).toBe(false);
+        expect(orgService.deactivateByKode).toHaveBeenCalledWith("ORG001");
     });
 });

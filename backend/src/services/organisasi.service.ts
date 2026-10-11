@@ -9,22 +9,29 @@ export type CreateOrganisasiInput = {
   activeAt: string | null;
 };
 
-export type UpdateOrganisasiInput = CreateOrganisasiInput & {
-  id: number;
-};
+export type UpdateOrganisasiInput = Partial<
+  Pick<CreateOrganisasiInput, "kode" | "nama" | "alamat" | "website" | "activeAt">
+>;
 
 class OrganisasiService {
   getByKode(kode: string) {
-    return db.orm.public.organisasi.where({ kode }).first();
+    return db.orm.public.organisasi.where({ kode, isActive: true }).first();
   }
 
   create(input: CreateOrganisasiInput) {
     return db.orm.public.organisasi.create(input);
   }
 
-  update(input: UpdateOrganisasiInput) {
-    const { id, ...data } = input;
-    return db.orm.public.organisasi.where({ id }).update(data);
+  updateByKode(kode: string, input: UpdateOrganisasiInput) {
+    return db.orm.public.organisasi
+      .where({ kode, isActive: true })
+      .update(input);
+  }
+
+  deactivateByKode(kode: string) {
+    return db.orm.public.organisasi
+      .where({ kode, isActive: true })
+      .update({ isActive: false });
   }
 }
 

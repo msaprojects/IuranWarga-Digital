@@ -9,7 +9,11 @@ export const validate = <TOutput>(
 ): RequestHandler => {
   return async (req: Request, res: Response, next) => {
     try {
-      res.locals.validated = await schema.parseAsync(req[part]);
+      const parsed = await schema.parseAsync(req[part]);
+      const validated = (res.locals.validated ?? {}) as Partial<
+        Record<RequestPart, unknown>
+      >;
+      res.locals.validated = { ...validated, [part]: parsed };
       next();
     } catch (error) {
       next(error);
