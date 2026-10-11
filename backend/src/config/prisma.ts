@@ -1,3 +1,3 @@
-import { db } from '../prisma/db.ts'
+import { db } from "../prisma/db.ts";
 
-export default db.orm.public
+export default db.orm.public;

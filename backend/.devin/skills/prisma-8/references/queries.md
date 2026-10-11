@@ -1,9 +1,8 @@
-
 # Prisma 8 — Queries
 
 > **Edit your data contract. Prisma handles the rest.**
 
-Once the contract is emitted and the DB is up to date, this skill covers everything you do *with* the data: reading, writing, eager-loading relations, aggregating, and the choice between the ORM and the lower-level query lane.
+Once the contract is emitted and the DB is up to date, this skill covers everything you do _with_ the data: reading, writing, eager-loading relations, aggregating, and the choice between the ORM and the lower-level query lane.
 
 ## When to Use
 
@@ -13,7 +12,7 @@ Once the contract is emitted and the DB is up to date, this skill covers everyth
 - User wants to wrap operations in a transaction (`db.transaction(...)` — Postgres and SQLite).
 - User wants to aggregate (`count`, `sum`, `avg`, …).
 - User asks about query lanes (ORM vs SQL builder / query builder).
-- User mentions: *query, select, where, orderBy, limit, offset, take, skip, include, eager load, first, all, count, aggregate, create, update, delete, upsert, returning, drizzle-style, kysely-style, prisma client*.
+- User mentions: _query, select, where, orderBy, limit, offset, take, skip, include, eager load, first, all, count, aggregate, create, update, delete, upsert, returning, drizzle-style, kysely-style, prisma client_.
 
 ## When Not to Use
 
@@ -26,10 +25,10 @@ Once the contract is emitted and the DB is up to date, this skill covers everyth
 
 Prisma 8 ships **two query lanes per target** on the same `db` value from `src/prisma/db.ts`. **Before writing queries, read `db.ts` and load the matching target guide:**
 
-| Runtime import in `db.ts` | Load |
-| --- | --- |
-| `@internal/postgres/runtime` | [`queries-postgres.md`](./queries-postgres.md) — `db.orm.<ns>.<Model>` + `db.sql.<ns>.<table>` |
-| `@internal/mongo/runtime` | [`queries-mongo.md`](./queries-mongo.md) — `db.orm.<root>` + `db.query.from(...)` |
+| Runtime import in `db.ts`              | Load                                                                                                                                                                                            |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@internal/postgres/runtime`           | [`queries-postgres.md`](./queries-postgres.md) — `db.orm.<ns>.<Model>` + `db.sql.<ns>.<table>`                                                                                                  |
+| `@internal/mongo/runtime`              | [`queries-mongo.md`](./queries-mongo.md) — `db.orm.<root>` + `db.query.from(...)`                                                                                                               |
 | `@internal/extension-supabase/runtime` | [`queries-postgres.md`](./queries-postgres.md) — a Supabase `RoleBoundDb` is a Postgres surface (`db.orm.<ns>.<Model>` + `db.sql.<ns>.<table>`); bind a role first via `references/supabase.md` |
 
 Both targets share the contract and connection on one `db` value. Reach for the ORM first; drop to the lower-level lane when the ORM can't express the shape. Lane choice is local — one query function picks one lane, not the whole app.
@@ -49,10 +48,10 @@ See [`queries-postgres.md` § Namespace-aware accessors](./queries-postgres.md#n
 
 ## Consuming the result: `await`, `.toArray()`, or `for await`
 
-Critical to get right early — on **both Postgres and Mongo**, `.all()` returns an **`AsyncIterableResult<Row>`**, which is *both* a `PromiseLike<Row[]>` and an `AsyncIterable<Row>`. That means three consumption forms all work, and the canonical one is the shortest:
+Critical to get right early — on **both Postgres and Mongo**, `.all()` returns an **`AsyncIterableResult<Row>`**, which is _both_ a `PromiseLike<Row[]>` and an `AsyncIterable<Row>`. That means three consumption forms all work, and the canonical one is the shortest:
 
 ```typescript
-const users = await db.orm.public.User.select('id', 'email').all();
+const users = await db.orm.public.User.select("id", "email").all();
 //    ^? Row[]   ← the Thenable resolves to a real array. This is the default idiom.
 ```
 
@@ -67,12 +66,12 @@ You do **not** need a `collect()` / `toArray()` helper — `await` is enough. In
 // `Promise.race` combinators all accept the thenable directly — those are
 // NOT reasons to call `.toArray()`. Whenever you are just going to await it
 // here, use `await ...all()` and skip `.toArray()`.
-const rows: Promise<User[]> = db.orm.public.User.select('id', 'email').all().toArray();
+const rows: Promise<User[]> = db.orm.public.User.select("id", "email").all().toArray();
 
 // Iterate — decode and handle rows one at a time. Whether the raw rows are
 // also fetched incrementally depends on the `cursor` option; see *Streaming* below.
-for await (const user of db.orm.public.User.select('id', 'email').all()) {
-  process(user);
+for await (const user of db.orm.public.User.select("id", "email").all()) {
+    process(user);
 }
 ```
 
@@ -85,18 +84,18 @@ const required = await db.orm.public.User.where({ id }).all().firstOrThrow();
 //    ^? Row          ← buffers; throws `RUNTIME.NO_ROWS` if empty.
 ```
 
-For genuine single-row reads, prefer the *collection*-level `.first()` (which adds `LIMIT 1` to the SQL on Postgres) over `.all().first()` (which fetches all rows and discards the rest). The result-level helpers are for cases where you already need the full result and want the first row without an extra round-trip.
+For genuine single-row reads, prefer the _collection_-level `.first()` (which adds `LIMIT 1` to the SQL on Postgres) over `.all().first()` (which fetches all rows and discards the rest). The result-level helpers are for cases where you already need the full result and want the first row without an extra round-trip.
 
 **The result is single-consumption.** Each `AsyncIterableResult` instance can be consumed once — by `await`, by `.toArray()`, or by `for await`. Trying to consume it a second time throws **`RUNTIME.ITERATOR_CONSUMED`**. The fix is almost always to store the array in a variable on first consumption and reuse the variable:
 
 ```typescript
 // Bad — second await throws RUNTIME.ITERATOR_CONSUMED.
-const result = db.orm.public.User.select('id', 'email').all();
+const result = db.orm.public.User.select("id", "email").all();
 const a = await result;
 const b = await result;
 
 // Good — buffer once, reuse the array.
-const users = await db.orm.public.User.select('id', 'email').all();
+const users = await db.orm.public.User.select("id", "email").all();
 const a = users;
 const b = users;
 ```
@@ -105,15 +104,15 @@ If you've seen `collect(...)` / `toArray(...)` helpers in a codebase wrapping `.
 
 ## Running queries from a short script
 
-When the user is running a one-off `tsx my-script.ts` (not a long-lived server), call `await db.close()` at the end so the process exits cleanly — on Postgres the façade-owned pool keeps Node's event loop alive; on Mongo the façade-owned `MongoClient` does the same. See `references/runtime.md` § *Running as a script (teardown)* for the full pattern including `await using`.
+When the user is running a one-off `tsx my-script.ts` (not a long-lived server), call `await db.close()` at the end so the process exits cleanly — on Postgres the façade-owned pool keeps Node's event loop alive; on Mongo the façade-owned `MongoClient` does the same. See `references/runtime.md` § _Running as a script (teardown)_ for the full pattern including `await using`.
 
 ```typescript
 // src/scripts/seed.ts
-import { db } from '../prisma/db';
+import { db } from "../prisma/db";
 
 // Postgres — PascalCase model root from contract
 for (const u of users) {
-  await db.orm.public.User.create(u);
+    await db.orm.public.User.create(u);
 }
 
 // Mongo — lowercased plural root from contract (e.g. users, not User)
@@ -121,7 +120,7 @@ for (const u of users) {
 //   await db.orm.users.create(u);
 // }
 
-console.log('Seeded.');
+console.log("Seeded.");
 await db.close();
 ```
 
@@ -129,7 +128,7 @@ await db.close();
 
 Every read terminal (`.all()`, and `runtime.query(plan)` for a SQL-builder plan) returns an `AsyncIterableResult`, so `for await` is always available. What it buys you depends on the `cursor` option, which `postgres()` and `postgresServerless()` (`@prisma/orm-postgres/serverless`) both accept:
 
-- **Default (cursors off), on a client and on a connection:** the full result set is fetched from the server before the first row is yielded; only *decoding* happens per row. `for await` therefore does not bound the memory held by the raw result. For very large sets, paginate (`.limit()` / `.offset()`, or `.orderBy(...).cursor(...)`) instead.
+- **Default (cursors off), on a client and on a connection:** the full result set is fetched from the server before the first row is yielded; only _decoding_ happens per row. `for await` therefore does not bound the memory held by the raw result. For very large sets, paginate (`.limit()` / `.offset()`, or `.orderBy(...).cursor(...)`) instead.
 - **`cursor` set in the options of `postgres()` or `postgresServerless()` (`{ batchSize: 100 }`; `{}` or `{ batchSize: undefined }` for batches of 100; a `batchSize` that is not a positive integer fails the factory call; there is no flag that turns cursors off):** the driver reads through a server-side cursor in batches of that size, so `for await` over `db.orm...all()` or `db.runtime().query(plan)` really does stream, and an early `break` stops reading. In a Worker, put the option only on a second serverless client that the streaming paths open their connections from, and keep the serverless client every other path uses without it. On a connection with cursors on, finish or `break` the `for await` loop before sending another query through `db`: the cursor holds the connection's only database connection until the loop ends, so a query inside the loop waits forever. On a client, the same query takes another database connection from the pool. Behind Cloudflare Hyperdrive, reads with cursors on hang, so the streaming paths hang there and the other paths do not.
 
 There is no `.stream()` method on a client or on a connection.
@@ -140,17 +139,17 @@ There is no `.stream()` method on a client or on a connection.
 
 ```typescript
 // examples/prisma-8-demo/src/queries/get-user-by-email-prepared.ts
-const ps = await db.prepare({ email: 'pg/text@1' }, (sql, params) =>
-  sql.public.user
-    .select('id', 'email', 'displayName', 'createdAt', 'kind')
-    .where((f, fns) => fns.eq(f.email, params.email))
-    .limit(1)
-    .build(),
+const ps = await db.prepare({ email: "pg/text@1" }, (sql, params) =>
+    sql.public.user
+        .select("id", "email", "displayName", "createdAt", "kind")
+        .where((f, fns) => fns.eq(f.email, params.email))
+        .limit(1)
+        .build(),
 );
 
 const runtime = db.runtime();
 for (const email of emails) {
-  const rows = await ps.query(runtime, { email });
+    const rows = await ps.query(runtime, { email });
 }
 ```
 
@@ -164,29 +163,32 @@ The model is the whole row plus its relations, and each related model carries it
 - `ResultType<typeof query>` — the row of any ORM collection value (plain, `.include()`, `.select()`, `.variant()`), and of SQL lane plans. Bind the query to a name first; `typeof` needs a value. `.variant()` takes the variant's discriminator value, not its model name: `db.orm.public.Task.variant('bug')` for `@@base(Task, "bug")`. Call it once, on the base collection; a second `.variant()` on a variant collection is refused.
 
 ```ts
-import type { models, Models } from './prisma/contract';
-import type { Scalars, Shape } from '@prisma/orm-postgres/family-contract/types';
-import type { ResultType } from '@prisma/orm-postgres/components/runtime';
+import type { models, Models } from "./prisma/contract";
+import type { Scalars, Shape } from "@prisma/orm-postgres/family-contract/types";
+import type { ResultType } from "@prisma/orm-postgres/components/runtime";
 
 type User = typeof models.public.User; // same type as Models.public_User
 type UserRow = ResultType<typeof db.orm.public.User>; // Scalars<Models.public_User>
 
-const usersWithTasks = () => db.orm.public.User.include('tasks');
+const usersWithTasks = () => db.orm.public.User.include("tasks");
 type UserWithTasks = ResultType<ReturnType<typeof usersWithTasks>>; // Shape<Models.public_User, { '+': 'tasks' }>
 
-const projected = db.orm.public.User.select('id');
+const projected = db.orm.public.User.select("id");
 type UserId = ResultType<typeof projected>; // { id: number }
 
 // An endpoint declares its response from the model; the query behind it is an implementation detail.
-type UserResponse = Shape<Models.public_User, { '-': 'email'; posts: { '+': 'id' | 'title' | 'tags' } }>;
+type UserResponse = Shape<
+    Models.public_User,
+    { "-": "email"; posts: { "+": "id" | "title" | "tags" } }
+>;
 
-async function getUserWithPosts(userId: Models.public_User['id']): Promise<UserResponse | null> {
-  const user = await db.orm.public.User.where({ id: userId })
-    .include('posts', (posts) => posts.include('tags'))
-    .first();
-  if (user === null) return null;
-  const { email: _email, ...rest } = user;
-  return { ...rest, posts: user.posts.map(({ id, title, tags }) => ({ id, title, tags })) };
+async function getUserWithPosts(userId: Models.public_User["id"]): Promise<UserResponse | null> {
+    const user = await db.orm.public.User.where({ id: userId })
+        .include("posts", (posts) => posts.include("tags"))
+        .first();
+    if (user === null) return null;
+    const { email: _email, ...rest } = user;
+    return { ...rest, posts: user.posts.map(({ id, title, tags }) => ({ id, title, tags })) };
 }
 
 // @ts-expect-error 'nope' is not a relation of User
@@ -204,7 +206,7 @@ Inside an ORM `.orderBy(...)`: a to-one relation's field (`(p) => p.author.name.
 ## Common Pitfalls (cross-target)
 
 1. **Using Postgres examples on a Mongo project (or vice versa).** Check `db.ts` and load the correct target guide ([`queries-postgres.md`](./queries-postgres.md) or [`queries-mongo.md`](./queries-mongo.md)).
-2. **Writing a `collect()` / `toArray()` helper to convert `.all()` to an array.** `.all()` returns an `AsyncIterableResult<Row>` which *is* a `PromiseLike<Row[]>` — `await collection.all()` directly yields `Row[]`. See *Consuming the result* above.
+2. **Writing a `collect()` / `toArray()` helper to convert `.all()` to an array.** `.all()` returns an `AsyncIterableResult<Row>` which _is_ a `PromiseLike<Row[]>` — `await collection.all()` directly yields `Row[]`. See _Consuming the result_ above.
 3. **Consuming an `AsyncIterableResult` twice.** Each result is single-use. The second consumer throws `RUNTIME.ITERATOR_CONSUMED`. Buffer once into a variable and reuse the variable.
 
 Target-specific pitfalls live in the per-target guides.
@@ -214,7 +216,7 @@ Target-specific pitfalls live in the per-target guides.
 - **Many-to-many relations work through the junction.** `.include('tags', (tag) => tag.select(...))` traverses an N:M relation's `through` table, and nested `create` / `connect` / `disconnect` on an N:M relation write the junction rows for you (`examples/prisma-8-demo/src/orm-client/get-post-tags.ts`, `create-post-with-tags.ts`). The one refusal: a junction with required payload columns the relation API cannot populate throws `ORM.RELATION_MUTATION_UNSUPPORTED` — write that junction directly or use the SQL builder.
 - **Ordering grouped aggregates by an aggregate alias (Postgres).** `db.orm.<ns>.<Model>.groupBy(...)` supports `.orderBy(...)` on group keys plus `.limit(...)` / `.offset(...)`, but the grouped collection cannot order by an aggregate alias such as `SUM(amount)`. A "top-N groups by SUM" query therefore falls back to JS-side sort + slice over the full grouped result, which is fine at small cardinalities and bad at scale. Workarounds: (a) drop to `db.sql.<ns>.<table>` and write the `GROUP BY` + `ORDER BY` + `LIMIT` against the aggregated table directly; (b) live with the JS-side sort/slice if the grouped cardinality is bounded. File a feature request via `references/feedback.md` if this is hitting you in production.
 - **A raw-SQL lane.** This one exists. Write whole-query raw SQL through the client's raw lane: ``db.raw.sql`SELECT ...`.returnsRow({ ... }).build()`` for rows, or `.affectedCount()` for a mutation's row count. Each declared column names the codec that decodes it, so the row stays typed. For an expression fragment inside a builder query, use `fns.raw` in a `.select(...)` callback instead.
-- **TypedSQL (`.sql` files compiled into typed callables).** Not implemented. For a repeated query, use `db.prepare(...)` (see *Prepared statements* above) or a function that returns the built plan and `db.runtime().query(plan)` at the call site. If you want a `.sql`-file compile path, file a feature request via `references/feedback.md`.
+- **TypedSQL (`.sql` files compiled into typed callables).** Not implemented. For a repeated query, use `db.prepare(...)` (see _Prepared statements_ above) or a function that returns the built plan and `db.runtime().query(plan)` at the call site. If you want a `.sql`-file compile path, file a feature request via `references/feedback.md`.
 - **`EXPLAIN` / query-plan inspection.** Prisma 8 does not expose an `.explain()` method. Workaround: connect a `pg.Pool` you control via the runtime's `pg:` binding (see `references/runtime.md`) and issue `EXPLAIN ANALYZE` through it. If you want a first-class plan-inspection surface, file a feature request via `references/feedback.md`.
 - **Multi-statement batching (Prisma-7-style `db.$transaction([call1, call2])`).** Prisma 8 runs each call sequentially. Workaround: wrap atomically-related work in `db.transaction(async (tx) => { ... })` on Postgres. If you want batch-as-array semantics, file a feature request via `references/feedback.md`.
 - **Mongo façade transactions.** `@internal/mongo/runtime` does not expose `db.transaction(...)`. Multi-document atomicity is not yet wrapped in the Prisma 8 Mongo façade. Workaround: use the MongoDB driver's session API directly if you control the client binding (`mongoClient:` option). File a feature request via `references/feedback.md` if you need a first-class façade surface.

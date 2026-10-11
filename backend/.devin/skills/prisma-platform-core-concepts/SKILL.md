@@ -1,18 +1,18 @@
 ---
 name: prisma-platform-core-concepts
 metadata:
-  library: "prisma"
-  library_version: "8.0.0-rc.21"
-  version: 2026.9.2
+    library: "prisma"
+    library_version: "8.0.0-rc.21"
+    version: 2026.9.2
 description: >-
-  Use when hosting, deploying, or operating an app on the Prisma Platform:
-  projects, branches, preview environments, services and their versions,
-  Prisma Postgres databases, object-store buckets, environment variables,
-  custom domains, logs, or the GitHub integration. Triggers on "Prisma
-  Platform", "Prisma Compute", "Prisma Postgres", "Prisma Storage",
-  "preview environment", `prisma deploy`, `prisma dev`, `prisma auth`,
-  `prisma project`, `prisma branch`, `prisma service`, `prisma postgres`,
-  `prisma bucket`, `prisma git`, `prisma.config.ts`, promote, rollback.
+    Use when hosting, deploying, or operating an app on the Prisma Platform:
+    projects, branches, preview environments, services and their versions,
+    Prisma Postgres databases, object-store buckets, environment variables,
+    custom domains, logs, or the GitHub integration. Triggers on "Prisma
+    Platform", "Prisma Compute", "Prisma Postgres", "Prisma Storage",
+    "preview environment", `prisma deploy`, `prisma dev`, `prisma auth`,
+    `prisma project`, `prisma branch`, `prisma service`, `prisma postgres`,
+    `prisma bucket`, `prisma git`, `prisma.config.ts`, promote, rollback.
 ---
 
 # Prisma Platform core concepts
@@ -40,13 +40,13 @@ and modules in code belongs to `prisma-composer-core-concepts`.
 
 One CLI, `prisma`, fronts a set of products designed to be used together:
 
-| Product | What it is | Concepts live in |
-| --- | --- | --- |
-| Prisma ORM (Prisma 8) | Data contract, typed queries, migrations | `prisma-orm-core-concepts` |
-| Prisma Composer | The app declaration: services, databases, buckets, wiring | `prisma-composer-core-concepts` |
-| Prisma Compute | Hosting: runs your services next to your data | this skill |
-| Prisma Postgres | Managed PostgreSQL | this skill |
-| Prisma Storage | S3-compatible object storage | this skill |
+| Product               | What it is                                                | Concepts live in                |
+| --------------------- | --------------------------------------------------------- | ------------------------------- |
+| Prisma ORM (Prisma 8) | Data contract, typed queries, migrations                  | `prisma-orm-core-concepts`      |
+| Prisma Composer       | The app declaration: services, databases, buckets, wiring | `prisma-composer-core-concepts` |
+| Prisma Compute        | Hosting: runs your services next to your data             | this skill                      |
+| Prisma Postgres       | Managed PostgreSQL                                        | this skill                      |
+| Prisma Storage        | S3-compatible object storage                              | this skill                      |
 
 **Every deployed app is a Composer app.** Your server code plus a declaration
 (`module.ts`) naming its services, databases, and buckets. The declaration is
@@ -80,19 +80,16 @@ shape:
 import { definePrismaConfig } from "prisma/config";
 import { defineConfig as composer } from "@prisma/composer/config";
 import { nodeBuild } from "@prisma/composer/node/control";
-import {
-  prismaCloud,
-  prismaState,
-} from "@prisma/composer-prisma-cloud/control";
+import { prismaCloud, prismaState } from "@prisma/composer-prisma-cloud/control";
 import { defineConfig as orm } from "@prisma/orm-postgres/config";
 
 export default definePrismaConfig({
-  composer: composer({
-    extensions: [prismaCloud(), nodeBuild()],
-    state: prismaState(),
-  }),
-  orm: orm({ contract: "./src/prisma/contract.prisma" }),
-  skills: { agents: ["claude"] },
+    composer: composer({
+        extensions: [prismaCloud(), nodeBuild()],
+        state: prismaState(),
+    }),
+    orm: orm({ contract: "./src/prisma/contract.prisma" }),
+    skills: { agents: ["claude"] },
 });
 ```
 
@@ -173,23 +170,23 @@ The minimal `.github/workflows/prisma-deploy.yml`:
 ```yaml
 name: prisma-deploy
 on:
-  push:
+    push:
 permissions:
-  contents: read
-  id-token: write
+    contents: read
+    id-token: write
 jobs:
-  deploy:
-    if: github.ref_type == 'branch'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-      - uses: oven-sh/setup-bun@v2
-      - uses: prisma/cloud-deploy-action@v1
-        with:
-          build-command: npm run build
+    deploy:
+        if: github.ref_type == 'branch'
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 24
+            - uses: oven-sh/setup-bun@v2
+            - uses: prisma/cloud-deploy-action@v1
+              with:
+                  build-command: npm run build
 ```
 
 From then on, every push of a branch that carries the workflow file runs
@@ -299,10 +296,10 @@ code written against it runs unchanged on the platform.
 
 Configuration has two independent axes:
 
-| Axis | Values | Meaning |
-| --- | --- | --- |
-| Class | `production`, `preview` | Which branches resolve it: production-class values reach the production branch, preview-class values reach every preview |
-| Scope | project template, branch override | A template applies to all branches of its class; an override pins a value to one named preview branch |
+| Axis  | Values                            | Meaning                                                                                                                  |
+| ----- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Class | `production`, `preview`           | Which branches resolve it: production-class values reach the production branch, preview-class values reach every preview |
+| Scope | project template, branch override | A template applies to all branches of its class; an override pins a value to one named preview branch                    |
 
 Rules that bite:
 

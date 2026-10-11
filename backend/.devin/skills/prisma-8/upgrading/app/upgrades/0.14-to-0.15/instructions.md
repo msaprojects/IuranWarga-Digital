@@ -2,46 +2,46 @@
 from: "0.14"
 to: "0.15"
 changes:
-  - id: sql-orm-includes-decode-codec-values
-    summary: |
-      SQL ORM includes now decode every scalar child field through its contract-bound codec, matching top-level query results. Update application code and tests that relied on included fields retaining the database's JSON representation: for example, Postgres `bytea` include fields now return `Uint8Array` instead of `\\x`-prefixed hex text, and timestamp include fields return `Date` instead of timestamp strings. Custom codec-backed include fields likewise return the value produced by the codec's `decodeJson` method.
-  - id: db-verify-json-single-issue-list
-    summary: |
-      `prisma-next db verify --json` (and `db verify --schema-only --json`) now report a single
-      `schema.issues` array instead of the split `schema.issues` / `schema.schemaDiffIssues`
-      pair — the one-differ-two-ir-planner slice unified the CLI's schema-issue vocabulary onto
-      one shape: `{ path, reason, message, expected?, actual? }`. `reason` replaces the retired
-      `outcome` field (`'missing'` -> `'not-found'`, `'extra'` -> `'not-expected'`, `'mismatch'`
-      -> `'not-equal'`). The same collapse applies to `schema.warnings`. If a script or CI step
-      parses `db verify --json` output and reads `schema.schemaDiffIssues` /
-      `schema.warnings.schemaDiffIssues`, or compares an issue's `.outcome` field, update it:
-      read `schema.issues` (it already carries everything the two lists used to, concatenated)
-      and switch any `.outcome` comparison to the matching `.reason` value.
-    detection:
-      glob: "**/*.{ts,mts,cts,js,mjs,sh}"
-      contains:
-        - "schemaDiffIssues"
-        - ".outcome === 'missing'"
-        - ".outcome === 'extra'"
-        - ".outcome === 'mismatch'"
-      anyMatch: true
-  - id: policy-target-models-require-rls-attribute
-    summary: |
-      RLS enablement is now an explicit, authored table attribute: a `policy_select` block's
-      `target` model must declare `@@rls`, or `prisma-next contract emit` fails with
-      `PSL_EXTENSION_TARGET_MODEL_MISSING_ATTRIBUTE` naming the model and the policy. Add
-      `@@rls` to every policy-bearing model and re-run `prisma-next contract emit`; the
-      re-emitted `contract.json` gains an `rls` marker entity and a new storage hash. Plan
-      semantics follow the marker, not the policy set: a marked table with RLS off plans
-      `ENABLE ROW LEVEL SECURITY` (even with policies in sync), removing every policy keeps
-      RLS enabled (fail-closed deny-all), removing `@@rls` itself plans
-      `DISABLE ROW LEVEL SECURITY` (requires the destructive allowance), and changing only a
-      policy's name prefix plans a single `ALTER POLICY ... RENAME TO` instead of drop+create.
-    detection:
-      glob: "**/*.prisma"
-      contains:
-        - "policy_select"
-      anyMatch: true
+    - id: sql-orm-includes-decode-codec-values
+      summary: |
+          SQL ORM includes now decode every scalar child field through its contract-bound codec, matching top-level query results. Update application code and tests that relied on included fields retaining the database's JSON representation: for example, Postgres `bytea` include fields now return `Uint8Array` instead of `\\x`-prefixed hex text, and timestamp include fields return `Date` instead of timestamp strings. Custom codec-backed include fields likewise return the value produced by the codec's `decodeJson` method.
+    - id: db-verify-json-single-issue-list
+      summary: |
+          `prisma-next db verify --json` (and `db verify --schema-only --json`) now report a single
+          `schema.issues` array instead of the split `schema.issues` / `schema.schemaDiffIssues`
+          pair — the one-differ-two-ir-planner slice unified the CLI's schema-issue vocabulary onto
+          one shape: `{ path, reason, message, expected?, actual? }`. `reason` replaces the retired
+          `outcome` field (`'missing'` -> `'not-found'`, `'extra'` -> `'not-expected'`, `'mismatch'`
+          -> `'not-equal'`). The same collapse applies to `schema.warnings`. If a script or CI step
+          parses `db verify --json` output and reads `schema.schemaDiffIssues` /
+          `schema.warnings.schemaDiffIssues`, or compares an issue's `.outcome` field, update it:
+          read `schema.issues` (it already carries everything the two lists used to, concatenated)
+          and switch any `.outcome` comparison to the matching `.reason` value.
+      detection:
+          glob: "**/*.{ts,mts,cts,js,mjs,sh}"
+          contains:
+              - "schemaDiffIssues"
+              - ".outcome === 'missing'"
+              - ".outcome === 'extra'"
+              - ".outcome === 'mismatch'"
+          anyMatch: true
+    - id: policy-target-models-require-rls-attribute
+      summary: |
+          RLS enablement is now an explicit, authored table attribute: a `policy_select` block's
+          `target` model must declare `@@rls`, or `prisma-next contract emit` fails with
+          `PSL_EXTENSION_TARGET_MODEL_MISSING_ATTRIBUTE` naming the model and the policy. Add
+          `@@rls` to every policy-bearing model and re-run `prisma-next contract emit`; the
+          re-emitted `contract.json` gains an `rls` marker entity and a new storage hash. Plan
+          semantics follow the marker, not the policy set: a marked table with RLS off plans
+          `ENABLE ROW LEVEL SECURITY` (even with policies in sync), removing every policy keeps
+          RLS enabled (fail-closed deny-all), removing `@@rls` itself plans
+          `DISABLE ROW LEVEL SECURITY` (requires the destructive allowance), and changing only a
+          policy's name prefix plans a single `ALTER POLICY ... RENAME TO` instead of drop+create.
+      detection:
+          glob: "**/*.prisma"
+          contains:
+              - "policy_select"
+          anyMatch: true
 ---
 
 <!--

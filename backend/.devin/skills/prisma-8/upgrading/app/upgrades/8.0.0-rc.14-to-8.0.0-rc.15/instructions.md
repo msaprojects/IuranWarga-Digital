@@ -2,417 +2,417 @@
 from: "8.0.0-rc.14"
 to: "8.0.0-rc.15"
 changes:
-  - id: contract-stores-data-type
-    summary: |
-      A SQL contract names each column's data type in `dataType` (for example `pg/int4`) instead of
-      its database type name in `nativeType`. Upgrade every extension that ships migrations in the
-      same step, then run the colocated script on the project: it rewrites every contract, writes
-      its lists in this release's new form, renames the snapshot directories to the new storage
-      hashes, and rewrites the migrations, refs, `migration.ts` files and `contract.d.ts` files
-      that name them.
-    detection:
-      glob: "**/*.json"
-      matches:
-        - '"nativeType"\s*:\s*"'
-    script: ./scripts/data-type-in-contract/data-type-in-contract.ts
-  - id: sign-databases-after-upgrade
-    summary: |
-      The upgrade changes every contract's storage hash, so every database's marker names a hash
-      the project no longer has. Run `prisma db sign` against every database before deploying the
-      application built with the new contract. `db sign` now signs every contract space, and its
-      `--json` document is `{ ok, summary, spaces, advancedRefs }`.
-  - id: column-descriptors-drop-native-type
-    summary: |
-      A hand-written column descriptor names its codec only: `{ codecId: 'pg/text@1' }` instead of
-      `{ codecId: 'pg/text@1', nativeType: 'text' }`. Code that reads or builds a column of a stored
-      contract uses `dataType` (for example `pg/text`) instead of `nativeType` (`text`).
-    detection:
-      glob: "**/*.{ts,mts,cts,tsx}"
-      matches:
-        - '(?<![\w$])(?<!readonly\s+)nativeType\s*:\s*[''"]'
-        - '\.nativeType\b'
-  - id: parameter-casts-use-base-names
-    summary: |
-      PostgreSQL parameter casts are written with the data type's base name: `$1::int4` instead of
-      `$1::integer`, and likewise `int2`, `int8`, `float4`, `float8` and `bool` instead of
-      `smallint`, `bigint`, `real`, `double precision` and `boolean`. Logged SQL and SQL snapshots
-      in tests change to match.
-    detection:
-      glob: "**/*.{ts,mts,cts,sql,json,snap}"
-      matches:
-        - '\$\d+::(?:integer|smallint|bigint|real|double precision|boolean)\b'
-  - id: ts-contract-lists-extension-codecs
-    summary: |
-      A TypeScript contract built with `defineContract` from `@prisma/orm-postgres/contract-builder`
-      or `@prisma/orm-sqlite/contract-builder` names each column's database type from the data type
-      its codec represents. A contract that uses an extension's codec without listing the extension
-      in `extensions` now fails with `CONTRACT.CODEC_DESCRIPTOR_MISSING`. List the extension.
-    detection:
-      glob: "**/*.{ts,mts,cts}"
-      matches:
-        - '(?<![\s\S])(?![\s\S]*GENERATED FILE - DO NOT EDIT)(?=[\s\S]*(?<![\w$])defineContract(?![\w$]))[\s\S]*[''"]@prisma/orm-extension-(?:pgvector|postgis|arktype-json)/column-types[''"]'
-        - '(?<![\s\S])(?![\s\S]*GENERATED FILE - DO NOT EDIT)(?=[\s\S]*(?<![\w$])defineContract(?![\w$]))[\s\S]*(?<![\w$])codecId\s*:\s*[''"](?:pg/vector|pg/geometry|arktype/json)@\d+[''"]'
-  - id: sqlite-contract-d-ts-char-aggregates
-    summary: |
-      On SQLite, `sql/char@1` and `sql/varchar@1` are registered codecs. Re-emit the contract:
-      `contract.d.ts` gains `min` and `max` aggregate rows for both codecs. `contract.json`, its
-      hashes and the migration SQL do not change.
-    detection:
-      glob: "**/contract.d.ts"
-      matches:
-        - '^(?![\s\S]*[''"]sql/char@1[''"]\s*:\s*\{\s*readonly output)[\s\S]*@prisma/orm-(?:target-)?sqlite/'
-  - id: column-helpers-raise-type-params-invalid
-    summary: |
-      pgvector's `vector(length)` and PostGIS's `geometry({ srid })` and `pgGeometryColumn({ srid })`
-      no longer check their arguments. Building the contract checks every column's parameters
-      against its data type: an argument outside its bounds now fails `defineContract` with
-      `CONTRACT.TYPE_PARAMS_INVALID` instead of failing the helper call with
-      `CONTRACT.ARGUMENT_INVALID`, and `srid: 0` is refused when the contract is built, not later
-      when a migration is planned.
-    detection:
-      glob: "**/*.{ts,mts,cts}"
-      matches:
-        - '\bCONTRACT\.ARGUMENT_INVALID\b'
-        - '\bsrid\s*:\s*0\b'
-  - id: reemit-explicit-list-cardinality
-    summary: Re-emit list contracts with nested element nullability while preserving scalar JSON.
-  - id: refresh-historical-list-contracts
-    summary: Refresh historical MongoDB contract snapshots and their migration references together; for SQL contracts, `contract-stores-data-type` rewrites them.
-  - id: mongo-nullable-list-containers
-    summary: Re-emit Mongo contracts and migrate validators to accept nullable list containers.
-  - id: domain-types-match-their-columns
-    summary: |
-      The domain half of an emitted SQL contract now carries the type parameters and enum value sets the schema declares: on fields typed by a named type, on enum list fields, and on composite type members. In `contract.d.ts`, a composite type member with type parameters now has the parameterized output type. Re-emit the contract. This change leaves the storage half, every hash and migration snapshots unchanged.
-    detection:
-      glob: "**/contract.json"
-      matches:
-        - '"typeRef"\s*:'
-        - '"valueObjects"\s*:'
-        - '"valueSet"\s*:'
-  - id: value-object-default-matches-composite-type
-    summary: |
-      A literal default on a field typed by a composite type must now match the composite type, with each member value read by the member's codec and each enum member value one of the enum's values, or the schema is refused. Fix the default the diagnostic names.
-    detection:
-      glob: "**/*.prisma"
-      matches:
-        - '^\s*type\s+\w+\s*\{'
-  - id: composite-type-attributes-refused
-    summary: |
-      An attribute on a composite type or on one of its members is now refused, where it used to be ignored. Remove it.
-    detection:
-      glob: "**/*.prisma"
-      matches:
-        - '^\s*type\s+\w+\s*\{'
-  - id: codecs-check-stored-json
-    summary: |
-      A TypeScript `.default()` value or `enumType` member that its column's codec does not take is now refused when the contract is built, with `CONTRACT.DEFAULT_INVALID` or `CONTRACT.ENUM_INVALID`. A `contract.json` that holds such a default stops `db init`, `db update` and `migration plan` with `CONTRACT.DEFAULT_INVALID`, and a `migration.ts` that holds one fails when it runs. Correct the value the error names.
-    detection:
-      glob: "**/*.{ts,mts,cts,tsx}"
-      matches:
-        - '\.default\(\s*(?!now\(|sql`|autoincrement\()'
-        - '\benumType\s*\('
-  - id: psl-values-checked-by-codecs
-    summary: |
-      A PSL schema whose SQL enum member its codec does not take, or whose literal default its column's type does not hold, is now refused at `contract emit`, where it used to load. Correct the member or the default.
-    detection:
-      glob: "**/*.prisma"
-      matches:
-        - '@@type\(\s*"(?:pg|sql|sqlite)/'
-        - '^\s*\w+\s*=\s*-?\d{10,}\s*$'
-        - '@default\(\s*(?:"|-?\d|\[)'
-  - id: uuid-defaults-stored-as-postgresql-writes
-    summary: |
-      A uuid default written in upper case, in braces or without hyphens, in PSL or in a TypeScript `.default()`, is now stored as PostgreSQL writes it, so emitting the contract again changes its storage hash. Earlier versions could not apply such a contract: the command that applied it failed and changed nothing. Emit the contract again, then run that command again. With migrations, first delete the migration package that never applied.
-    detection:
-      glob: "**/*.{prisma,ts,mts,cts,tsx}"
-      matches:
-        - '\bUuid\b[^\n]*@default\(\s*"(?![0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")\{?[0-9A-Fa-f]{4}'
-        - '\b(?:uuidNative|pgUuidColumn)\s*\([^\n]*\.default\(\s*[''"`](?![0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}[''"`])\{?[0-9A-Fa-f]{4}'
-        - '^\s*\.default\(\s*[''"`](?![0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}[''"`])(?=[^''"`\n]*[A-F{-])\{?[0-9A-Fa-f]{8}-?[0-9A-Fa-f]{4}-?[0-9A-Fa-f]{4}-?[0-9A-Fa-f]{4}-?[0-9A-Fa-f]{12}\}?[''"`]'
-  - id: ts-enum-member-written-as-stored
-    summary: |
-      `defineContract` from the Postgres and SQLite packages now refuses an `enumType` member that its codec takes but stores as a different value, with `CONTRACT.ENUM_INVALID`. A uuid member written with an upper-case hex digit, in braces, or with hyphens anywhere other than the 8-4-4-4-12 positions Postgres prints (including none) is refused, because `pg/uuid@1` stores lower-case 8-4-4-4-12 text. Write each refused member as the error message says, re-emit, and apply a migration that replaces the enum's CHECK constraint.
-    detection:
-      glob: "**/*.{ts,tsx,mts,cts}"
-      matches:
-        - '\benumType\('
-  - id: mongo-codecs-check-json
-    summary: |
-      The built-in Mongo codecs now refuse a JSON value that is not the JSON form of their type, where most passed it through: a PSL enum member whose value its `@@type` codec does not take is now refused at `contract emit`, and a TypeScript `enumType` member that `mongo/objectId@1` or `mongo/int32@1` does not hold is refused when the contract is built. Correct the member.
-    detection:
-      glob: "**/*.{prisma,ts,mts,cts,tsx}"
-      matches:
-        - '@@type\(\s*"mongo/'
-        - '[''"]mongo/(?:objectId|int32)@1[''"]'
-        - '\bMONGO_(?:OBJECTID|INT32)_CODEC_ID\b'
-  - id: text-array-elements-nullable
-    summary: |
-      A `textArray()` column's elements are now typed `string | null`, because a `text[]` holds NULL elements, which it reads as `null`. Handle the `null`.
-    detection:
-      glob: "**/*.{ts,mts,cts,tsx}"
-      matches:
-        - '\btextArray\s*\('
-        - '[''"]pg/text-array@1[''"]'
-  - id: char-reads-drop-only-padding
-    summary: |
-      A `char(n)` column now reads the same through `.include()` as through a flat read: without the trailing spaces that pad it, where an include used to return them, and keeping a trailing tab or newline, which a flat read used to drop. Compare `char` values without their padding.
-    detection:
-      glob: "**/contract.json"
-      matches:
-        - '"codecId"\s*:\s*"(?:sql|pg)/char@1"'
-  - id: sqlite-nan-parameters-refused
-    summary: |
-      On SQLite, NaN written to a float column or used as a filter value now throws `RUNTIME.ENCODE_FAILED` naming the codec, where SQLite stored NULL or matched nothing. Write `null` for no value.
-    detection:
-      glob: "**/contract.json"
-      matches:
-        - '"target"\s*:\s*"sqlite"'
-  - id: sqlite-int-include-refuses-inexact-values
-    summary: |
-      On SQLite, an `.include()` of a row whose `sql/int@1` column holds an INTEGER past 2^53, or a REAL, now throws `RUNTIME.DECODE_FAILED`, where it read the value rounded or with a fraction. Store such values in a `BigInt` or `Float` column.
-    detection:
-      glob: "**/contract.json"
-      matches:
-        - '"codecId"\s*:\s*"sql/int@1"'
-  - id: prefixed-sql-tags-are-removed
-    summary: |
-      The tags `pg.sql` and `sqlite.sql` are removed. Write `sql`.
-    detection:
-      glob: "**/*.{prisma,ts}"
-      matches:
-        - '(?<![\w./-])(pg|sqlite)\s*\.\s*sql\s*\\?[\x60"'']'
-  - id: default-diagnostic-codes-changed
-    summary: |
-      Four PSL diagnostic codes for written values changed: `PSL_UNKNOWN_DEFAULT_LITERAL_TAG` is now `PSL_UNKNOWN_LITERAL_TAG`, `PSL_INVALID_JSON_LITERAL` is now `PSL_INVALID_LITERAL`, `PSL_DEFAULT_TYPE_INCOMPATIBLE` is now `PSL_VALUE_TYPE_INCOMPATIBLE`, or `PSL_DEFAULT_LIST_EXPECTED` for a single value on a list column, and most cases of `PSL_INVALID_DEFAULT_LITERAL` moved to `PSL_INVALID_LITERAL`.
-    detection:
-      glob: "**/*.{ts,mts,cts,js,mjs}"
-      matches:
-        - '\bPSL_INVALID_JSON_LITERAL\b'
-        - '\bPSL_UNKNOWN_DEFAULT_LITERAL_TAG\b'
-        - '\bPSL_DEFAULT_TYPE_INCOMPATIBLE\b'
-        - '\bPSL_INVALID_DEFAULT_LITERAL\b'
-  - id: migration-ts-column-defaults
-    summary: |
-      In `migration.ts`, the adapter writes every column default, reading it with the column's codec. Postgres `setDefault` takes the column as `col(name, type, { default, codecRef })` instead of `column` (the name) and `defaultSql`. A SQLite `addColumn` or `recreateTable` column carries `default` and `codecRef` instead of `defaultSql`, and a `recreateTable` postcheck for a default is `{ description, columnDefault }`. An earlier `migration.ts` that uses `defaultSql` no longer compiles, and running it with `node migration.ts` stops with `MIGRATION.OPERATION_OPTION_REMOVED`; its `ops.json` still applies.
-    detection:
-      glob: "**/migration.ts"
-      matches:
-        - '\bdefaultSql\s*:'
-  - id: postgres-changed-default-applied
-    summary: |
-      On PostgreSQL, `db update` and `db migrate` now change a column default that is already there. They used to skip the change and then fail with `MIGRATION.SCHEMA_VERIFY_FAILED`. A migration an earlier version planned still skips it: before you apply it, delete its package and plan it again, or rewrite its `setDefault` call to the form `migration-ts-column-defaults` shows and run its `migration.ts` to write `ops.json` again.
-    detection:
-      glob: "**/ops.json"
-      matches:
-        - '"id":\s*"setDefault\.'
-  - id: cli-error-from-caught
-    summary: |
-      `mapCaughtMigrationError` is removed from `@prisma/orm-toolchain/cli/control-api` (`@internal/cli/control-api`). Use `errorFromCaught(error, why)`, which always returns an error: a CLI error as it is, any error with a structured code as itself, and anything else as `CLI.UNEXPECTED` with `why(message)`. It throws an `InternalError` again.
-    detection:
-      glob: "**/*.{ts,mts,cts,tsx}"
-      matches:
-        - '\bmapCaughtMigrationError\b'
-  - id: sql-with-a-line-comment-gets-a-new-wire-name
-    summary: |
-      An index, check or policy whose SQL body contains both `--` and a line break gets a new name in `contract.json` once. The next `migration plan` drops and recreates the object.
-    detection:
-      glob: "**/contract.json"
-      matches:
-        - '"(?:[^"\\]|\\.)*?--(?:[^"\\]|\\.)*?\\n|"(?:[^"\\]|\\.)*?\\n(?:[^"\\]|\\.)*?--'
-  - id: strict-verify-unclaimed-code
-    summary: |
-      `prisma db verify --strict` now reports a database holding tables no contract declares under `CONTRACT.SCHEMA_VERIFICATION_FAILED`, in both the diagnostic and the JSON result's `code`. It used to report `CONTRACT.MARKER_REQUIRED`. The exit code is still 4. `CONTRACT.MARKER_REQUIRED` now only means the database has not been signed.
-    detection:
-      glob: "**/*.{ts,mts,cts,js,mjs,cjs,sh,yml,yaml,json}"
-      matches:
-        - 'CONTRACT\.MARKER_REQUIRED'
-  - id: prisma7-schema-date-types-are-text
-    summary: |
-      A contract from `prisma7Schema(...)` now reads a Prisma 7 `DateTime` column and `@db.Timestamp`, `@db.Timestamptz`, `@db.Date` and `@db.Time` columns as the text PostgreSQL prints (`TimestampString(3)`, `TimestampString(p)`, `TimestamptzString(p)`, `DateString`, `TimeString(p)`), not as `Temporal` values. `@updatedAt` still writes UTC. The application needs no `Temporal` for them. Re-emit, change code that treats these fields as `Temporal` values, then run `prisma db sign`.
-    detection:
-      glob: "**/prisma.config.{ts,mts,cts,js,mjs}"
-      matches:
-        - '\bprisma7Schema\s*\('
-  - id: contract-infer-writes-text-date-types
-    summary: |
-      `prisma contract infer` now writes `TimestampString(p)`, `TimestamptzString(p)`, `DateString` and `TimeString(p)` for `timestamp`, `timestamptz`, `date` and `time` columns, where it wrote `Timestamp(p)`, `Timestamptz(p)`, `Date` and `Time(p)`. A contract inferred earlier keeps its types until infer runs again.
-    detection:
-      glob: "**/*.prisma"
-      matches:
-        - 'Contract inferred from the live database schema'
-  - id: text-timestamp-now-is-utc
-    summary: |
-      A `timestamp` column of type `TimestampString(p)` that the ORM fills with `now` now receives the UTC wall-clock time on a host outside UTC. Before, it received the host's local time. No code changes.
-    detection:
-      glob: "**/*.{prisma,ts,mts,cts}"
-      matches:
-        - '\btimestampString\s*\([^)\n]*\bnow\b'
-  - id: contract-infer-writes-bytea-default-literals
-    summary: |
-      `prisma contract infer` now writes a `bytea` column default as a base64 literal, `@default("aGVsbG8=")`, where it wrote ``@default(sql`'\\x68656c6c6f'::bytea`)``. A contract emitted from the new output stores a value instead of an expression, so it gets a new storage hash while the database does not change. Re-emit, then `prisma db sign`, or record an empty migration with `prisma migration new`.
-    detection:
-      glob: "**/*.prisma"
-      matches:
-        - '\bBytes(?:\[\])?\??[ \t]+[^\n]*@default\(sql[^\n]*::bytea'
-  - id: prisma6-int-written-as-long
-    summary: |
-      A contract read with `prisma6Schema(...)` now gives a plain Prisma 6 `Int` field, and `Int @db.Long`,
-      the `mongo/int64Number@1` codec: the application type stays `number`, and Prisma 8 now writes these
-      fields as a BSON long, as Prisma 6 does, instead of an int. A document in which such a field holds a
-      fractional number, which the previous contract let Prisma 8 write, now fails to read with
-      `RUNTIME.DECODE_FAILED`: repair those documents, then re-emit the contract.
-    detection:
-      glob: "**/prisma.config.{ts,mts,cts,js,mjs}"
-      matches:
-        - '\bprisma6Schema\s*\('
-  - id: prisma6-bytes-objectid-is-hex
-    summary: |
-      A Prisma 6 MongoDB schema with a native type Prisma 6 accepts now emits with `prisma6Schema(...)`
-      (only `DateTime @db.Timestamp` is still refused). A `Bytes @db.ObjectId` field holds an ObjectId, so
-      Prisma 8 reads it as a 24-digit hex string and writes only a hex string or an ObjectId; a 12-byte
-      `Buffer` or `Uint8Array`, which the Prisma 6 client uses for it, is refused.
-    detection:
-      glob: "**/*.prisma"
-      matches:
-        - '\bBytes(?:\[\])?\??[ \t]+[^\n]*@db\.ObjectId\b'
-  - id: writes-on-a-conditional-collection-are-refused
-    summary: |
-      A write (`update`, `updateAll`, `updateAndCount`, `delete`, `deleteAll`, `deleteAndCount`) on a collection that is filtered on some code paths and not on others no longer compiles. A pattern cannot tell which collections those are: act only where the compiler reports "The 'this' context of type '...' is not assignable to method's 'this' of type 'HasWhere'". Filter on every path, or make the write only where the filter was applied.
-    detection:
-      glob: "**/*.{ts,mts,cts,tsx}"
-      matches:
-        - '\.(?:updateAll|updateAndCount|deleteAll|deleteAndCount)\s*\('
-        - '\.update\s*\('
-        - '\.delete\s*\(\s*(?:\)|\()'
-  - id: writes-refuse-what-they-would-ignore
-    summary: |
-      `updateAll`, `updateAndCount`, `deleteAll` and `deleteAndCount` now throw `ORM.ARGUMENT_INVALID` on a collection that has a `limit`, an `offset`, a `cursor`, `distinct` or `distinctOn`. These writes change every row that matches the filter; their statement cannot apply any of these, so they were ignored and more rows changed than the chain asked for. Remove them before the write, or read the rows first and change them by their ids. `update` with a relation callback now throws on a collection with an order, a limit, an offset, a cursor, `distinct` or `distinctOn`, which it ignored; filter it to the one row instead. `update` and `delete` without a relation callback change the row `first()` returns, as before, except after `limit(0)`: they changed one row and now change none and return `null`.
-    detection:
-      glob: "**/*.{ts,mts,cts,tsx}"
-      matches:
-        - '\.(?:limit|offset|cursor|distinct|distinctOn)\s*\([^)]*\)[\s\S]{0,300}?\.(?:update|updateAll|updateAndCount|delete|deleteAll|deleteAndCount)\s*\('
-        - '\.orderBy\s*\([\s\S]{0,300}?\.update\s*\('
-  - id: cursor-and-distinct-on-check-the-receiver
-    summary: |
-      `cursor` and `distinctOn` now require an order on the collection they are called on, checked on the receiver. A cast on the argument, such as `cursor({ id } as never)`, no longer bypasses the check; add the `orderBy`, or cast the collection to `Ordered<C>` where the query is meant to have no order.
-    detection:
-      glob: "**/*.{ts,mts,cts,tsx}"
-      matches:
-        - '\.(?:cursor|distinctOn)\s*\([^)]*\bas\s+never\b'
-  - id: apply-is-a-collection-member
-    summary: |
-      Every collection now has an `apply` method. A custom collection class that declares its own `apply` member with another signature no longer compiles; rename it.
-    detection:
-      glob: "**/*.{ts,mts,cts,tsx}"
-      matches:
-        - '(?:^|\n)[ \t]*(?:(?:public|protected|private|readonly|static|async|override)\s+)*apply\s*[(<:=?]'
-  - id: scope-is-a-collection-member
-    summary: |
-      Every collection now has a `scope` method. A custom collection class that declares its own `scope` member with another signature no longer compiles; rename it.
-    detection:
-      glob: "**/*.{ts,mts,cts,tsx}"
-      matches:
-        - '(?:^|\n)[ \t]*(?:(?:public|protected|private|readonly|static|async|override|get|set)\s+)*scope\s*[!(<:=?]'
-  - id: overriding-a-chaining-method
-    summary: |
-      In a class that extends `Collection`, an override of a chaining method (`where`, `orderBy`, `limit`, `offset`, `distinct`, `distinctOn`, `cursor`, `include`) or of a method that returns rows (`all`, `first`, `create`, `createAll`, `upsert`, `update`, `updateAll`, `updateAndCount`, `delete`, `deleteAll`, `deleteAndCount`) must use the new signature, which takes a `this` parameter.
-    detection:
-      glob: "**/*.{ts,mts,cts,tsx}"
-      matches:
-        - '(?:^|\n)[ \t]*(?:(?:public|protected|override|async)\s+)*(?:where|orderBy|limit|offset|distinct|distinctOn|cursor|include|all|first|create|createAll|upsert|update|updateAll|updateAndCount|delete|deleteAll|deleteAndCount)\s*[(<]'
-  - id: collection-state-flags-are-boolean
-    summary: |
-      In `DefaultCollectionTypeState`, `hasWhere`, `hasOrderBy` and `hasUniqueFilter` are `boolean` (not known) instead of `false`. Code that expects `false` on a collection with no filter or order must expect `boolean`.
-    detection:
-      glob: "**/*.{ts,mts,cts,tsx}"
-      matches:
-        - '\bhas(?:Where|OrderBy|UniqueFilter)\b[''"]?\]?\s*,\s*false\b'
-        - '\bhas(?:Where|OrderBy|UniqueFilter)\s*:\s*false\b'
-  - id: read-collection-state-and-row-with-helpers
-    summary: |
-      A collection's type state and row are read with `CollectionTypeStateOf<C>` and `CollectionRowOf<C>`, not by inferring the type arguments of `Collection`. The type arguments keep what the collection started with.
-    detection:
-      glob: "**/*.{ts,mts,cts,tsx}"
-      matches:
-        - '\bCollection<[^;]*?\binfer\b'
-  - id: return-type-of-a-chaining-method
-    summary: |
-      `ReturnType` of `where`, `orderBy`, `limit`, `offset`, `distinct`, `distinctOn`, `cursor` or `include` no longer gives a collection. Write `Filtered<C>` after `where`, `Ordered<C>` after `orderBy`, and `C` after the others, or take `typeof` of a value.
-    detection:
-      glob: "**/*.{ts,mts,cts,tsx}"
-      matches:
-        - '\bReturnType<[^>]*\[[''"](?:where|orderBy|limit|offset|distinct|distinctOn|cursor|include)[''"]\]'
-        - '\bReturnType<\s*typeof\s+[\w$.]+\.(?:where|orderBy|limit|offset|distinct|distinctOn|cursor|include)\b'
-  - id: chaining-methods-take-no-explicit-type-arguments
-    summary: |
-      `include`, `distinct` and `distinctOn` with explicit type arguments no longer compile: `posts.include<'user'>('user')` and `posts.distinct<['title']>('title')` fail, and `ReturnType<typeof posts.include<'user'>>` is `never`. Drop the type arguments; they are inferred from the arguments, so `posts.distinct('title')` needs none.
-    detection:
-      glob: "**/*.{ts,mts,cts,tsx}"
-      matches:
-        - '\.(?:include|distinct|distinctOn)<'
-  - id: custom-collection-methods-chain
-    summary: |
-      Optional. Custom collection methods now stay available after the built-in chaining methods. Where code repeats a class method's body inline after a chaining call, it can call the method instead.
-    detection:
-      glob: "**/*.{ts,mts,cts,tsx}"
-      matches:
-        - '\bextends\s+Collection<'
-  - id: variant-takes-discriminator-value
-    summary: |
-      `.variant()` on a polymorphic SQL or Mongo ORM collection takes the discriminator value a variant declares instead of the variant's model name: `db.orm.public.Task.variant('bug')` for `@@base(Task, "bug")`, where it used to be `.variant('Bug')`. A value the model does not declare, or a call on a model with no discriminator, now throws `ORM.ARGUMENT_INVALID` instead of returning the collection unchanged. `.variant()` on a collection that already has a variant selected is now rejected: select the variant from the base collection.
-    detection:
-      glob: "**/*.{ts,tsx,mts,cts}"
-      matches:
-        - '\.variant\('
-  - id: imported-postgres-field-checks-defaults
-    summary: |
-      The `field` exported by the Postgres facade's `contract-builder` entry now has the Postgres presets and checks a `.default(...)` value against the Postgres target's column types, as the `defineContract` callback's `field` does; it does not know the column types an extension adds, such as pgvector's, so it does not check those. A default of the wrong type, which compiled before and failed when the contract was built, is now a compile error; give the value the column's type.
-    detection:
-      glob: "**/*.{ts,mts,cts,tsx}"
-      matches:
-        - 'import\s*\{[^}]*\bfield\b[^}]*\}\s*from\s*[''"]@(?:prisma/orm-|internal/)postgres/contract-builder[''"]'
-  - id: re-emit-for-the-row-locking-capabilities
-    summary: "The Postgres adapter reports seven new capability keys (sql.forUpdate, sql.forShare, sql.lockOf, sql.lockNowait, sql.lockSkipLocked, postgres.forNoKeyUpdate, postgres.forKeyShare), which gate the new row-locking methods on the SQL builder; a contract emitted before this release does not carry them and the methods are unavailable against it, so re-emit the contract before using them."
-    detection:
-      glob: "**/contract.json"
-      contains:
-        - '"distinctOn"'
-  - id: cache-annotation-ttl-removed
-    summary: "cacheAnnotation from @prisma/orm-extension-middleware-cache no longer takes ttl. Every annotated read is now cached, including cacheAnnotation({}) and cacheAnnotation({ key }), which used to pass through uncached; how long an entry lives is the store's policy (the default store: 60 seconds). Remove ttl from every cacheAnnotation call."
-    detection:
-      glob: "**/*.{ts,mts,cts,tsx,js,mjs,cjs,jsx}"
-      matches:
-        - '\bcacheAnnotation\s*\('
-  - id: cache-annotation-skip-renamed-bypass
-    summary: "cacheAnnotation({ skip }) is now cacheAnnotation({ bypass }), and the CachePayload type is now CacheAnnotationOptions. Detection finds skip written inside a cacheAnnotation({ ... }) literal and any use of CachePayload; options built elsewhere without that type are not detected."
-    detection:
-      glob: "**/*.{ts,mts,cts,tsx,js,mjs,cjs,jsx}"
-      matches:
-        - '\bCachePayload\b'
-        - '\bcacheAnnotation\s*\(\s*\{[^}]*\bskip\s*:'
-  - id: cache-middleware-store-options
-    summary: "createCacheMiddleware no longer takes maxEntries or clock. Pass them to createInMemoryCacheStore and hand that store to createCacheMiddleware({ store }), or drop them when they match the new defaults (1000 entries). Detection finds maxEntries or clock written in the options literal of a createCacheMiddleware call; it also matches an already-migrated createCacheMiddleware({ store: createInMemoryCacheStore({ maxEntries }) }), which needs no change."
-    detection:
-      glob: "**/*.{ts,mts,cts,tsx,js,mjs,cjs,jsx}"
-      matches:
-        - '\bcreateCacheMiddleware\s*\(\s*\{[^}]*\b(maxEntries|clock)\s*:'
-  - id: cache-store-object-arguments
-    summary: "A custom CacheStore is now a cache of values with a version per key: CacheStore<TMeta, TValue>. get({ key, meta }) replaces get(key) and returns a CacheEntry { key, meta, version, data } whose data is { empty: true } or { empty: false, value }; set(entry, value) replaces set(key, entry, ttlMs), stores only if the key's version still equals entry.version, and returns whether it stored; a new required unset({ keys, meta }) removes values and increments their keys' versions. CachedEntry is replaced by CacheEntry, and the rows type by CachedRows."
-    detection:
-      glob: "**/*.{ts,mts,cts,tsx,js,mjs,cjs,jsx}"
-      matches:
-        - '\bCacheStore\b'
-        - '\bCachedEntry\b'
-        - '\bcreateCacheMiddleware\s*\('
-  - id: contract-artifacts-restamp
-    summary: |
-      An extension that writes its own package version into the contracts it emits, such as the
-      Supabase extension, now writes 8.0.0-rc.15. Run `contract emit` once after upgrading so the
-      emitted `contract.json` and `contract.d.ts` match the installed extension.
-    detection:
-      glob: "**/contract.json"
-      contains:
-        - '"version": "8.0.0-rc.14"'
+    - id: contract-stores-data-type
+      summary: |
+          A SQL contract names each column's data type in `dataType` (for example `pg/int4`) instead of
+          its database type name in `nativeType`. Upgrade every extension that ships migrations in the
+          same step, then run the colocated script on the project: it rewrites every contract, writes
+          its lists in this release's new form, renames the snapshot directories to the new storage
+          hashes, and rewrites the migrations, refs, `migration.ts` files and `contract.d.ts` files
+          that name them.
+      detection:
+          glob: "**/*.json"
+          matches:
+              - '"nativeType"\s*:\s*"'
+      script: ./scripts/data-type-in-contract/data-type-in-contract.ts
+    - id: sign-databases-after-upgrade
+      summary: |
+          The upgrade changes every contract's storage hash, so every database's marker names a hash
+          the project no longer has. Run `prisma db sign` against every database before deploying the
+          application built with the new contract. `db sign` now signs every contract space, and its
+          `--json` document is `{ ok, summary, spaces, advancedRefs }`.
+    - id: column-descriptors-drop-native-type
+      summary: |
+          A hand-written column descriptor names its codec only: `{ codecId: 'pg/text@1' }` instead of
+          `{ codecId: 'pg/text@1', nativeType: 'text' }`. Code that reads or builds a column of a stored
+          contract uses `dataType` (for example `pg/text`) instead of `nativeType` (`text`).
+      detection:
+          glob: "**/*.{ts,mts,cts,tsx}"
+          matches:
+              - '(?<![\w$])(?<!readonly\s+)nativeType\s*:\s*[''"]'
+              - '\.nativeType\b'
+    - id: parameter-casts-use-base-names
+      summary: |
+          PostgreSQL parameter casts are written with the data type's base name: `$1::int4` instead of
+          `$1::integer`, and likewise `int2`, `int8`, `float4`, `float8` and `bool` instead of
+          `smallint`, `bigint`, `real`, `double precision` and `boolean`. Logged SQL and SQL snapshots
+          in tests change to match.
+      detection:
+          glob: "**/*.{ts,mts,cts,sql,json,snap}"
+          matches:
+              - '\$\d+::(?:integer|smallint|bigint|real|double precision|boolean)\b'
+    - id: ts-contract-lists-extension-codecs
+      summary: |
+          A TypeScript contract built with `defineContract` from `@prisma/orm-postgres/contract-builder`
+          or `@prisma/orm-sqlite/contract-builder` names each column's database type from the data type
+          its codec represents. A contract that uses an extension's codec without listing the extension
+          in `extensions` now fails with `CONTRACT.CODEC_DESCRIPTOR_MISSING`. List the extension.
+      detection:
+          glob: "**/*.{ts,mts,cts}"
+          matches:
+              - '(?<![\s\S])(?![\s\S]*GENERATED FILE - DO NOT EDIT)(?=[\s\S]*(?<![\w$])defineContract(?![\w$]))[\s\S]*[''"]@prisma/orm-extension-(?:pgvector|postgis|arktype-json)/column-types[''"]'
+              - '(?<![\s\S])(?![\s\S]*GENERATED FILE - DO NOT EDIT)(?=[\s\S]*(?<![\w$])defineContract(?![\w$]))[\s\S]*(?<![\w$])codecId\s*:\s*[''"](?:pg/vector|pg/geometry|arktype/json)@\d+[''"]'
+    - id: sqlite-contract-d-ts-char-aggregates
+      summary: |
+          On SQLite, `sql/char@1` and `sql/varchar@1` are registered codecs. Re-emit the contract:
+          `contract.d.ts` gains `min` and `max` aggregate rows for both codecs. `contract.json`, its
+          hashes and the migration SQL do not change.
+      detection:
+          glob: "**/contract.d.ts"
+          matches:
+              - '^(?![\s\S]*[''"]sql/char@1[''"]\s*:\s*\{\s*readonly output)[\s\S]*@prisma/orm-(?:target-)?sqlite/'
+    - id: column-helpers-raise-type-params-invalid
+      summary: |
+          pgvector's `vector(length)` and PostGIS's `geometry({ srid })` and `pgGeometryColumn({ srid })`
+          no longer check their arguments. Building the contract checks every column's parameters
+          against its data type: an argument outside its bounds now fails `defineContract` with
+          `CONTRACT.TYPE_PARAMS_INVALID` instead of failing the helper call with
+          `CONTRACT.ARGUMENT_INVALID`, and `srid: 0` is refused when the contract is built, not later
+          when a migration is planned.
+      detection:
+          glob: "**/*.{ts,mts,cts}"
+          matches:
+              - '\bCONTRACT\.ARGUMENT_INVALID\b'
+              - '\bsrid\s*:\s*0\b'
+    - id: reemit-explicit-list-cardinality
+      summary: Re-emit list contracts with nested element nullability while preserving scalar JSON.
+    - id: refresh-historical-list-contracts
+      summary: Refresh historical MongoDB contract snapshots and their migration references together; for SQL contracts, `contract-stores-data-type` rewrites them.
+    - id: mongo-nullable-list-containers
+      summary: Re-emit Mongo contracts and migrate validators to accept nullable list containers.
+    - id: domain-types-match-their-columns
+      summary: |
+          The domain half of an emitted SQL contract now carries the type parameters and enum value sets the schema declares: on fields typed by a named type, on enum list fields, and on composite type members. In `contract.d.ts`, a composite type member with type parameters now has the parameterized output type. Re-emit the contract. This change leaves the storage half, every hash and migration snapshots unchanged.
+      detection:
+          glob: "**/contract.json"
+          matches:
+              - '"typeRef"\s*:'
+              - '"valueObjects"\s*:'
+              - '"valueSet"\s*:'
+    - id: value-object-default-matches-composite-type
+      summary: |
+          A literal default on a field typed by a composite type must now match the composite type, with each member value read by the member's codec and each enum member value one of the enum's values, or the schema is refused. Fix the default the diagnostic names.
+      detection:
+          glob: "**/*.prisma"
+          matches:
+              - '^\s*type\s+\w+\s*\{'
+    - id: composite-type-attributes-refused
+      summary: |
+          An attribute on a composite type or on one of its members is now refused, where it used to be ignored. Remove it.
+      detection:
+          glob: "**/*.prisma"
+          matches:
+              - '^\s*type\s+\w+\s*\{'
+    - id: codecs-check-stored-json
+      summary: |
+          A TypeScript `.default()` value or `enumType` member that its column's codec does not take is now refused when the contract is built, with `CONTRACT.DEFAULT_INVALID` or `CONTRACT.ENUM_INVALID`. A `contract.json` that holds such a default stops `db init`, `db update` and `migration plan` with `CONTRACT.DEFAULT_INVALID`, and a `migration.ts` that holds one fails when it runs. Correct the value the error names.
+      detection:
+          glob: "**/*.{ts,mts,cts,tsx}"
+          matches:
+              - '\.default\(\s*(?!now\(|sql`|autoincrement\()'
+              - '\benumType\s*\('
+    - id: psl-values-checked-by-codecs
+      summary: |
+          A PSL schema whose SQL enum member its codec does not take, or whose literal default its column's type does not hold, is now refused at `contract emit`, where it used to load. Correct the member or the default.
+      detection:
+          glob: "**/*.prisma"
+          matches:
+              - '@@type\(\s*"(?:pg|sql|sqlite)/'
+              - '^\s*\w+\s*=\s*-?\d{10,}\s*$'
+              - '@default\(\s*(?:"|-?\d|\[)'
+    - id: uuid-defaults-stored-as-postgresql-writes
+      summary: |
+          A uuid default written in upper case, in braces or without hyphens, in PSL or in a TypeScript `.default()`, is now stored as PostgreSQL writes it, so emitting the contract again changes its storage hash. Earlier versions could not apply such a contract: the command that applied it failed and changed nothing. Emit the contract again, then run that command again. With migrations, first delete the migration package that never applied.
+      detection:
+          glob: "**/*.{prisma,ts,mts,cts,tsx}"
+          matches:
+              - '\bUuid\b[^\n]*@default\(\s*"(?![0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")\{?[0-9A-Fa-f]{4}'
+              - '\b(?:uuidNative|pgUuidColumn)\s*\([^\n]*\.default\(\s*[''"`](?![0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}[''"`])\{?[0-9A-Fa-f]{4}'
+              - '^\s*\.default\(\s*[''"`](?![0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}[''"`])(?=[^''"`\n]*[A-F{-])\{?[0-9A-Fa-f]{8}-?[0-9A-Fa-f]{4}-?[0-9A-Fa-f]{4}-?[0-9A-Fa-f]{4}-?[0-9A-Fa-f]{12}\}?[''"`]'
+    - id: ts-enum-member-written-as-stored
+      summary: |
+          `defineContract` from the Postgres and SQLite packages now refuses an `enumType` member that its codec takes but stores as a different value, with `CONTRACT.ENUM_INVALID`. A uuid member written with an upper-case hex digit, in braces, or with hyphens anywhere other than the 8-4-4-4-12 positions Postgres prints (including none) is refused, because `pg/uuid@1` stores lower-case 8-4-4-4-12 text. Write each refused member as the error message says, re-emit, and apply a migration that replaces the enum's CHECK constraint.
+      detection:
+          glob: "**/*.{ts,tsx,mts,cts}"
+          matches:
+              - '\benumType\('
+    - id: mongo-codecs-check-json
+      summary: |
+          The built-in Mongo codecs now refuse a JSON value that is not the JSON form of their type, where most passed it through: a PSL enum member whose value its `@@type` codec does not take is now refused at `contract emit`, and a TypeScript `enumType` member that `mongo/objectId@1` or `mongo/int32@1` does not hold is refused when the contract is built. Correct the member.
+      detection:
+          glob: "**/*.{prisma,ts,mts,cts,tsx}"
+          matches:
+              - '@@type\(\s*"mongo/'
+              - '[''"]mongo/(?:objectId|int32)@1[''"]'
+              - '\bMONGO_(?:OBJECTID|INT32)_CODEC_ID\b'
+    - id: text-array-elements-nullable
+      summary: |
+          A `textArray()` column's elements are now typed `string | null`, because a `text[]` holds NULL elements, which it reads as `null`. Handle the `null`.
+      detection:
+          glob: "**/*.{ts,mts,cts,tsx}"
+          matches:
+              - '\btextArray\s*\('
+              - '[''"]pg/text-array@1[''"]'
+    - id: char-reads-drop-only-padding
+      summary: |
+          A `char(n)` column now reads the same through `.include()` as through a flat read: without the trailing spaces that pad it, where an include used to return them, and keeping a trailing tab or newline, which a flat read used to drop. Compare `char` values without their padding.
+      detection:
+          glob: "**/contract.json"
+          matches:
+              - '"codecId"\s*:\s*"(?:sql|pg)/char@1"'
+    - id: sqlite-nan-parameters-refused
+      summary: |
+          On SQLite, NaN written to a float column or used as a filter value now throws `RUNTIME.ENCODE_FAILED` naming the codec, where SQLite stored NULL or matched nothing. Write `null` for no value.
+      detection:
+          glob: "**/contract.json"
+          matches:
+              - '"target"\s*:\s*"sqlite"'
+    - id: sqlite-int-include-refuses-inexact-values
+      summary: |
+          On SQLite, an `.include()` of a row whose `sql/int@1` column holds an INTEGER past 2^53, or a REAL, now throws `RUNTIME.DECODE_FAILED`, where it read the value rounded or with a fraction. Store such values in a `BigInt` or `Float` column.
+      detection:
+          glob: "**/contract.json"
+          matches:
+              - '"codecId"\s*:\s*"sql/int@1"'
+    - id: prefixed-sql-tags-are-removed
+      summary: |
+          The tags `pg.sql` and `sqlite.sql` are removed. Write `sql`.
+      detection:
+          glob: "**/*.{prisma,ts}"
+          matches:
+              - '(?<![\w./-])(pg|sqlite)\s*\.\s*sql\s*\\?[\x60"'']'
+    - id: default-diagnostic-codes-changed
+      summary: |
+          Four PSL diagnostic codes for written values changed: `PSL_UNKNOWN_DEFAULT_LITERAL_TAG` is now `PSL_UNKNOWN_LITERAL_TAG`, `PSL_INVALID_JSON_LITERAL` is now `PSL_INVALID_LITERAL`, `PSL_DEFAULT_TYPE_INCOMPATIBLE` is now `PSL_VALUE_TYPE_INCOMPATIBLE`, or `PSL_DEFAULT_LIST_EXPECTED` for a single value on a list column, and most cases of `PSL_INVALID_DEFAULT_LITERAL` moved to `PSL_INVALID_LITERAL`.
+      detection:
+          glob: "**/*.{ts,mts,cts,js,mjs}"
+          matches:
+              - '\bPSL_INVALID_JSON_LITERAL\b'
+              - '\bPSL_UNKNOWN_DEFAULT_LITERAL_TAG\b'
+              - '\bPSL_DEFAULT_TYPE_INCOMPATIBLE\b'
+              - '\bPSL_INVALID_DEFAULT_LITERAL\b'
+    - id: migration-ts-column-defaults
+      summary: |
+          In `migration.ts`, the adapter writes every column default, reading it with the column's codec. Postgres `setDefault` takes the column as `col(name, type, { default, codecRef })` instead of `column` (the name) and `defaultSql`. A SQLite `addColumn` or `recreateTable` column carries `default` and `codecRef` instead of `defaultSql`, and a `recreateTable` postcheck for a default is `{ description, columnDefault }`. An earlier `migration.ts` that uses `defaultSql` no longer compiles, and running it with `node migration.ts` stops with `MIGRATION.OPERATION_OPTION_REMOVED`; its `ops.json` still applies.
+      detection:
+          glob: "**/migration.ts"
+          matches:
+              - '\bdefaultSql\s*:'
+    - id: postgres-changed-default-applied
+      summary: |
+          On PostgreSQL, `db update` and `db migrate` now change a column default that is already there. They used to skip the change and then fail with `MIGRATION.SCHEMA_VERIFY_FAILED`. A migration an earlier version planned still skips it: before you apply it, delete its package and plan it again, or rewrite its `setDefault` call to the form `migration-ts-column-defaults` shows and run its `migration.ts` to write `ops.json` again.
+      detection:
+          glob: "**/ops.json"
+          matches:
+              - '"id":\s*"setDefault\.'
+    - id: cli-error-from-caught
+      summary: |
+          `mapCaughtMigrationError` is removed from `@prisma/orm-toolchain/cli/control-api` (`@internal/cli/control-api`). Use `errorFromCaught(error, why)`, which always returns an error: a CLI error as it is, any error with a structured code as itself, and anything else as `CLI.UNEXPECTED` with `why(message)`. It throws an `InternalError` again.
+      detection:
+          glob: "**/*.{ts,mts,cts,tsx}"
+          matches:
+              - '\bmapCaughtMigrationError\b'
+    - id: sql-with-a-line-comment-gets-a-new-wire-name
+      summary: |
+          An index, check or policy whose SQL body contains both `--` and a line break gets a new name in `contract.json` once. The next `migration plan` drops and recreates the object.
+      detection:
+          glob: "**/contract.json"
+          matches:
+              - '"(?:[^"\\]|\\.)*?--(?:[^"\\]|\\.)*?\\n|"(?:[^"\\]|\\.)*?\\n(?:[^"\\]|\\.)*?--'
+    - id: strict-verify-unclaimed-code
+      summary: |
+          `prisma db verify --strict` now reports a database holding tables no contract declares under `CONTRACT.SCHEMA_VERIFICATION_FAILED`, in both the diagnostic and the JSON result's `code`. It used to report `CONTRACT.MARKER_REQUIRED`. The exit code is still 4. `CONTRACT.MARKER_REQUIRED` now only means the database has not been signed.
+      detection:
+          glob: "**/*.{ts,mts,cts,js,mjs,cjs,sh,yml,yaml,json}"
+          matches:
+              - 'CONTRACT\.MARKER_REQUIRED'
+    - id: prisma7-schema-date-types-are-text
+      summary: |
+          A contract from `prisma7Schema(...)` now reads a Prisma 7 `DateTime` column and `@db.Timestamp`, `@db.Timestamptz`, `@db.Date` and `@db.Time` columns as the text PostgreSQL prints (`TimestampString(3)`, `TimestampString(p)`, `TimestamptzString(p)`, `DateString`, `TimeString(p)`), not as `Temporal` values. `@updatedAt` still writes UTC. The application needs no `Temporal` for them. Re-emit, change code that treats these fields as `Temporal` values, then run `prisma db sign`.
+      detection:
+          glob: "**/prisma.config.{ts,mts,cts,js,mjs}"
+          matches:
+              - '\bprisma7Schema\s*\('
+    - id: contract-infer-writes-text-date-types
+      summary: |
+          `prisma contract infer` now writes `TimestampString(p)`, `TimestamptzString(p)`, `DateString` and `TimeString(p)` for `timestamp`, `timestamptz`, `date` and `time` columns, where it wrote `Timestamp(p)`, `Timestamptz(p)`, `Date` and `Time(p)`. A contract inferred earlier keeps its types until infer runs again.
+      detection:
+          glob: "**/*.prisma"
+          matches:
+              - "Contract inferred from the live database schema"
+    - id: text-timestamp-now-is-utc
+      summary: |
+          A `timestamp` column of type `TimestampString(p)` that the ORM fills with `now` now receives the UTC wall-clock time on a host outside UTC. Before, it received the host's local time. No code changes.
+      detection:
+          glob: "**/*.{prisma,ts,mts,cts}"
+          matches:
+              - '\btimestampString\s*\([^)\n]*\bnow\b'
+    - id: contract-infer-writes-bytea-default-literals
+      summary: |
+          `prisma contract infer` now writes a `bytea` column default as a base64 literal, `@default("aGVsbG8=")`, where it wrote ``@default(sql`'\\x68656c6c6f'::bytea`)``. A contract emitted from the new output stores a value instead of an expression, so it gets a new storage hash while the database does not change. Re-emit, then `prisma db sign`, or record an empty migration with `prisma migration new`.
+      detection:
+          glob: "**/*.prisma"
+          matches:
+              - '\bBytes(?:\[\])?\??[ \t]+[^\n]*@default\(sql[^\n]*::bytea'
+    - id: prisma6-int-written-as-long
+      summary: |
+          A contract read with `prisma6Schema(...)` now gives a plain Prisma 6 `Int` field, and `Int @db.Long`,
+          the `mongo/int64Number@1` codec: the application type stays `number`, and Prisma 8 now writes these
+          fields as a BSON long, as Prisma 6 does, instead of an int. A document in which such a field holds a
+          fractional number, which the previous contract let Prisma 8 write, now fails to read with
+          `RUNTIME.DECODE_FAILED`: repair those documents, then re-emit the contract.
+      detection:
+          glob: "**/prisma.config.{ts,mts,cts,js,mjs}"
+          matches:
+              - '\bprisma6Schema\s*\('
+    - id: prisma6-bytes-objectid-is-hex
+      summary: |
+          A Prisma 6 MongoDB schema with a native type Prisma 6 accepts now emits with `prisma6Schema(...)`
+          (only `DateTime @db.Timestamp` is still refused). A `Bytes @db.ObjectId` field holds an ObjectId, so
+          Prisma 8 reads it as a 24-digit hex string and writes only a hex string or an ObjectId; a 12-byte
+          `Buffer` or `Uint8Array`, which the Prisma 6 client uses for it, is refused.
+      detection:
+          glob: "**/*.prisma"
+          matches:
+              - '\bBytes(?:\[\])?\??[ \t]+[^\n]*@db\.ObjectId\b'
+    - id: writes-on-a-conditional-collection-are-refused
+      summary: |
+          A write (`update`, `updateAll`, `updateAndCount`, `delete`, `deleteAll`, `deleteAndCount`) on a collection that is filtered on some code paths and not on others no longer compiles. A pattern cannot tell which collections those are: act only where the compiler reports "The 'this' context of type '...' is not assignable to method's 'this' of type 'HasWhere'". Filter on every path, or make the write only where the filter was applied.
+      detection:
+          glob: "**/*.{ts,mts,cts,tsx}"
+          matches:
+              - '\.(?:updateAll|updateAndCount|deleteAll|deleteAndCount)\s*\('
+              - '\.update\s*\('
+              - '\.delete\s*\(\s*(?:\)|\()'
+    - id: writes-refuse-what-they-would-ignore
+      summary: |
+          `updateAll`, `updateAndCount`, `deleteAll` and `deleteAndCount` now throw `ORM.ARGUMENT_INVALID` on a collection that has a `limit`, an `offset`, a `cursor`, `distinct` or `distinctOn`. These writes change every row that matches the filter; their statement cannot apply any of these, so they were ignored and more rows changed than the chain asked for. Remove them before the write, or read the rows first and change them by their ids. `update` with a relation callback now throws on a collection with an order, a limit, an offset, a cursor, `distinct` or `distinctOn`, which it ignored; filter it to the one row instead. `update` and `delete` without a relation callback change the row `first()` returns, as before, except after `limit(0)`: they changed one row and now change none and return `null`.
+      detection:
+          glob: "**/*.{ts,mts,cts,tsx}"
+          matches:
+              - '\.(?:limit|offset|cursor|distinct|distinctOn)\s*\([^)]*\)[\s\S]{0,300}?\.(?:update|updateAll|updateAndCount|delete|deleteAll|deleteAndCount)\s*\('
+              - '\.orderBy\s*\([\s\S]{0,300}?\.update\s*\('
+    - id: cursor-and-distinct-on-check-the-receiver
+      summary: |
+          `cursor` and `distinctOn` now require an order on the collection they are called on, checked on the receiver. A cast on the argument, such as `cursor({ id } as never)`, no longer bypasses the check; add the `orderBy`, or cast the collection to `Ordered<C>` where the query is meant to have no order.
+      detection:
+          glob: "**/*.{ts,mts,cts,tsx}"
+          matches:
+              - '\.(?:cursor|distinctOn)\s*\([^)]*\bas\s+never\b'
+    - id: apply-is-a-collection-member
+      summary: |
+          Every collection now has an `apply` method. A custom collection class that declares its own `apply` member with another signature no longer compiles; rename it.
+      detection:
+          glob: "**/*.{ts,mts,cts,tsx}"
+          matches:
+              - '(?:^|\n)[ \t]*(?:(?:public|protected|private|readonly|static|async|override)\s+)*apply\s*[(<:=?]'
+    - id: scope-is-a-collection-member
+      summary: |
+          Every collection now has a `scope` method. A custom collection class that declares its own `scope` member with another signature no longer compiles; rename it.
+      detection:
+          glob: "**/*.{ts,mts,cts,tsx}"
+          matches:
+              - '(?:^|\n)[ \t]*(?:(?:public|protected|private|readonly|static|async|override|get|set)\s+)*scope\s*[!(<:=?]'
+    - id: overriding-a-chaining-method
+      summary: |
+          In a class that extends `Collection`, an override of a chaining method (`where`, `orderBy`, `limit`, `offset`, `distinct`, `distinctOn`, `cursor`, `include`) or of a method that returns rows (`all`, `first`, `create`, `createAll`, `upsert`, `update`, `updateAll`, `updateAndCount`, `delete`, `deleteAll`, `deleteAndCount`) must use the new signature, which takes a `this` parameter.
+      detection:
+          glob: "**/*.{ts,mts,cts,tsx}"
+          matches:
+              - '(?:^|\n)[ \t]*(?:(?:public|protected|override|async)\s+)*(?:where|orderBy|limit|offset|distinct|distinctOn|cursor|include|all|first|create|createAll|upsert|update|updateAll|updateAndCount|delete|deleteAll|deleteAndCount)\s*[(<]'
+    - id: collection-state-flags-are-boolean
+      summary: |
+          In `DefaultCollectionTypeState`, `hasWhere`, `hasOrderBy` and `hasUniqueFilter` are `boolean` (not known) instead of `false`. Code that expects `false` on a collection with no filter or order must expect `boolean`.
+      detection:
+          glob: "**/*.{ts,mts,cts,tsx}"
+          matches:
+              - '\bhas(?:Where|OrderBy|UniqueFilter)\b[''"]?\]?\s*,\s*false\b'
+              - '\bhas(?:Where|OrderBy|UniqueFilter)\s*:\s*false\b'
+    - id: read-collection-state-and-row-with-helpers
+      summary: |
+          A collection's type state and row are read with `CollectionTypeStateOf<C>` and `CollectionRowOf<C>`, not by inferring the type arguments of `Collection`. The type arguments keep what the collection started with.
+      detection:
+          glob: "**/*.{ts,mts,cts,tsx}"
+          matches:
+              - '\bCollection<[^;]*?\binfer\b'
+    - id: return-type-of-a-chaining-method
+      summary: |
+          `ReturnType` of `where`, `orderBy`, `limit`, `offset`, `distinct`, `distinctOn`, `cursor` or `include` no longer gives a collection. Write `Filtered<C>` after `where`, `Ordered<C>` after `orderBy`, and `C` after the others, or take `typeof` of a value.
+      detection:
+          glob: "**/*.{ts,mts,cts,tsx}"
+          matches:
+              - '\bReturnType<[^>]*\[[''"](?:where|orderBy|limit|offset|distinct|distinctOn|cursor|include)[''"]\]'
+              - '\bReturnType<\s*typeof\s+[\w$.]+\.(?:where|orderBy|limit|offset|distinct|distinctOn|cursor|include)\b'
+    - id: chaining-methods-take-no-explicit-type-arguments
+      summary: |
+          `include`, `distinct` and `distinctOn` with explicit type arguments no longer compile: `posts.include<'user'>('user')` and `posts.distinct<['title']>('title')` fail, and `ReturnType<typeof posts.include<'user'>>` is `never`. Drop the type arguments; they are inferred from the arguments, so `posts.distinct('title')` needs none.
+      detection:
+          glob: "**/*.{ts,mts,cts,tsx}"
+          matches:
+              - '\.(?:include|distinct|distinctOn)<'
+    - id: custom-collection-methods-chain
+      summary: |
+          Optional. Custom collection methods now stay available after the built-in chaining methods. Where code repeats a class method's body inline after a chaining call, it can call the method instead.
+      detection:
+          glob: "**/*.{ts,mts,cts,tsx}"
+          matches:
+              - '\bextends\s+Collection<'
+    - id: variant-takes-discriminator-value
+      summary: |
+          `.variant()` on a polymorphic SQL or Mongo ORM collection takes the discriminator value a variant declares instead of the variant's model name: `db.orm.public.Task.variant('bug')` for `@@base(Task, "bug")`, where it used to be `.variant('Bug')`. A value the model does not declare, or a call on a model with no discriminator, now throws `ORM.ARGUMENT_INVALID` instead of returning the collection unchanged. `.variant()` on a collection that already has a variant selected is now rejected: select the variant from the base collection.
+      detection:
+          glob: "**/*.{ts,tsx,mts,cts}"
+          matches:
+              - '\.variant\('
+    - id: imported-postgres-field-checks-defaults
+      summary: |
+          The `field` exported by the Postgres facade's `contract-builder` entry now has the Postgres presets and checks a `.default(...)` value against the Postgres target's column types, as the `defineContract` callback's `field` does; it does not know the column types an extension adds, such as pgvector's, so it does not check those. A default of the wrong type, which compiled before and failed when the contract was built, is now a compile error; give the value the column's type.
+      detection:
+          glob: "**/*.{ts,mts,cts,tsx}"
+          matches:
+              - 'import\s*\{[^}]*\bfield\b[^}]*\}\s*from\s*[''"]@(?:prisma/orm-|internal/)postgres/contract-builder[''"]'
+    - id: re-emit-for-the-row-locking-capabilities
+      summary: "The Postgres adapter reports seven new capability keys (sql.forUpdate, sql.forShare, sql.lockOf, sql.lockNowait, sql.lockSkipLocked, postgres.forNoKeyUpdate, postgres.forKeyShare), which gate the new row-locking methods on the SQL builder; a contract emitted before this release does not carry them and the methods are unavailable against it, so re-emit the contract before using them."
+      detection:
+          glob: "**/contract.json"
+          contains:
+              - '"distinctOn"'
+    - id: cache-annotation-ttl-removed
+      summary: "cacheAnnotation from @prisma/orm-extension-middleware-cache no longer takes ttl. Every annotated read is now cached, including cacheAnnotation({}) and cacheAnnotation({ key }), which used to pass through uncached; how long an entry lives is the store's policy (the default store: 60 seconds). Remove ttl from every cacheAnnotation call."
+      detection:
+          glob: "**/*.{ts,mts,cts,tsx,js,mjs,cjs,jsx}"
+          matches:
+              - '\bcacheAnnotation\s*\('
+    - id: cache-annotation-skip-renamed-bypass
+      summary: "cacheAnnotation({ skip }) is now cacheAnnotation({ bypass }), and the CachePayload type is now CacheAnnotationOptions. Detection finds skip written inside a cacheAnnotation({ ... }) literal and any use of CachePayload; options built elsewhere without that type are not detected."
+      detection:
+          glob: "**/*.{ts,mts,cts,tsx,js,mjs,cjs,jsx}"
+          matches:
+              - '\bCachePayload\b'
+              - '\bcacheAnnotation\s*\(\s*\{[^}]*\bskip\s*:'
+    - id: cache-middleware-store-options
+      summary: "createCacheMiddleware no longer takes maxEntries or clock. Pass them to createInMemoryCacheStore and hand that store to createCacheMiddleware({ store }), or drop them when they match the new defaults (1000 entries). Detection finds maxEntries or clock written in the options literal of a createCacheMiddleware call; it also matches an already-migrated createCacheMiddleware({ store: createInMemoryCacheStore({ maxEntries }) }), which needs no change."
+      detection:
+          glob: "**/*.{ts,mts,cts,tsx,js,mjs,cjs,jsx}"
+          matches:
+              - '\bcreateCacheMiddleware\s*\(\s*\{[^}]*\b(maxEntries|clock)\s*:'
+    - id: cache-store-object-arguments
+      summary: "A custom CacheStore is now a cache of values with a version per key: CacheStore<TMeta, TValue>. get({ key, meta }) replaces get(key) and returns a CacheEntry { key, meta, version, data } whose data is { empty: true } or { empty: false, value }; set(entry, value) replaces set(key, entry, ttlMs), stores only if the key's version still equals entry.version, and returns whether it stored; a new required unset({ keys, meta }) removes values and increments their keys' versions. CachedEntry is replaced by CacheEntry, and the rows type by CachedRows."
+      detection:
+          glob: "**/*.{ts,mts,cts,tsx,js,mjs,cjs,jsx}"
+          matches:
+              - '\bCacheStore\b'
+              - '\bCachedEntry\b'
+              - '\bcreateCacheMiddleware\s*\('
+    - id: contract-artifacts-restamp
+      summary: |
+          An extension that writes its own package version into the contracts it emits, such as the
+          Supabase extension, now writes 8.0.0-rc.15. Run `contract emit` once after upgrading so the
+          emitted `contract.json` and `contract.d.ts` match the installed extension.
+      detection:
+          glob: "**/contract.json"
+          contains:
+              - '"version": "8.0.0-rc.14"'
 ---
 
 # 8.0.0-rc.14 → 8.0.0-rc.15 — User upgrade instructions
@@ -476,17 +476,17 @@ A script that reads `db sign --json` reads one outcome per space. The document w
 
 ```json
 {
-  "ok": true,
-  "summary": "Database signed",
-  "spaces": [
-    {
-      "space": "app",
-      "status": "updated",
-      "contract": { "storageHash": "…", "profileHash": "…" },
-      "previous": { "storageHash": "…", "profileHash": "…" }
-    }
-  ],
-  "advancedRefs": [{ "space": "app", "name": "db", "hash": "…" }]
+    "ok": true,
+    "summary": "Database signed",
+    "spaces": [
+        {
+            "space": "app",
+            "status": "updated",
+            "contract": { "storageHash": "…", "profileHash": "…" },
+            "previous": { "storageHash": "…", "profileHash": "…" }
+        }
+    ],
+    "advancedRefs": [{ "space": "app", "name": "db", "hash": "…" }]
 }
 ```
 
@@ -500,12 +500,16 @@ In `contract.ts` and every other file that builds a column descriptor by hand, d
 
 ```ts
 // before
-const pgText = { codecId: 'pg/text@1', nativeType: 'text' } as const;
-const Priority = enumType('Priority', { codecId: 'pg/int4@1', nativeType: 'int4' }, member('Low', 0));
+const pgText = { codecId: "pg/text@1", nativeType: "text" } as const;
+const Priority = enumType(
+    "Priority",
+    { codecId: "pg/int4@1", nativeType: "int4" },
+    member("Low", 0),
+);
 
 // after
-const pgText = { codecId: 'pg/text@1' } as const;
-const Priority = enumType('Priority', { codecId: 'pg/int4@1' }, member('Low', 0));
+const pgText = { codecId: "pg/text@1" } as const;
+const Priority = enumType("Priority", { codecId: "pg/int4@1" }, member("Low", 0));
 ```
 
 Code that reads a column of a stored contract (`contract.storage…tables[name].columns[name]`) reads `dataType`, the data type id such as `pg/text`, instead of `nativeType`, the database type name such as `text`:
@@ -534,15 +538,15 @@ A type written by hand for such a contract changes the same way: `readonly nativ
 
 Update tests that assert query text or SQL snapshots:
 
-| Before | After |
-| --- | --- |
-| `$1::integer` | `$1::int4` |
-| `$1::smallint` | `$1::int2` |
-| `$1::bigint` | `$1::int8` |
-| `$1::real` | `$1::float4` |
+| Before                 | After        |
+| ---------------------- | ------------ |
+| `$1::integer`          | `$1::int4`   |
+| `$1::smallint`         | `$1::int2`   |
+| `$1::bigint`           | `$1::int8`   |
+| `$1::real`             | `$1::float4` |
 | `$1::double precision` | `$1::float8` |
-| `$1::boolean` | `$1::bool` |
-| `$1::integer[]` | `$1::int4[]` |
+| `$1::boolean`          | `$1::bool`   |
+| `$1::integer[]`        | `$1::int4[]` |
 
 Extension types keep their names (`$1::vector`, `$1::geometry`).
 
@@ -551,15 +555,12 @@ Extension types keep their names (`$1::vector`, `$1::geometry`).
 A column's stored database type name is now written from the data type of the column's codec, so the contract build needs the pack that provides the codec. Add every extension whose codec the contract uses:
 
 ```ts
-import pgvector from '@prisma/orm-extension-pgvector/pack';
-import { defineContract } from '@prisma/orm-postgres/contract-builder';
+import pgvector from "@prisma/orm-extension-pgvector/pack";
+import { defineContract } from "@prisma/orm-postgres/contract-builder";
 
-export const contract = defineContract(
-  { extensions: { pgvector } },
-  ({ field, model }) => ({
+export const contract = defineContract({ extensions: { pgvector } }, ({ field, model }) => ({
     // …
-  }),
-);
+}));
 ```
 
 A contract that already lists the extension changes nothing. `contract.json` does not change.
@@ -581,10 +582,14 @@ The error now comes from `defineContract`, not from the helper call. Code that c
 
 ```ts
 // before
-if (error.code === 'CONTRACT.ARGUMENT_INVALID') { /* … */ }
+if (error.code === "CONTRACT.ARGUMENT_INVALID") {
+    /* … */
+}
 
 // after
-if (error.code === 'CONTRACT.TYPE_PARAMS_INVALID') { /* … */ }
+if (error.code === "CONTRACT.TYPE_PARAMS_INVALID") {
+    /* … */
+}
 ```
 
 The error's `meta` is `{ dataType, parameters, modelName, fieldName }`, for example `{ dataType: 'postgis/geometry', parameters: ['srid'], modelName: 'Place', fieldName: 'location' }`, in place of `helperPath`, `expected` and `received`. A contract that passes `srid: 0` now fails when it is built; PostgreSQL refuses an SRID below 1, so such a column never migrated. Use a real SRID such as `4326`, or `geometryColumn` for a column with no SRID.
@@ -625,12 +630,12 @@ For disposable example or test databases whose migration fixtures are regenerate
 
 Run `prisma contract emit`. `contract.json` and `contract.d.ts` gain these entries in the domain half:
 
-| PSL | Added to the field's domain entry |
-| --- | --- |
-| `code Short`, with `types { Short = VarChar(10) }` (also `Short[]`) | `"typeParams": { "length": 10 }` on `type` |
-| `roles Role[]`, where `Role` is an `enum` | `"valueSet": { "plane": "domain", "entityKind": "enum", "namespaceId": "public", "entityName": "Role" }`, as `role Role` already had |
-| composite type member `amount Numeric(10, 2)` (also a list, or a named type) | `"typeParams": { "precision": 10, "scale": 2 }` on `type` |
-| composite type member `role Role` or `roles Role[]` | the same `valueSet` as a model field of that enum |
+| PSL                                                                          | Added to the field's domain entry                                                                                                    |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `code Short`, with `types { Short = VarChar(10) }` (also `Short[]`)          | `"typeParams": { "length": 10 }` on `type`                                                                                           |
+| `roles Role[]`, where `Role` is an `enum`                                    | `"valueSet": { "plane": "domain", "entityKind": "enum", "namespaceId": "public", "entityName": "Role" }`, as `role Role` already had |
+| composite type member `amount Numeric(10, 2)` (also a list, or a named type) | `"typeParams": { "precision": 10, "scale": 2 }` on `type`                                                                            |
+| composite type member `role Role` or `roles Role[]`                          | the same `valueSet` as a model field of that enum                                                                                    |
 
 A named type without parameters, such as `Email = String`, adds nothing.
 
@@ -644,7 +649,7 @@ Migration snapshots under `migrations/snapshots/<hash>/` need no change. Migrati
 
 A literal default on a field typed by a composite type used to be stored whatever its shape. It is now checked, naming the path that is wrong, as in `Field "User.home.street"`:
 
-- A single value object takes a JSON object, and a list of them a JSON array: `` homes Address[] @default(json`{"street": "x"}`) `` is refused; write `@default([])` or `` @default(json`[{"street": "x"}]`) ``. JSON `null` is taken when the field is optional. `PSL_VALUE_TYPE_INCOMPATIBLE`.
+- A single value object takes a JSON object, and a list of them a JSON array: ``homes Address[] @default(json`{"street": "x"}`)`` is refused; write `@default([])` or ``@default(json`[{"street": "x"}]`)``. JSON `null` is taken when the field is optional. `PSL_VALUE_TYPE_INCOMPATIBLE`.
 - A key that is not a member is refused, and so is a missing member that is not optional, and `null` for a member that is not optional. `PSL_VALUE_TYPE_INCOMPATIBLE`.
 - The default holds each member in the form its codec stores, so the member's codec must read the value. A `Decimal`, `Numeric(p, s)` or `BigInt` member takes a decimal string, `"1.5"`, and a number is refused; a `String` member takes a JSON string, so `"street": 1` is refused; a `DateTime` member takes a date and time string; a `Json` member takes any JSON value. `PSL_INVALID_DEFAULT_LITERAL`, with the codec's message.
 - A member typed by an enum takes only the enum's values: `PSL_INVALID_DEFAULT_LITERAL`, `Expected one of:` the values.
@@ -654,7 +659,7 @@ Correct the value the diagnostic names.
 
 ## `composite-type-attributes-refused`
 
-An attribute inside a `type` block was ignored: `street String @default("x")` stored no default, and `@@map` mapped nothing. Each is now refused, `PSL_UNSUPPORTED_FIELD_ATTRIBUTE` on a member and `PSL_UNSUPPORTED_COMPOSITE_TYPE_ATTRIBUTE` on the type. Remove the attribute. To give a value object a default, write it on the model field as a whole value, such as `` home Address @default(json`{"street": "x"}`) ``.
+An attribute inside a `type` block was ignored: `street String @default("x")` stored no default, and `@@map` mapped nothing. Each is now refused, `PSL_UNSUPPORTED_FIELD_ATTRIBUTE` on a member and `PSL_UNSUPPORTED_COMPOSITE_TYPE_ATTRIBUTE` on the type. Remove the attribute. To give a value object a default, write it on the model field as a whole value, such as ``home Address @default(json`{"street": "x"}`)``.
 
 ## `codecs-check-stored-json`
 
@@ -674,17 +679,17 @@ The PSL reader reads each literal default, and each member of a SQL `enum`, with
 
 Such a default used to load, and the migration planned and applied; the first insert that used the default then failed. A `Char` or bit column without a length, which did not apply on PostgreSQL whatever its default, now applies as `character(1)` or `bit(1)`. SQLite does not enforce a declared length, so on SQLite the char and varchar codecs take text of any length. Each of these is now refused at `contract emit`:
 
-| Schema | Diagnostic |
-| --- | --- |
-| `enum P { @@type("pg/int4@1") Low = "low" }` | `PSL_EXTENSION_INVALID_VALUE`: `enum "P" member "Low" was rejected by codec "pg/int4@1": pg/int4@1 JSON value must be an integer from -2147483648 to 2147483647` |
-| the same enum with a bare `Low` | `PSL_ENUM_BARE_MEMBER_NON_STRING_CODEC`: `enum "P" member "Low" has no value and codec "pg/int4@1" does not accept a bare name as input` |
-| `enum P { @@type("pg/text@1") Low = 1 }` | `PSL_EXTENSION_INVALID_VALUE`, `enum "P" member "Low": pg/text has no cast from pg/int2; it casts from nothing` |
-| an enum without `@@type` whose integer members include one outside -2147483648 to 2147483647, such as `Low = 3000000000` | `PSL_EXTENSION_INVALID_VALUE`, `enum "P" member "Low": pg/int4 has no cast from pg/int8; it casts from pg/int2` |
-| `u Uuid @default("nope")` | `PSL_INVALID_LITERAL`, `"nope" is not a UUID: PostgreSQL reads 32 hexadecimal digits, with a hyphen after any group of four and optionally in braces.` |
-| `s VarChar(3) @default("toolong")` | `PSL_INVALID_DEFAULT_LITERAL`, `sql/varchar@1 JSON value must be a string of at most 3 characters` |
-| `c Char @default("abc")` on PostgreSQL | `PSL_INVALID_DEFAULT_LITERAL`, `sql/char@1 JSON value must be a string of at most 1 character before any trailing spaces` |
-| `enum P { @@type("sql/int@1") Low = 3000000000 }` on PostgreSQL | `PSL_EXTENSION_INVALID_VALUE`, `enum "P" member "Low": pg/int4 has no cast from pg/int8; it casts from pg/int2` |
-| `n Numeric(5, 2) @default(1.555)` | `PSL_INVALID_DEFAULT_LITERAL`, `pg/numeric@1 JSON value must be a decimal string that numeric(5, 2) stores without rounding` |
+| Schema                                                                                                                   | Diagnostic                                                                                                                                                       |
+| ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `enum P { @@type("pg/int4@1") Low = "low" }`                                                                             | `PSL_EXTENSION_INVALID_VALUE`: `enum "P" member "Low" was rejected by codec "pg/int4@1": pg/int4@1 JSON value must be an integer from -2147483648 to 2147483647` |
+| the same enum with a bare `Low`                                                                                          | `PSL_ENUM_BARE_MEMBER_NON_STRING_CODEC`: `enum "P" member "Low" has no value and codec "pg/int4@1" does not accept a bare name as input`                         |
+| `enum P { @@type("pg/text@1") Low = 1 }`                                                                                 | `PSL_EXTENSION_INVALID_VALUE`, `enum "P" member "Low": pg/text has no cast from pg/int2; it casts from nothing`                                                  |
+| an enum without `@@type` whose integer members include one outside -2147483648 to 2147483647, such as `Low = 3000000000` | `PSL_EXTENSION_INVALID_VALUE`, `enum "P" member "Low": pg/int4 has no cast from pg/int8; it casts from pg/int2`                                                  |
+| `u Uuid @default("nope")`                                                                                                | `PSL_INVALID_LITERAL`, `"nope" is not a UUID: PostgreSQL reads 32 hexadecimal digits, with a hyphen after any group of four and optionally in braces.`           |
+| `s VarChar(3) @default("toolong")`                                                                                       | `PSL_INVALID_DEFAULT_LITERAL`, `sql/varchar@1 JSON value must be a string of at most 3 characters`                                                               |
+| `c Char @default("abc")` on PostgreSQL                                                                                   | `PSL_INVALID_DEFAULT_LITERAL`, `sql/char@1 JSON value must be a string of at most 1 character before any trailing spaces`                                        |
+| `enum P { @@type("sql/int@1") Low = 3000000000 }` on PostgreSQL                                                          | `PSL_EXTENSION_INVALID_VALUE`, `enum "P" member "Low": pg/int4 has no cast from pg/int8; it casts from pg/int2`                                                  |
+| `n Numeric(5, 2) @default(1.555)`                                                                                        | `PSL_INVALID_DEFAULT_LITERAL`, `pg/numeric@1 JSON value must be a decimal string that numeric(5, 2) stores without rounding`                                     |
 
 Give each enum member a value its codec takes, and each default a value its column's type holds unchanged. A `Uuid` default is still read in any form PostgreSQL reads; see `uuid-defaults-stored-as-postgresql-writes`.
 
@@ -766,22 +771,22 @@ The stored default does not change, so no migration follows.
 
 This matters only to code that reads PSL diagnostic codes, such as a test that asserts one. The messages did not change, except for a `sql` literal inside a list literal and the list of known tags, both described below the table.
 
-| Refusal | Old code | New code |
-| --- | --- | --- |
-| A tag no pack registered | `PSL_UNKNOWN_DEFAULT_LITERAL_TAG` | `PSL_UNKNOWN_LITERAL_TAG` |
-| A `json` literal whose text is not a JSON document | `PSL_INVALID_JSON_LITERAL` | `PSL_INVALID_LITERAL` |
-| Text an authoring entry or a cast refused | `PSL_INVALID_DEFAULT_LITERAL` | `PSL_INVALID_LITERAL` |
-| A value whose type the column's type has no cast from, including a list written on a column that holds one value | `PSL_DEFAULT_TYPE_INCOMPATIBLE` | `PSL_VALUE_TYPE_INCOMPATIBLE` |
-| A written form the target has no data type for | `PSL_DEFAULT_TYPE_INCOMPATIBLE` | `PSL_VALUE_TYPE_INCOMPATIBLE` |
-| A single value on a list column | `PSL_DEFAULT_TYPE_INCOMPATIBLE` | `PSL_DEFAULT_LIST_EXPECTED` |
-| A value the column's codec refused | `PSL_INVALID_DEFAULT_LITERAL` | unchanged |
-| A `sql` literal inside a list literal | `PSL_INVALID_DEFAULT_LITERAL`, at the element | `PSL_VALUE_TYPE_INCOMPATIBLE`, at the `@default` attribute |
+| Refusal                                                                                                          | Old code                                      | New code                                                   |
+| ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------- | ---------------------------------------------------------- |
+| A tag no pack registered                                                                                         | `PSL_UNKNOWN_DEFAULT_LITERAL_TAG`             | `PSL_UNKNOWN_LITERAL_TAG`                                  |
+| A `json` literal whose text is not a JSON document                                                               | `PSL_INVALID_JSON_LITERAL`                    | `PSL_INVALID_LITERAL`                                      |
+| Text an authoring entry or a cast refused                                                                        | `PSL_INVALID_DEFAULT_LITERAL`                 | `PSL_INVALID_LITERAL`                                      |
+| A value whose type the column's type has no cast from, including a list written on a column that holds one value | `PSL_DEFAULT_TYPE_INCOMPATIBLE`               | `PSL_VALUE_TYPE_INCOMPATIBLE`                              |
+| A written form the target has no data type for                                                                   | `PSL_DEFAULT_TYPE_INCOMPATIBLE`               | `PSL_VALUE_TYPE_INCOMPATIBLE`                              |
+| A single value on a list column                                                                                  | `PSL_DEFAULT_TYPE_INCOMPATIBLE`               | `PSL_DEFAULT_LIST_EXPECTED`                                |
+| A value the column's codec refused                                                                               | `PSL_INVALID_DEFAULT_LITERAL`                 | unchanged                                                  |
+| A `sql` literal inside a list literal                                                                            | `PSL_INVALID_DEFAULT_LITERAL`, at the element | `PSL_VALUE_TYPE_INCOMPATIBLE`, at the `@default` attribute |
 
 `PSL_INVALID_JSON_LITERAL` no longer exists.
 
 The unknown-tag message lists the known tags in the order the stack registers them. The SQL family registers `sql` before the target registers `json`, so a Postgres or SQLite stack lists `sql, json`, where it used to list `json, sql, pg.sql` or `json, sql, sqlite.sql`. The completion list and the `Expected one of` message of `@default` offer `sql` before `json` for the same reason.
 
-A `sql` literal inside a list literal used to report `Literal tag "sql" produces a default of its own and cannot be an element of a list literal.` It is now refused by the cast rule, like any other value the column's type does not take: `Field "Post.tags" at element 1: pg/text has no cast from sql/expression; it casts from nothing`. Write the whole list as one `sql` literal instead, as in `` @default(sql`'{}'::text[]`) ``.
+A `sql` literal inside a list literal used to report `Literal tag "sql" produces a default of its own and cannot be an element of a list literal.` It is now refused by the cast rule, like any other value the column's type does not take: `Field "Post.tags" at element 1: pg/text has no cast from sql/expression; it casts from nothing`. Write the whole list as one `sql` literal instead, as in ``@default(sql`'{}'::text[]`)``.
 
 This supersedes the codes named in the `data-types-column-defaults` app instructions of the upgrade from 8.0.0-rc.11 to 8.0.0-rc.12: where they name `PSL_DEFAULT_TYPE_INCOMPATIBLE` for a value a column's type has no cast from, or `PSL_INVALID_JSON_LITERAL`, read the new codes above.
 
@@ -793,9 +798,12 @@ On PostgreSQL, `setDefault` takes the column and its default:
 
 ```typescript
 // before
-this.setDefault({ table: 'user', column: 'role', defaultSql: "DEFAULT 'member'" })
+this.setDefault({ table: "user", column: "role", defaultSql: "DEFAULT 'member'" });
 // after
-this.setDefault({ table: 'user', column: col('role', 'text', { default: lit('member'), codecRef: { codecId: 'pg/text@1' } }) })
+this.setDefault({
+    table: "user",
+    column: col("role", "text", { default: lit("member"), codecRef: { codecId: "pg/text@1" } }),
+});
 ```
 
 On SQLite, a column in `addColumn` or `recreateTable` carries the default and its codec, and a `recreateTable` postcheck that checks a default names the column:
@@ -841,22 +849,22 @@ For each project whose `prisma.config.ts` uses `prisma7Schema(...)`:
 
 1. Run `prisma contract emit`. The date and time fields change type:
 
-   | Prisma 7 field | Before | Now | Example value |
-   | --- | --- | --- | --- |
-   | `DateTime`, `DateTime @db.Timestamp(p)` | `Temporal.PlainDateTime` | `string` | `"2026-09-14 10:00:00.123"` (UTC, as Prisma 7 writes it) |
-   | `DateTime @db.Timestamptz(p)` | `Temporal.Instant` | `string` | `"2026-09-14 10:00:00.123+00"` (on a server whose `TimeZone` is UTC) |
-   | `DateTime @db.Date` | `Temporal.PlainDate` | `string` | `"2026-09-14"` |
-   | `DateTime @db.Time(p)` | `Temporal.PlainTime` | `string` | `"10:00:00.123"` |
+    | Prisma 7 field                          | Before                   | Now      | Example value                                                        |
+    | --------------------------------------- | ------------------------ | -------- | -------------------------------------------------------------------- |
+    | `DateTime`, `DateTime @db.Timestamp(p)` | `Temporal.PlainDateTime` | `string` | `"2026-09-14 10:00:00.123"` (UTC, as Prisma 7 writes it)             |
+    | `DateTime @db.Timestamptz(p)`           | `Temporal.Instant`       | `string` | `"2026-09-14 10:00:00.123+00"` (on a server whose `TimeZone` is UTC) |
+    | `DateTime @db.Date`                     | `Temporal.PlainDate`     | `string` | `"2026-09-14"`                                                       |
+    | `DateTime @db.Time(p)`                  | `Temporal.PlainTime`     | `string` | `"10:00:00.123"`                                                     |
 
-   `@db.Timetz` fields already read as text and do not change.
+    `@db.Timetz` fields already read as text and do not change.
 
 2. Change the code that reads or writes these fields:
 
-   - `DateTime` and `@db.Timestamp`: the text holds UTC wall-clock time with a space between the date and the time, where `.toString()` on a `Temporal.PlainDateTime` printed a `T`. Where code printed or stored that form, replace `value.toString()` with `value.replace(' ', 'T')`. Where it compares or computes with the value, `` new Date(`${value.replace(' ', 'T')}Z`) `` is the instant.
-   - `@db.Timestamptz`: the text carries the offset of the database session's `TimeZone`, `+00` on a server set to UTC. Do not apply `replace(' ', 'T')` to it. `new Date(value)` parses it in Node.js, and `new Date(value).toISOString()` prints the instant in UTC ending in `Z`, the form `.toString()` on a `Temporal.Instant` printed, with milliseconds always present.
-   - `@db.Date` and `@db.Time`: the text is the form `.toString()` on a `Temporal.PlainDate` or `Temporal.PlainTime` printed.
+    - `DateTime` and `@db.Timestamp`: the text holds UTC wall-clock time with a space between the date and the time, where `.toString()` on a `Temporal.PlainDateTime` printed a `T`. Where code printed or stored that form, replace `value.toString()` with `value.replace(' ', 'T')`. Where it compares or computes with the value, ``new Date(`${value.replace(' ', 'T')}Z`)`` is the instant.
+    - `@db.Timestamptz`: the text carries the offset of the database session's `TimeZone`, `+00` on a server set to UTC. Do not apply `replace(' ', 'T')` to it. `new Date(value)` parses it in Node.js, and `new Date(value).toISOString()` prints the instant in UTC ending in `Z`, the form `.toString()` on a `Temporal.Instant` printed, with milliseconds always present.
+    - `@db.Date` and `@db.Time`: the text is the form `.toString()` on a `Temporal.PlainDate` or `Temporal.PlainTime` printed.
 
-   Write a string PostgreSQL reads, such as `"2026-09-14 10:00:00"` for `DateTime` or `"2026-09-14T10:00:00Z"` for `@db.Timestamptz`, instead of a `Temporal` value. `@updatedAt` still writes UTC, as it did before and as Prisma 7 does, so existing rows need no change.
+    Write a string PostgreSQL reads, such as `"2026-09-14 10:00:00"` for `DateTime` or `"2026-09-14T10:00:00Z"` for `@db.Timestamptz`, instead of a `Temporal` value. `@updatedAt` still writes UTC, as it did before and as Prisma 7 does, so existing rows need no change.
 
 3. If no other code in the application uses `Temporal`, remove the `import 'temporal-polyfill/full/global'` it had for these fields, and remove `temporal-polyfill` from the application's `dependencies`. Keep the dependency in a project that installs with Yarn: `@prisma/orm-postgres` declares it as a peer dependency, and Yarn does not install peers on its own.
 
@@ -880,9 +888,9 @@ Nothing changes until `prisma contract infer` runs again. A schema that keeps th
 
 When infer runs again, it writes each `bytea` default as the base64 the `Bytes` codec stores:
 
-| Before | Now |
-| --- | --- |
-| ``@default(sql`'\\x68656c6c6f'::bytea`)`` | `@default("aGVsbG8=")` |
+| Before                                           | Now                      |
+| ------------------------------------------------ | ------------------------ |
+| ``@default(sql`'\\x68656c6c6f'::bytea`)``        | `@default("aGVsbG8=")`   |
 | ``@default(sql`ARRAY['\\x68656c6c6f'::bytea]`)`` | `@default(["aGVsbG8="])` |
 
 1. Run `prisma contract emit`. The default is now stored as a value, so the storage hash changes. The default in the database does not change.
@@ -896,77 +904,81 @@ Sign the database or apply the migration before you deploy the re-emitted contra
 Prisma 6 stores a plain `Int` on MongoDB as a BSON long and presents it as a `number`. A contract read with `prisma6Schema(...)` used to give such a field the 32-bit int codec, so Prisma 8 wrote new values as BSON ints, and a fractional number was accepted and stored as a double. It now uses `mongo/int64Number@1`: a stored long reads as a `number`, Prisma 8 writes a `number` back as a long, and a value that is not a whole number within ±(2^53 − 1) is refused instead of rounded. The application type does not change.
 
 1. Repair every document in which a plain `Int` field holds a fractional number, whether the field is on the model, in an `Int[]` list, or in a composite type the model holds once or in a list. The previous contract let Prisma 8 store such a value as a BSON double, and `mongo/int64Number@1` refuses to read it (`RUNTIME.DECODE_FAILED`, "wire value is the fractional double 2.5"), so a query that returns such a document fails as a whole. For each plain `Int` field, in the collection its model is stored in, with the MongoDB shell (`mongosh`) or the driver:
-   - List the affected documents, to decide how to repair them. For a field on the model, this finds the fractional values:
+    - List the affected documents, to decide how to repair them. For a field on the model, this finds the fractional values:
 
-     ```js
-     db.Post.find({ likes: { $type: 'double' }, $expr: { $ne: ['$likes', { $trunc: '$likes' }] } })
-     ```
+        ```js
+        db.Post.find({
+            likes: { $type: "double" },
+            $expr: { $ne: ["$likes", { $trunc: "$likes" }] },
+        });
+        ```
 
-     For a list or a composite value, this finds every document with a double in the field: `db.Post.find({ scores: { $type: 'double' } })` for an `Int[]` field, and `db.Post.find({ 'addresses.zip': { $type: 'double' } })` for `zip` in a composite type, whether `addresses` holds one value or a list.
+        For a list or a composite value, this finds every document with a double in the field: `db.Post.find({ scores: { $type: 'double' } })` for an `Int[]` field, and `db.Post.find({ 'addresses.zip': { $type: 'double' } })` for `zip` in a composite type, whether `addresses` holds one value or a list.
 
-   - Store every double in the field as a long. Choose `$round` or `$trunc`: `$round` rounds to the nearest whole number and a half to the even one (2.5 becomes 2, 3.5 becomes 4); `$trunc` drops the fraction (2.9 becomes 2). Whole-number doubles become longs either way.
+    - Store every double in the field as a long. Choose `$round` or `$trunc`: `$round` rounds to the nearest whole number and a half to the even one (2.5 becomes 2, 3.5 becomes 4); `$trunc` drops the fraction (2.9 becomes 2). Whole-number doubles become longs either way.
 
-     ```js
-     db.Post.updateMany({ likes: { $type: 'double' } }, [
-       { $set: { likes: { $toLong: { $round: ['$likes', 0] } } } },
-     ])
-     ```
+        ```js
+        db.Post.updateMany({ likes: { $type: "double" } }, [
+            { $set: { likes: { $toLong: { $round: ["$likes", 0] } } } },
+        ]);
+        ```
 
-   - For an `Int[]` field, convert each double in the list:
+    - For an `Int[]` field, convert each double in the list:
 
-     ```js
-     db.Post.updateMany({ scores: { $type: 'double' } }, [
-       {
-         $set: {
-           scores: {
-             $map: {
-               input: '$scores',
-               in: {
-                 $cond: [
-                   { $eq: [{ $type: '$$this' }, 'double'] },
-                   { $toLong: { $round: ['$$this', 0] } },
-                   '$$this',
-                 ],
-               },
-             },
-           },
-         },
-       },
-     ])
-     ```
+        ```js
+        db.Post.updateMany({ scores: { $type: "double" } }, [
+            {
+                $set: {
+                    scores: {
+                        $map: {
+                            input: "$scores",
+                            in: {
+                                $cond: [
+                                    { $eq: [{ $type: "$$this" }, "double"] },
+                                    { $toLong: { $round: ["$$this", 0] } },
+                                    "$$this",
+                                ],
+                            },
+                        },
+                    },
+                },
+            },
+        ]);
+        ```
 
-   - For a field of a composite type the model holds once (`address Address?`), write its dotted path (`'address.zip'` and `'$address.zip'`) in the filter and the update above.
-   - For a field of a composite type the model holds in a list (`addresses Address[]`), the dotted path fails with "$round only supports numeric types, not array". Rewrite each element of the list instead:
+    - For a field of a composite type the model holds once (`address Address?`), write its dotted path (`'address.zip'` and `'$address.zip'`) in the filter and the update above.
+    - For a field of a composite type the model holds in a list (`addresses Address[]`), the dotted path fails with "$round only supports numeric types, not array". Rewrite each element of the list instead:
 
-     ```js
-     db.Post.updateMany({ 'addresses.zip': { $type: 'double' } }, [
-       {
-         $set: {
-           addresses: {
-             $map: {
-               input: '$addresses',
-               in: {
-                 $mergeObjects: [
-                   '$$this',
-                   {
-                     zip: {
-                       $cond: [
-                         { $eq: [{ $type: '$$this.zip' }, 'double'] },
-                         { $toLong: { $round: ['$$this.zip', 0] } },
-                         '$$this.zip',
-                       ],
-                     },
-                   },
-                 ],
-               },
-             },
-           },
-         },
-       },
-     ])
-     ```
+        ```js
+        db.Post.updateMany({ "addresses.zip": { $type: "double" } }, [
+            {
+                $set: {
+                    addresses: {
+                        $map: {
+                            input: "$addresses",
+                            in: {
+                                $mergeObjects: [
+                                    "$$this",
+                                    {
+                                        zip: {
+                                            $cond: [
+                                                { $eq: [{ $type: "$$this.zip" }, "double"] },
+                                                { $toLong: { $round: ["$$this.zip", 0] } },
+                                                "$$this.zip",
+                                            ],
+                                        },
+                                    },
+                                ],
+                            },
+                        },
+                    },
+                },
+            },
+        ]);
+        ```
 
-   Here `Post`, `likes`, `scores`, `address`, `addresses` and `zip` stand for the collection and the field names in the database, after `@@map` and `@map`.
+    Here `Post`, `likes`, `scores`, `address`, `addresses` and `zip` stand for the collection and the field names in the database, after `@@map` and `@map`.
+
 2. Run `prisma contract emit`. In `contract.d.ts`, each plain `Int` field of the Prisma 6 schema is now typed with `mongo/int64Number@1` instead of `mongo/int32@1`; both read and write a `number`, so application code needs no change. `db sign` and `db verify` need nothing new: the contract carries no validators.
 
 ## `prisma6-bytes-objectid-is-hex`
@@ -1047,7 +1059,7 @@ Add the order the query needs:
 Where the query is meant to run without an order, cast the collection instead of the argument:
 
 ```ts
-import type { Ordered } from '@prisma/orm-postgres/orm-client';
+import type { Ordered } from "@prisma/orm-postgres/orm-client";
 
 const unordered = db.Post as Ordered<typeof db.Post>;
 await unordered.cursor({ id }).all();
@@ -1123,7 +1135,12 @@ A type of your own that sets a flag to `false` should set it to `boolean`. The w
 To keep a helper of your own, constrain its parameter, because both helpers require one:
 
 ```ts
-import type { CollectionRowOf, CollectionTypeStateOf, HasRow, HasTypeState } from '@prisma/orm-postgres/orm-client';
+import type {
+    CollectionRowOf,
+    CollectionTypeStateOf,
+    HasRow,
+    HasTypeState,
+} from "@prisma/orm-postgres/orm-client";
 
 type RowOf<C extends HasRow> = CollectionRowOf<C>;
 type StateOf<C extends HasTypeState> = CollectionTypeStateOf<C>;
@@ -1178,12 +1195,12 @@ For every `.variant(...)` call matched by `detection`, replace the variant's mod
 
 ```ts
 // before
-db.orm.public.Task.variant('Bug');
-db.orm.events.variant('ViewProductEvent');
+db.orm.public.Task.variant("Bug");
+db.orm.events.variant("ViewProductEvent");
 
 // after, for @@base(Task, "bug") and a ViewProductEvent variant declaring "view-product"
-db.orm.public.Task.variant('bug');
-db.orm.events.variant('view-product');
+db.orm.public.Task.variant("bug");
+db.orm.events.variant("view-product");
 ```
 
 Custom collection methods that call `this.variant('<ModelName>')`, and helpers or closures that call `.variant()`, change the same way. When the argument is a variable or a forwarded parameter, follow it back to where the model name is written and replace it there, including in type annotations that list variant model names. Update code comments and READMEs that show `.variant('<ModelName>')` too.
@@ -1196,13 +1213,13 @@ A second `.variant()` call on a variant collection is rejected. It no longer rep
 
 ```ts
 // before
-const bugs = db.orm.public.Task.variant('Bug');
-const features = bugs.variant('Feature');
+const bugs = db.orm.public.Task.variant("Bug");
+const features = bugs.variant("Feature");
 
 // after
 const tasks = db.orm.public.Task;
-const bugs = tasks.variant('bug');
-const features = tasks.variant('feature');
+const bugs = tasks.variant("bug");
+const features = tasks.variant("feature");
 ```
 
 ## `imported-postgres-field-checks-defaults`
@@ -1220,14 +1237,14 @@ The typed SQL builder gains four methods that lock the rows a select reads, name
 
 ```ts
 await db.transaction(async (tx) => {
-  const [job] = await tx.query(
-    tx.sql.public.job
-      .select('id')
-      .where((f, fns) => fns.eq(f.state, 'queued'))
-      .limit(1)
-      .forUpdate({ skipLocked: true })
-      .build(),
-  );
+    const [job] = await tx.query(
+        tx.sql.public.job
+            .select("id")
+            .where((f, fns) => fns.eq(f.state, "queued"))
+            .limit(1)
+            .forUpdate({ skipLocked: true })
+            .build(),
+    );
 });
 ```
 
@@ -1258,12 +1275,12 @@ Before:
 
 ```ts
 export async function getUsersCached(limit = 10, ttlMs = 60_000) {
-  const plan = db.sql.public.user
-    .select('id', 'email')
-    .annotate(cacheAnnotation({ ttl: ttlMs }))
-    .limit(limit)
-    .build();
-  return db.runtime().query(plan);
+    const plan = db.sql.public.user
+        .select("id", "email")
+        .annotate(cacheAnnotation({ ttl: ttlMs }))
+        .limit(limit)
+        .build();
+    return db.runtime().query(plan);
 }
 ```
 
@@ -1271,12 +1288,12 @@ After:
 
 ```ts
 export async function getUsersCached(limit = 10) {
-  const plan = db.sql.public.user
-    .select('id', 'email')
-    .annotate(cacheAnnotation({}))
-    .limit(limit)
-    .build();
-  return db.runtime().query(plan);
+    const plan = db.sql.public.user
+        .select("id", "email")
+        .annotate(cacheAnnotation({}))
+        .limit(limit)
+        .build();
+    return db.runtime().query(plan);
 }
 ```
 
@@ -1311,13 +1328,13 @@ Before:
 
 ```ts
 const store: CacheStore = {
-  async get(key) {
-    const raw = await redis.get(key);
-    return raw ? (JSON.parse(raw) as CachedEntry) : undefined;
-  },
-  async set(key, entry, ttlMs) {
-    await redis.set(key, JSON.stringify(entry), 'PX', ttlMs);
-  },
+    async get(key) {
+        const raw = await redis.get(key);
+        return raw ? (JSON.parse(raw) as CachedEntry) : undefined;
+    },
+    async set(key, entry, ttlMs) {
+        await redis.set(key, JSON.stringify(entry), "PX", ttlMs);
+    },
 };
 ```
 
@@ -1330,33 +1347,33 @@ const SET_IF_VERSION = `
   return 1`;
 
 const store: CacheStore<unknown, CachedRows> = {
-  async get({ key, meta }) {
-    const [raw, version] = await redis.mget(`value:${key}`, `version:${key}`);
-    return {
-      key,
-      meta,
-      version: Number(version ?? 0),
-      data: raw ? { empty: false, value: JSON.parse(raw) as CachedRows } : { empty: true },
-    };
-  },
-  async set(entry, value) {
-    const keys = [`value:${entry.key}`, `version:${entry.key}`];
-    const json = JSON.stringify(value);
-    return (await redis.eval(SET_IF_VERSION, 2, ...keys, json, entry.version)) === 1;
-  },
-  async unset({ keys, meta }) {
-    if (meta !== undefined) {
-      throw new Error('This store does not index meta');
-    }
-    for (const key of keys ?? []) {
-      await redis
-        .multi()
-        .del(`value:${key}`)
-        .incr(`version:${key}`)
-        .pexpire(`version:${key}`, 60_000)
-        .exec();
-    }
-  },
+    async get({ key, meta }) {
+        const [raw, version] = await redis.mget(`value:${key}`, `version:${key}`);
+        return {
+            key,
+            meta,
+            version: Number(version ?? 0),
+            data: raw ? { empty: false, value: JSON.parse(raw) as CachedRows } : { empty: true },
+        };
+    },
+    async set(entry, value) {
+        const keys = [`value:${entry.key}`, `version:${entry.key}`];
+        const json = JSON.stringify(value);
+        return (await redis.eval(SET_IF_VERSION, 2, ...keys, json, entry.version)) === 1;
+    },
+    async unset({ keys, meta }) {
+        if (meta !== undefined) {
+            throw new Error("This store does not index meta");
+        }
+        for (const key of keys ?? []) {
+            await redis
+                .multi()
+                .del(`value:${key}`)
+                .incr(`version:${key}`)
+                .pexpire(`version:${key}`, 60_000)
+                .exec();
+        }
+    },
 };
 ```
 

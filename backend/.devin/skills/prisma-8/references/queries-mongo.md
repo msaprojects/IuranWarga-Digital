@@ -15,15 +15,15 @@ Reach for the ORM first; drop to `db.query` when the ORM can't express the shape
 
 **Lane decision table:**
 
-| Need | Choose | Why |
-|---|---|---|
-| Standard CRUD with reference relations | **ORM (`db.orm.<root>`)** | Collection-shaped; object `.where({ ... })`; `.create` / `.update` / `.delete` / `.upsert`. |
-| Eager-load a reference relation | **ORM `.include('<relation>')`** | Lowers to `$lookup`; composes with `.where` / `.select` / `.orderBy` / `.limit`. |
-| Polymorphic root (discriminated variants) | **ORM `.variant('<discriminator value>')`** | Narrows to the variant declaring that value and injects the discriminator filter. |
-| Field-level Mongo updates (`$push`, `$inc`, dot-path `$set`) | **ORM `.update((f) => [f.field.inc(1)])`** | Field-accessor callback; plain-object `.update({ ... })` for whole-field replacement. |
-| Aggregation pipeline (group, facet, `$lookup` with reshaping) | **Query builder (`db.query.from(...)`)** | Full pipeline surface; typed row shape through `.build()`. |
-| Typed cross-collection join in a pipeline | **Query builder `.lookup((from) => from('users').on(...).as('author'))`** | `$lookup` with compile-time foreign-root checking. |
-| Bulk writes with pipeline semantics | **Query builder write terminals** (`.insertOne`, `.updateMany`, `.findOneAndUpdate`, `.upsertOne`, …) | Filtered writes after `.match(...)`; plans execute through the runtime. |
+| Need                                                          | Choose                                                                                                | Why                                                                                         |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Standard CRUD with reference relations                        | **ORM (`db.orm.<root>`)**                                                                             | Collection-shaped; object `.where({ ... })`; `.create` / `.update` / `.delete` / `.upsert`. |
+| Eager-load a reference relation                               | **ORM `.include('<relation>')`**                                                                      | Lowers to `$lookup`; composes with `.where` / `.select` / `.orderBy` / `.limit`.            |
+| Polymorphic root (discriminated variants)                     | **ORM `.variant('<discriminator value>')`**                                                           | Narrows to the variant declaring that value and injects the discriminator filter.           |
+| Field-level Mongo updates (`$push`, `$inc`, dot-path `$set`)  | **ORM `.update((f) => [f.field.inc(1)])`**                                                            | Field-accessor callback; plain-object `.update({ ... })` for whole-field replacement.       |
+| Aggregation pipeline (group, facet, `$lookup` with reshaping) | **Query builder (`db.query.from(...)`)**                                                              | Full pipeline surface; typed row shape through `.build()`.                                  |
+| Typed cross-collection join in a pipeline                     | **Query builder `.lookup((from) => from('users').on(...).as('author'))`**                             | `$lookup` with compile-time foreign-root checking.                                          |
+| Bulk writes with pipeline semantics                           | **Query builder write terminals** (`.insertOne`, `.updateMany`, `.findOneAndUpdate`, `.upsertOne`, …) | Filtered writes after `.match(...)`; plans execute through the runtime.                     |
 
 ## Workflow — ORM reads
 
@@ -31,48 +31,45 @@ The concept matches Postgres — `db.orm.<root>` returns a collection you compos
 
 ```typescript
 // src/queries/users.ts — adjust the relative import to match file depth.
-import { db } from '../prisma/db';
+import { db } from "../prisma/db";
 
 // All users.
 const users = await db.orm.users.all();
 
 // Single row by equality filter.
-const alice = await db.orm.users.where({ email: 'alice@example.com' }).first();
+const alice = await db.orm.users.where({ email: "alice@example.com" }).first();
 
 // Projection, sort, pagination — same chaining as Postgres.
 const recent = await db.orm.posts
-  .select('title', 'authorId', 'createdAt')
-  .orderBy({ createdAt: -1 })
-  .limit(10)
-  .all();
+    .select("title", "authorId", "createdAt")
+    .orderBy({ createdAt: -1 })
+    .limit(10)
+    .all();
 ```
 
 **`.where(...)`** accepts a plain object whose keys are model field names and values are compared with equality (codec-aware — `ObjectId` fields accept string ids from the contract). Chain multiple `.where({ ... })` calls to AND-compose filters.
 
-For operators the object form doesn't cover (`.in([...])`, range comparisons, nested logic), pass a `MongoFilterExpr` — today that means importing filter helpers from `@prisma/orm-mongo/query-ast/execution` (a façade-completeness gap; see *What Prisma 8 doesn't do yet* in [`queries.md`](./queries.md)). Prefer the object form whenever equality suffices.
+For operators the object form doesn't cover (`.in([...])`, range comparisons, nested logic), pass a `MongoFilterExpr` — today that means importing filter helpers from `@prisma/orm-mongo/query-ast/execution` (a façade-completeness gap; see _What Prisma 8 doesn't do yet_ in [`queries.md`](./queries.md)). Prefer the object form whenever equality suffices.
 
 **Polymorphic roots.** When the contract declares variants on a model, narrow before querying. `.variant()` takes the discriminator value a variant declares (`"article"` from `@@base(Post, "article")`), not the variant's model name. Call it once, on the base collection; a second `.variant()` on a variant collection is refused:
 
 ```typescript
-const articles = await db.orm.posts.variant('article').all();
-const tutorials = await db.orm.posts.variant('tutorial').where({ authorId }).all();
+const articles = await db.orm.posts.variant("article").all();
+const tutorials = await db.orm.posts.variant("tutorial").where({ authorId }).all();
 ```
 
 **Sorting and pagination.** `.orderBy({ field: 1 | -1 })` (Mongo sort directions). `.limit(n)` maps to `$limit`; `.offset(n)` maps to `$skip`.
 
 **`.first()` vs `.all()`.** `.first()` issues a limit-1 read; `.all()` returns every matching document. There is no `.first({ pk })` shorthand on Mongo — filter on `_id` explicitly: `.where({ _id: id }).first()`.
 
-Mongo `.all()` returns the same `AsyncIterableResult` shape as Postgres — `await db.orm.users.all()` yields an array; see *Consuming the result* in [`queries.md`](./queries.md).
+Mongo `.all()` returns the same `AsyncIterableResult` shape as Postgres — `await db.orm.users.all()` yields an array; see _Consuming the result_ in [`queries.md`](./queries.md).
 
 ## Workflow — Eager-loading relations (`.include`)
 
 Mongo reference relations eager-load through the same `.include('<relation>')` surface; the ORM lowers to `$lookup`:
 
 ```typescript
-const posts = await db.orm.posts
-  .include('author')
-  .orderBy({ createdAt: -1 })
-  .all();
+const posts = await db.orm.posts.include("author").orderBy({ createdAt: -1 }).all();
 // → Array<{ title, authorId, createdAt, author: { name, email, ... } }>
 ```
 
@@ -85,32 +82,32 @@ Mongo mutations require a preceding `.where(...)` filter (except `.create` / `.c
 ```typescript
 // Create — returns the row with server-assigned `_id`.
 const user = await db.orm.users.create({
-  name: 'Alice',
-  email: 'alice@example.com',
-  bio: null,
-  address: null,
+    name: "Alice",
+    email: "alice@example.com",
+    bio: null,
+    address: null,
 });
 
 // Update one — plain object replaces top-level fields.
-await db.orm.users.where({ _id: user._id }).update({ bio: 'Writer' });
+await db.orm.users.where({ _id: user._id }).update({ bio: "Writer" });
 
 // Update one — field operations ($push, $inc, dot-path $set).
 await db.orm.users
-  .where({ _id: user._id })
-  .update((u) => [u.tags.push('admin'), u.loginCount.inc(1)]);
+    .where({ _id: user._id })
+    .update((u) => [u.tags.push("admin"), u.loginCount.inc(1)]);
 
 // Update many / delete many — iterate or count.
-const updated = await db.orm.users
-  .where({ bio: null })
-  .updateAll({ bio: 'filled' });
-for await (const row of updated) { /* each modified doc */ }
+const updated = await db.orm.users.where({ bio: null }).updateAll({ bio: "filled" });
+for await (const row of updated) {
+    /* each modified doc */
+}
 
 await db.orm.users.where({ _id: user._id }).delete();
 
 // Upsert — filter via .where(), split create vs update branches.
-await db.orm.users.where({ email: 'alice@example.com' }).upsert({
-  create: { name: 'Alice', email: 'alice@example.com', bio: null, address: null },
-  update: { bio: 'Editor' },
+await db.orm.users.where({ email: "alice@example.com" }).upsert({
+    create: { name: "Alice", email: "alice@example.com", bio: null, address: null },
+    update: { bio: "Editor" },
 });
 ```
 
@@ -123,19 +120,19 @@ await db.orm.users.where({ email: 'alice@example.com' }).upsert({
 The Mongo ORM does not expose `.aggregate(...)` / `.groupBy(...)`. Express aggregations through **`db.query`** — the pipeline builder — with `.group(...)` and accumulator helpers:
 
 ```typescript
-import { acc } from '@prisma/orm-mongo/query-builder';
+import { acc } from "@prisma/orm-mongo/query-builder";
 
 const runtime = await db.runtime();
 const plan = db.query
-  .from('posts')
-  .match((f) => f.authorId.eq(authorId))
-  .group((f) => ({
-    _id: f.kind,
-    postCount: acc.count(),
-    latest: acc.max(f.createdAt),
-  }))
-  .sort({ postCount: -1 })
-  .build();
+    .from("posts")
+    .match((f) => f.authorId.eq(authorId))
+    .group((f) => ({
+        _id: f.kind,
+        postCount: acc.count(),
+        latest: acc.max(f.createdAt),
+    }))
+    .sort({ postCount: -1 })
+    .build();
 
 const byKind = await runtime.query(plan);
 ```
@@ -148,33 +145,33 @@ The concept: `db.query.from('<root>')` starts a typed aggregation-pipeline chain
 
 ```typescript
 // src/queries/analytics.ts
-import { acc, fn } from '@prisma/orm-mongo/query-builder';
-import { db } from '../prisma/db';
+import { acc, fn } from "@prisma/orm-mongo/query-builder";
+import { db } from "../prisma/db";
 
 const runtime = await db.runtime();
 
 // Read pipeline — match, project, sort, limit.
 const plan = db.query
-  .from('posts')
-  .match((f) => f.authorId.eq(authorId))
-  .sort({ createdAt: -1 })
-  .limit(10)
-  .project('title', 'authorId', 'createdAt')
-  .build();
+    .from("posts")
+    .match((f) => f.authorId.eq(authorId))
+    .sort({ createdAt: -1 })
+    .limit(10)
+    .project("title", "authorId", "createdAt")
+    .build();
 const recent = await runtime.query(plan);
 
 // Cross-collection join ($lookup).
 const withAuthor = db.query
-  .from('posts')
-  .lookup((from) =>
-    from('users')
-      .on((local, foreign) => ({
-        local: local.authorId,
-        foreign: foreign._id,
-      }))
-      .as('author'),
-  )
-  .build();
+    .from("posts")
+    .lookup((from) =>
+        from("users")
+            .on((local, foreign) => ({
+                local: local.authorId,
+                foreign: foreign._id,
+            }))
+            .as("author"),
+    )
+    .build();
 const rows = await runtime.query(withAuthor);
 ```
 
@@ -184,21 +181,21 @@ const rows = await runtime.query(withAuthor);
 
 ```typescript
 const inserted = await runtime.query(
-  db.query.from('users').insertOne({ name: 'Alice', email: 'a@e.com', bio: null }),
+    db.query.from("users").insertOne({ name: "Alice", email: "a@e.com", bio: null }),
 );
 
 const { affectedRows } = await runtime.execute(
-  db.query
-    .from('users')
-    .match((f) => f.name.eq('Alice'))
-    .updateMany((f) => [f.bio.set('filled')]),
+    db.query
+        .from("users")
+        .match((f) => f.name.eq("Alice"))
+        .updateMany((f) => [f.bio.set("filled")]),
 );
 
 const [updated] = await runtime.query(
-  db.query
-    .from('users')
-    .match((f) => f.email.eq('a@e.com'))
-    .findOneAndUpdate((f) => [f.bio.set('updated')], { returnDocument: 'after' }),
+    db.query
+        .from("users")
+        .match((f) => f.email.eq("a@e.com"))
+        .findOneAndUpdate((f) => [f.bio.set("updated")], { returnDocument: "after" }),
 );
 ```
 
@@ -213,7 +210,7 @@ Update callbacks return arrays of field operations (`.set`, `.inc`, `.push`, `.p
 3. **Calling `.update()` / `.delete()` without `.where()`.** Mutations other than `.create` / `.createAll` require a filter — the compiler enforces this at the type level where possible.
 4. **Using PascalCase model names on ORM.** Roots are lowercased plurals from the contract (`db.orm.users`, not `db.orm.User`).
 5. **Expecting Postgres-style lambda `.where((u) => u.email.eq(...))` on ORM.** Prefer object equality `.where({ email: '...' })`; richer operators need `MongoFilterExpr` helpers (façade gap today).
-6. **Expecting `db.transaction(...)`.** The Mongo façade does not expose it today. Multi-document atomicity requires MongoDB transactions on a replica set via the driver — not yet wrapped in the Prisma 8 façade. Route to *What Prisma 8 doesn't do yet* / `references/feedback.md` if the user needs this.
+6. **Expecting `db.transaction(...)`.** The Mongo façade does not expose it today. Multi-document atomicity requires MongoDB transactions on a replica set via the driver — not yet wrapped in the Prisma 8 façade. Route to _What Prisma 8 doesn't do yet_ / `references/feedback.md` if the user needs this.
 7. **Trying to use `db.sql`.** There is no `db.sql` on Mongo.
 8. **Trying to `db.execute(plan)` directly, or reading documents with `execute`.** Run query-builder plans via `(await db.runtime()).query(plan)`. `execute(plan)` resolves statistics only and throws `RUNTIME.MONGO_STATISTICS_UNSUPPORTED` for a find or aggregate.
 9. **Expecting ORM `.aggregate(...)` / `.groupBy(...)`.** Use `db.query.from(...).group(...).build()` instead.
@@ -232,5 +229,5 @@ Update callbacks return arrays of field operations (`.set`, `.inc`, `.push`, `.p
 - [ ] Used `.where({ ... }).first()` for single-row reads — not `.all()`.
 - [ ] Ran query-builder plans via `(await db.runtime()).query(plan)`; used `execute(plan)` only for an affected count on a write.
 - [ ] For aggregations, used `db.query.from(...).group(...)` rather than a non-existent ORM `.aggregate(...)`.
-- [ ] Did NOT confabulate `db.transaction`, `db.sql`, or ORM `.aggregate(...)` — routed to *What Prisma 8 doesn't do yet* / `references/feedback.md` instead.
+- [ ] Did NOT confabulate `db.transaction`, `db.sql`, or ORM `.aggregate(...)` — routed to _What Prisma 8 doesn't do yet_ / `references/feedback.md` instead.
 - [ ] Did NOT use the lower-level builder for something the ORM cleanly expresses.

@@ -2,147 +2,147 @@
 from: "8.0.0-rc.13"
 to: "8.0.0-rc.14"
 changes:
-  - id: engine-pin-moves-to-0-6-2
-    summary: |
-      The toolchain now requires `@prisma/cli-engine@0.6.2` (up from 0.6.1). A project that pins `@prisma/cli-engine` itself must move the pin to `0.6.2`. With this engine the CLI prints its own name in hints and messages where it used to print a literal `{bin}`.
-    detection:
-      glob: "**/package.json"
-      contains:
-        - '"@prisma/cli-engine": "0.6.1"'
-  - id: temporal-polyfill-is-a-peer-dependency
-    summary: |
-      `temporal-polyfill` is now a required peer dependency of `@prisma/orm-postgres` and `@prisma/orm-target-postgres`, not a dependency. The Postgres control plane, such as the `prisma` commands and the Vite plugin, imports it. npm, pnpm and bun install it automatically. A project that installs with Yarn must add `temporal-polyfill` (`^1.0.4`) to its own dependencies.
-    detection:
-      glob: "**/yarn.lock"
-      contains:
-        - "@prisma/orm-postgres@"
-        - "@prisma/orm-target-postgres@"
-      anyMatch: true
-  - id: serverless-connect-returns-connection
-    summary: "connect({ url }) on the serverless client from @prisma/orm-postgres/serverless returns a connection, not a Runtime. Call db.runtime().query(plan) and db.runtime().execute(plan), and pass db.runtime() wherever the connect() result was used as a runtime. connect() now connects before it returns and rejects with DRIVER.CONNECTION_FAILED when the database cannot be reached."
-    detection:
-      glob: "**/*.{ts,mts,cts,tsx,js,mjs,cjs,jsx}"
-      matches:
-        - '[''"]@prisma/orm-postgres/serverless[''"]'
-  - id: serverless-connection-orm-and-transaction
-    summary: "Optional: the connection has orm and transaction(fn), so db.orm replaces a hand-built orm({ runtime, context }) in queries that call no custom collection method, and db.transaction(fn) replaces withTransaction(runtime, fn)."
-    detection:
-      glob: "**/*.{ts,mts,cts,tsx,js,mjs,cjs,jsx}"
-      matches:
-        - '[''"]@prisma/orm-postgres/serverless[''"]'
-  - id: serverless-cursor-default-off
-    summary: "Reads through connections from @prisma/orm-postgres/serverless no longer go through a server-side cursor by default. A path that must keep batched streaming opens its connection from a second serverless client with cursor: { batchSize: 100 }; that path hangs behind Cloudflare Hyperdrive. PostgresServerlessCursorOptions is now PostgresCursorOptions, which is { batchSize?: number | undefined } with no disabled flag, so cursor: { disabled: true } no longer compiles and must be deleted."
-    detection:
-      glob: "**/*.{ts,mts,cts,tsx,js,mjs,cjs,jsx}"
-      matches:
-        - '[''"]@prisma/orm-postgres/serverless[''"]'
-  - id: date-time-default-stored-in-canonical-form
-    summary: |
-      A PSL date or time default is stored in `contract.json` in its type's canonical form, however it was written: `@default("2024-01-01T01:00:00+01:00")` on a `DateTime` column is stored as `"2024-01-01T00:00:00Z"`. A default that was not already in that form gets a new storage hash when the contract is re-emitted. The database needs no change: re-emit, then `prisma db sign`, or record an empty migration with `prisma migration new`.
-    detection:
-      glob: "**/*.prisma"
-      matches:
-        - '\b(DateTime|Timestamptz|TimestamptzJsDate|TimestamptzString|Timestamp|TimestampString|Date|DateString|Time|TimeString|Timetz)(\([^)]*\))?(\[\])?\??([ \t]+@[\w.]+(\([^)\n]*\))?)*?[ \t]+@default\([\s\[]*"'
-  - id: date-time-default-refused-text
-    summary: |
-      `prisma contract emit` refuses a date or time default its column's type does not hold, with `PSL_INVALID_DEFAULT_LITERAL`: an offset on `Timestamp`, `Date` or `Time`, no offset on `DateTime`, `Timestamptz` or `Timetz`, a date on a time column, a time on a `Date` column, more than six digits after the decimal point (three on a SQLite `DateTime`), a date or time that does not exist, a year outside the range the type holds, or a ` BC` suffix on a SQLite `DateTime`. The message shows text the column takes.
-    detection:
-      glob: "**/*.prisma"
-      matches:
-        - '\b(DateTime|Timestamptz|TimestamptzJsDate|TimestamptzString|Timestamp|TimestampString|Date|DateString|Time|TimeString|Timetz)(\([^)]*\))?(\[\])?\??([ \t]+@[\w.]+(\([^)\n]*\))?)*?[ \t]+@default\([\s\[]*"'
-  - id: date-time-ts-default-stored-in-canonical-form
-    summary: |
-      In a TypeScript contract, a default on `field.temporal.timestamptzJsDate()`, `field.temporal.timestamptzString()`, `field.temporal.timestampString()`, the SQLite `field.temporal.datetime()`, and the `dateStringColumn`, `timeStringColumn`, `timetzColumn` and SQLite `sqliteDatetimeColumn` helpers is stored in the same canonical form as in PSL: `new Date('2024-01-01T00:00:00Z')` is stored as `"2024-01-01T00:00:00Z"`, not `"2024-01-01T00:00:00.000Z"`. A `Temporal` default with digits below one microsecond is refused. The storage hash changes; re-emit, then sign or migrate as for PSL.
-    detection:
-      glob: "**/*.{ts,mts,cts}"
-      matches:
-        - '\.(timestamptzJsDate|timestamptzString|timestampString|datetime)\([^)]*\)(\s*\.\w+\([^)]*\))*?\s*\.default\('
-        - '\b(timestamptzJsDateColumn|timestamptzStringColumn|timestampStringColumn|dateStringColumn|timeStringColumn|timetzColumn|sqliteDatetimeColumn|datetimeColumn)\b[^\n]*\.default\('
-  - id: mongo-create-returns-stored-document
-    summary: |
-      Mongo `create()` and `createAll()` now return each inserted document as stored, decoded like
-      a read, instead of the input with the new `_id`. The ORM computes it from the document it
-      sent, through the client's BSON options, without a second query. A `Bson` field comes back
-      as a read returns it (a `Long` in the safe-integer range as a number, bytes as `Binary`, a
-      `BSONRegExp` as a `RegExp`), and a nullable field left out comes back as `null`.
-  - id: mongo-reads-decode-includes-value-objects-and-absent-fields
-    summary: |
-      Mongo reads now decode included documents (`include(...)`) and composite-type (value
-      object) fields through their codecs, and a nullable field missing from the stored document
-      reads as `null` instead of `undefined`.
-  - id: mongo-where-filter-expressions-encoded
-    summary: |
-      A filter expression passed to the Mongo ORM's `where()` now encodes its comparison and
-      `$in`/`$nin` values through the field's codec, as the object form of `where()` does, and each
-      element of a whole-list comparison through the element codec. A value the codec refuses,
-      such as a driver `Long` for an `Int64` field (the codec takes a `bigint`) or a fraction for
-      an `Int32` field, fails with `RUNTIME.ENCODE_FAILED`. The object form of `where()` now also
-      refuses a fraction or an out-of-range number for an `Int32` field. This applies to the ORM
-      only: the query builder's `match()` sends values as given.
-    detection:
-      glob: "**/*.{ts,mts,cts}"
-      matches:
-        - '\.where\(\s*(?:MongoFieldFilter|MongoAndExpr|MongoOrExpr|MongoNotExpr)\.'
-  - id: mongo-writes-check-int32-enum-and-null-values
-    summary: |
-      The Mongo ORM refuses, with `RUNTIME.ENCODE_FAILED` naming the field, a write of a fraction
-      or an out-of-range number to an `Int32` field, of a value outside the field's enum, and of
-      `null` to a field that is not nullable. Before, depending on the field's type, the field's
-      codec refused it, a contract with a collection validator got a bare "Document failed
-      validation" from the server, or a contract without one (TypeScript builder, Prisma 6 schema)
-      stored the value. Filters still accept a value outside the enum and `null`, so they can find
-      documents that hold one.
-  - id: mongo-codecs-check-value-types
-    summary: |
-      The Mongo `String`, `Bool`, `Date`, `ObjectId` and vector codecs refuse a value of the wrong
-      type with `RUNTIME.ENCODE_FAILED` naming the field, in writes and filters, as `Int32` and
-      `Double` do. Before, a `null` element in a `String[]`, `Bool[]` or `Date[]` list or a
-      mistyped value was stored as given, an invalid `Date` was stored as the epoch, and `null`,
-      `undefined` or a number for an `ObjectId` field became a new id or a timestamp.
-  - id: mongo-list-elements-encoded
-    summary: |
-      The Mongo ORM encodes each element of a list field through the field's codec, on writes and
-      in filters. An `ObjectId[]`, `Int64[]`, `Decimal128[]` or `Binary[]` field now stores its
-      elements as `ObjectId`, `long`, `decimal` and `binData`, where before the whole list reached
-      the element codec and the write failed with `RUNTIME.ENCODE_FAILED`. A whole number in a
-      `Double[]` field is stored as a `double`.
-  - id: mongo-query-builder-bson-values-match
-    summary: |
-      A query-builder filter or raw command that compares with a driver class such as `ObjectId`,
-      `Long`, `Decimal128` or `Binary` now sends it as that BSON value. Before, the Mongo adapter
-      copied it into a plain object, so the filter matched nothing.
-  - id: mongo-upsert-keeps-create-values
-    summary: |
-      When `create` sets a field that has an update default (`@updatedAt`,
-      `temporal.updatedAt()`, `temporal.timestamp(onUpdate: now)`), `upsert()` now inserts the
-      `create` value, and still applies the update default on update, in one atomic command.
-      Before, the insert got the current time instead. Such an upsert refuses `pull()` by a match
-      document with `ORM.OPERATION_UNSUPPORTED`.
-  - id: contract-source-warnings-are-diagnostics
-    summary: |
-      `prisma contract emit` and `prisma contract print` report contract source warnings, such as
-      `PSL_DEPRECATED_SCALAR_NAME`, as `warn` diagnostics of the result instead of free-text
-      `warning …` messages. With `--json` they are in the result envelope's `diagnostics`. Their
-      file, and the file of a source error from either command, is shown relative to the working
-      directory.
-  - id: mongo-ts-preset-field-not-optional
-    summary: |
-      In a Mongo TypeScript contract, `.optional()` or `.many()` on a field a preset fills, such
-      as `field.temporal.createdAt()`, is now a type error that says "A preset fills this field on
-      write, so it cannot be optional" (or "a list"); it always failed when the contract was built.
-    detection:
-      glob: "**/*.{ts,mts,cts}"
-      matches:
-        - '\btemporal\.(?:createdAt|updatedAt|timestamp)\([^)]*\)\s*\.(?:optional|many)\('
-  - id: contract-artifacts-restamp
-    summary: |
-      The emitted `contract.json` / `contract.d.ts` embed the toolchain version, which moves
-      to 8.0.0-rc.14. Run `contract emit` once after upgrading so the emitted artifacts match
-      the installed toolchain.
-    detection:
-      glob: "**/contract.json"
-      contains:
-        - '"version": "8.0.0-rc.13"'
+    - id: engine-pin-moves-to-0-6-2
+      summary: |
+          The toolchain now requires `@prisma/cli-engine@0.6.2` (up from 0.6.1). A project that pins `@prisma/cli-engine` itself must move the pin to `0.6.2`. With this engine the CLI prints its own name in hints and messages where it used to print a literal `{bin}`.
+      detection:
+          glob: "**/package.json"
+          contains:
+              - '"@prisma/cli-engine": "0.6.1"'
+    - id: temporal-polyfill-is-a-peer-dependency
+      summary: |
+          `temporal-polyfill` is now a required peer dependency of `@prisma/orm-postgres` and `@prisma/orm-target-postgres`, not a dependency. The Postgres control plane, such as the `prisma` commands and the Vite plugin, imports it. npm, pnpm and bun install it automatically. A project that installs with Yarn must add `temporal-polyfill` (`^1.0.4`) to its own dependencies.
+      detection:
+          glob: "**/yarn.lock"
+          contains:
+              - "@prisma/orm-postgres@"
+              - "@prisma/orm-target-postgres@"
+          anyMatch: true
+    - id: serverless-connect-returns-connection
+      summary: "connect({ url }) on the serverless client from @prisma/orm-postgres/serverless returns a connection, not a Runtime. Call db.runtime().query(plan) and db.runtime().execute(plan), and pass db.runtime() wherever the connect() result was used as a runtime. connect() now connects before it returns and rejects with DRIVER.CONNECTION_FAILED when the database cannot be reached."
+      detection:
+          glob: "**/*.{ts,mts,cts,tsx,js,mjs,cjs,jsx}"
+          matches:
+              - '[''"]@prisma/orm-postgres/serverless[''"]'
+    - id: serverless-connection-orm-and-transaction
+      summary: "Optional: the connection has orm and transaction(fn), so db.orm replaces a hand-built orm({ runtime, context }) in queries that call no custom collection method, and db.transaction(fn) replaces withTransaction(runtime, fn)."
+      detection:
+          glob: "**/*.{ts,mts,cts,tsx,js,mjs,cjs,jsx}"
+          matches:
+              - '[''"]@prisma/orm-postgres/serverless[''"]'
+    - id: serverless-cursor-default-off
+      summary: "Reads through connections from @prisma/orm-postgres/serverless no longer go through a server-side cursor by default. A path that must keep batched streaming opens its connection from a second serverless client with cursor: { batchSize: 100 }; that path hangs behind Cloudflare Hyperdrive. PostgresServerlessCursorOptions is now PostgresCursorOptions, which is { batchSize?: number | undefined } with no disabled flag, so cursor: { disabled: true } no longer compiles and must be deleted."
+      detection:
+          glob: "**/*.{ts,mts,cts,tsx,js,mjs,cjs,jsx}"
+          matches:
+              - '[''"]@prisma/orm-postgres/serverless[''"]'
+    - id: date-time-default-stored-in-canonical-form
+      summary: |
+          A PSL date or time default is stored in `contract.json` in its type's canonical form, however it was written: `@default("2024-01-01T01:00:00+01:00")` on a `DateTime` column is stored as `"2024-01-01T00:00:00Z"`. A default that was not already in that form gets a new storage hash when the contract is re-emitted. The database needs no change: re-emit, then `prisma db sign`, or record an empty migration with `prisma migration new`.
+      detection:
+          glob: "**/*.prisma"
+          matches:
+              - '\b(DateTime|Timestamptz|TimestamptzJsDate|TimestamptzString|Timestamp|TimestampString|Date|DateString|Time|TimeString|Timetz)(\([^)]*\))?(\[\])?\??([ \t]+@[\w.]+(\([^)\n]*\))?)*?[ \t]+@default\([\s\[]*"'
+    - id: date-time-default-refused-text
+      summary: |
+          `prisma contract emit` refuses a date or time default its column's type does not hold, with `PSL_INVALID_DEFAULT_LITERAL`: an offset on `Timestamp`, `Date` or `Time`, no offset on `DateTime`, `Timestamptz` or `Timetz`, a date on a time column, a time on a `Date` column, more than six digits after the decimal point (three on a SQLite `DateTime`), a date or time that does not exist, a year outside the range the type holds, or a ` BC` suffix on a SQLite `DateTime`. The message shows text the column takes.
+      detection:
+          glob: "**/*.prisma"
+          matches:
+              - '\b(DateTime|Timestamptz|TimestamptzJsDate|TimestamptzString|Timestamp|TimestampString|Date|DateString|Time|TimeString|Timetz)(\([^)]*\))?(\[\])?\??([ \t]+@[\w.]+(\([^)\n]*\))?)*?[ \t]+@default\([\s\[]*"'
+    - id: date-time-ts-default-stored-in-canonical-form
+      summary: |
+          In a TypeScript contract, a default on `field.temporal.timestamptzJsDate()`, `field.temporal.timestamptzString()`, `field.temporal.timestampString()`, the SQLite `field.temporal.datetime()`, and the `dateStringColumn`, `timeStringColumn`, `timetzColumn` and SQLite `sqliteDatetimeColumn` helpers is stored in the same canonical form as in PSL: `new Date('2024-01-01T00:00:00Z')` is stored as `"2024-01-01T00:00:00Z"`, not `"2024-01-01T00:00:00.000Z"`. A `Temporal` default with digits below one microsecond is refused. The storage hash changes; re-emit, then sign or migrate as for PSL.
+      detection:
+          glob: "**/*.{ts,mts,cts}"
+          matches:
+              - '\.(timestamptzJsDate|timestamptzString|timestampString|datetime)\([^)]*\)(\s*\.\w+\([^)]*\))*?\s*\.default\('
+              - '\b(timestamptzJsDateColumn|timestamptzStringColumn|timestampStringColumn|dateStringColumn|timeStringColumn|timetzColumn|sqliteDatetimeColumn|datetimeColumn)\b[^\n]*\.default\('
+    - id: mongo-create-returns-stored-document
+      summary: |
+          Mongo `create()` and `createAll()` now return each inserted document as stored, decoded like
+          a read, instead of the input with the new `_id`. The ORM computes it from the document it
+          sent, through the client's BSON options, without a second query. A `Bson` field comes back
+          as a read returns it (a `Long` in the safe-integer range as a number, bytes as `Binary`, a
+          `BSONRegExp` as a `RegExp`), and a nullable field left out comes back as `null`.
+    - id: mongo-reads-decode-includes-value-objects-and-absent-fields
+      summary: |
+          Mongo reads now decode included documents (`include(...)`) and composite-type (value
+          object) fields through their codecs, and a nullable field missing from the stored document
+          reads as `null` instead of `undefined`.
+    - id: mongo-where-filter-expressions-encoded
+      summary: |
+          A filter expression passed to the Mongo ORM's `where()` now encodes its comparison and
+          `$in`/`$nin` values through the field's codec, as the object form of `where()` does, and each
+          element of a whole-list comparison through the element codec. A value the codec refuses,
+          such as a driver `Long` for an `Int64` field (the codec takes a `bigint`) or a fraction for
+          an `Int32` field, fails with `RUNTIME.ENCODE_FAILED`. The object form of `where()` now also
+          refuses a fraction or an out-of-range number for an `Int32` field. This applies to the ORM
+          only: the query builder's `match()` sends values as given.
+      detection:
+          glob: "**/*.{ts,mts,cts}"
+          matches:
+              - '\.where\(\s*(?:MongoFieldFilter|MongoAndExpr|MongoOrExpr|MongoNotExpr)\.'
+    - id: mongo-writes-check-int32-enum-and-null-values
+      summary: |
+          The Mongo ORM refuses, with `RUNTIME.ENCODE_FAILED` naming the field, a write of a fraction
+          or an out-of-range number to an `Int32` field, of a value outside the field's enum, and of
+          `null` to a field that is not nullable. Before, depending on the field's type, the field's
+          codec refused it, a contract with a collection validator got a bare "Document failed
+          validation" from the server, or a contract without one (TypeScript builder, Prisma 6 schema)
+          stored the value. Filters still accept a value outside the enum and `null`, so they can find
+          documents that hold one.
+    - id: mongo-codecs-check-value-types
+      summary: |
+          The Mongo `String`, `Bool`, `Date`, `ObjectId` and vector codecs refuse a value of the wrong
+          type with `RUNTIME.ENCODE_FAILED` naming the field, in writes and filters, as `Int32` and
+          `Double` do. Before, a `null` element in a `String[]`, `Bool[]` or `Date[]` list or a
+          mistyped value was stored as given, an invalid `Date` was stored as the epoch, and `null`,
+          `undefined` or a number for an `ObjectId` field became a new id or a timestamp.
+    - id: mongo-list-elements-encoded
+      summary: |
+          The Mongo ORM encodes each element of a list field through the field's codec, on writes and
+          in filters. An `ObjectId[]`, `Int64[]`, `Decimal128[]` or `Binary[]` field now stores its
+          elements as `ObjectId`, `long`, `decimal` and `binData`, where before the whole list reached
+          the element codec and the write failed with `RUNTIME.ENCODE_FAILED`. A whole number in a
+          `Double[]` field is stored as a `double`.
+    - id: mongo-query-builder-bson-values-match
+      summary: |
+          A query-builder filter or raw command that compares with a driver class such as `ObjectId`,
+          `Long`, `Decimal128` or `Binary` now sends it as that BSON value. Before, the Mongo adapter
+          copied it into a plain object, so the filter matched nothing.
+    - id: mongo-upsert-keeps-create-values
+      summary: |
+          When `create` sets a field that has an update default (`@updatedAt`,
+          `temporal.updatedAt()`, `temporal.timestamp(onUpdate: now)`), `upsert()` now inserts the
+          `create` value, and still applies the update default on update, in one atomic command.
+          Before, the insert got the current time instead. Such an upsert refuses `pull()` by a match
+          document with `ORM.OPERATION_UNSUPPORTED`.
+    - id: contract-source-warnings-are-diagnostics
+      summary: |
+          `prisma contract emit` and `prisma contract print` report contract source warnings, such as
+          `PSL_DEPRECATED_SCALAR_NAME`, as `warn` diagnostics of the result instead of free-text
+          `warning …` messages. With `--json` they are in the result envelope's `diagnostics`. Their
+          file, and the file of a source error from either command, is shown relative to the working
+          directory.
+    - id: mongo-ts-preset-field-not-optional
+      summary: |
+          In a Mongo TypeScript contract, `.optional()` or `.many()` on a field a preset fills, such
+          as `field.temporal.createdAt()`, is now a type error that says "A preset fills this field on
+          write, so it cannot be optional" (or "a list"); it always failed when the contract was built.
+      detection:
+          glob: "**/*.{ts,mts,cts}"
+          matches:
+              - '\btemporal\.(?:createdAt|updatedAt|timestamp)\([^)]*\)\s*\.(?:optional|many)\('
+    - id: contract-artifacts-restamp
+      summary: |
+          The emitted `contract.json` / `contract.d.ts` embed the toolchain version, which moves
+          to 8.0.0-rc.14. Run `contract emit` once after upgrading so the emitted artifacts match
+          the installed toolchain.
+      detection:
+          glob: "**/contract.json"
+          contains:
+              - '"version": "8.0.0-rc.13"'
 ---
 
 # 8.0.0-rc.13 → 8.0.0-rc.14 — User upgrade instructions
@@ -180,21 +180,21 @@ Before:
 export const db = postgresServerless<Contract>({ contractJson });
 
 // src/orm-client/client.ts
-import type { Runtime } from '@prisma/orm-postgres/family-runtime';
-import type { ExecutionContext } from '@prisma/orm-postgres/relational-core/query-lane-context';
-import { db } from '../prisma/db';
+import type { Runtime } from "@prisma/orm-postgres/family-runtime";
+import type { ExecutionContext } from "@prisma/orm-postgres/relational-core/query-lane-context";
+import { db } from "../prisma/db";
 
 const context = db.context as ExecutionContext<Contract>;
 
 export function createOrmClient(runtime: Runtime) {
-  return orm({ runtime, context, collections: { User: UserCollection } }).public;
+    return orm({ runtime, context, collections: { User: UserCollection } }).public;
 }
 
 // src/worker.ts
-import { db } from './prisma/db';
+import { db } from "./prisma/db";
 
 await using runtime = await db.connect({ url: env.HYPERDRIVE.connectionString });
-const rows = await runtime.query(db.sql.public.user.select('id').build());
+const rows = await runtime.query(db.sql.public.user.select("id").build());
 const users = await createOrmClient(runtime).User.newestFirst().all();
 ```
 
@@ -209,26 +209,26 @@ After:
 export const postgres = postgresServerless<Contract>({ contractJson });
 
 // src/orm-client/client.ts
-import { orm } from '@prisma/orm-postgres/orm-client';
-import type { PostgresServerlessConnection } from '@prisma/orm-postgres/serverless';
-import type { Contract } from '../prisma/contract.d';
-import { UserCollection } from './collections';
+import { orm } from "@prisma/orm-postgres/orm-client";
+import type { PostgresServerlessConnection } from "@prisma/orm-postgres/serverless";
+import type { Contract } from "../prisma/contract.d";
+import { UserCollection } from "./collections";
 
 export function createOrmClient(
-  db: Pick<PostgresServerlessConnection<Contract>, 'runtime' | 'context'>,
+    db: Pick<PostgresServerlessConnection<Contract>, "runtime" | "context">,
 ) {
-  return orm({
-    runtime: db.runtime(),
-    context: db.context,
-    collections: { User: UserCollection },
-  }).public;
+    return orm({
+        runtime: db.runtime(),
+        context: db.context,
+        collections: { User: UserCollection },
+    }).public;
 }
 
 // src/worker.ts
-import { postgres } from './prisma/db';
+import { postgres } from "./prisma/db";
 
 await using db = await postgres.connect({ url: env.HYPERDRIVE.connectionString });
-const rows = await db.runtime().query(db.sql.public.user.select('id').build());
+const rows = await db.runtime().query(db.sql.public.user.select("id").build());
 const users = await createOrmClient(db).User.newestFirst().all();
 ```
 
@@ -245,12 +245,17 @@ This change is optional. The connection builds an ORM client and runs transactio
 Before:
 
 ```ts
-import { withTransaction } from '@prisma/orm-postgres/family-runtime';
+import { withTransaction } from "@prisma/orm-postgres/family-runtime";
 
 await using runtime = await db.connect({ url });
 const posts = await orm({ runtime, context }).public.Post.where({ userId }).all();
 await withTransaction(runtime, async (tx) => {
-  await tx.execute(db.sql.public.user.update({ displayName }).where((f, fns) => fns.eq(f.id, userId)).build());
+    await tx.execute(
+        db.sql.public.user
+            .update({ displayName })
+            .where((f, fns) => fns.eq(f.id, userId))
+            .build(),
+    );
 });
 ```
 
@@ -260,7 +265,12 @@ After:
 await using db = await postgres.connect({ url });
 const posts = await db.orm.public.Post.where({ userId }).all();
 await db.transaction(async (tx) => {
-  await tx.execute(db.sql.public.user.update({ displayName }).where((f, fns) => fns.eq(f.id, userId)).build());
+    await tx.execute(
+        db.sql.public.user
+            .update({ displayName })
+            .where((f, fns) => fns.eq(f.id, userId))
+            .build(),
+    );
 });
 ```
 
@@ -294,15 +304,15 @@ export const postgres = postgresServerless<Contract>({ contractJson });
  * result. Reads through its connections hang behind Cloudflare Hyperdrive.
  */
 export const streamingPostgres = postgresServerless<Contract>({
-  contractJson,
-  cursor: { batchSize: 100 },
+    contractJson,
+    cursor: { batchSize: 100 },
 });
 
 // src/worker.ts
-import { postgres, streamingPostgres } from './prisma/db';
+import { postgres, streamingPostgres } from "./prisma/db";
 
 // in fetch
-const routePostgres = url.pathname === '/cursor/large' ? streamingPostgres : postgres;
+const routePostgres = url.pathname === "/cursor/large" ? streamingPostgres : postgres;
 await using db = await routePostgres.connect({ url: env.HYPERDRIVE.connectionString });
 ```
 
@@ -310,8 +320,8 @@ await using db = await routePostgres.connect({ url: env.HYPERDRIVE.connectionStr
 
 ```ts
 import postgresServerless, {
-  type PostgresServerlessCursorOptions,
-} from '@prisma/orm-postgres/serverless';
+    type PostgresServerlessCursorOptions,
+} from "@prisma/orm-postgres/serverless";
 
 const cursor: PostgresServerlessCursorOptions = { disabled: true };
 
@@ -321,7 +331,7 @@ export const postgres = postgresServerless<Contract>({ contractJson, cursor });
 After:
 
 ```ts
-import postgresServerless from '@prisma/orm-postgres/serverless';
+import postgresServerless from "@prisma/orm-postgres/serverless";
 
 export const postgres = postgresServerless<Contract>({ contractJson });
 ```
@@ -330,21 +340,27 @@ export const postgres = postgresServerless<Contract>({ contractJson });
 
 ```ts
 export const streamingPostgres = postgresServerless<Contract>({
-  contractJson,
-  cursor: { disabled: false, batchSize: 50 },
+    contractJson,
+    cursor: { disabled: false, batchSize: 50 },
 });
 ```
 
 After:
 
 ```ts
-export const streamingPostgres = postgresServerless<Contract>({ contractJson, cursor: { batchSize: 50 } });
+export const streamingPostgres = postgresServerless<Contract>({
+    contractJson,
+    cursor: { batchSize: 50 },
+});
 ```
 
 A batch size alone, before and after (unchanged):
 
 ```ts
-export const streamingPostgres = postgresServerless<Contract>({ contractJson, cursor: { batchSize: 100 } });
+export const streamingPostgres = postgresServerless<Contract>({
+    contractJson,
+    cursor: { batchSize: 100 },
+});
 ```
 
 ## `date-time-default-stored-in-canonical-form`
@@ -360,14 +376,14 @@ model Event {
 }
 ```
 
-| Column type | Written | Stored before | Stored now |
-| --- | --- | --- | --- |
-| `DateTime`, `Timestamptz` | `2024-01-01 01:00:00+01` | as written | `2024-01-01T00:00:00Z` (UTC) |
-| `Timestamp` | `2024-01-01 12:34:56.500` | as written | `2024-01-01T12:34:56.5` |
-| `Date` | `0044-03-15 BC` | as written | `-000043-03-15` |
-| `Time` | `12:34` | as written | `12:34:00` |
-| `Timetz` | `12:34:56+02` | as written | `12:34:56+02:00` |
-| SQLite `DateTime` | `2024-01-01 01:00:00+01:00` | as written | `2024-01-01T00:00:00Z` |
+| Column type               | Written                     | Stored before | Stored now                   |
+| ------------------------- | --------------------------- | ------------- | ---------------------------- |
+| `DateTime`, `Timestamptz` | `2024-01-01 01:00:00+01`    | as written    | `2024-01-01T00:00:00Z` (UTC) |
+| `Timestamp`               | `2024-01-01 12:34:56.500`   | as written    | `2024-01-01T12:34:56.5`      |
+| `Date`                    | `0044-03-15 BC`             | as written    | `-000043-03-15`              |
+| `Time`                    | `12:34`                     | as written    | `12:34:00`                   |
+| `Timetz`                  | `12:34:56+02`               | as written    | `12:34:56+02:00`             |
+| SQLite `DateTime`         | `2024-01-01 01:00:00+01:00` | as written    | `2024-01-01T00:00:00Z`       |
 
 A year outside 0000 to 9999 is a sign and six digits, and year 0000 is 1 BC. `prisma contract infer` and `prisma contract print` print a date or time default in the same form.
 
@@ -397,15 +413,15 @@ SQLite cannot change a column's default in place, so new rows keep taking the ol
 Field "Event.localAt": pg/timestamp holds no UTC offset, but "2024-01-01T00:00:00Z" has one. Leave it out, as in "2024-01-01T12:34:56".
 ```
 
-| Refused | Fix |
-| --- | --- |
-| an offset on `Timestamp`, `Date` or `Time` | remove the offset, or make the column `DateTime` if it holds an instant |
-| no offset on `DateTime`, `Timestamptz`, `Timetz` or SQLite `DateTime` | add `Z` for UTC, or the offset, as in `2024-01-01T00:00:00Z` |
-| a time on a `Date` column, or a date on a `Time` or `Timetz` column | remove the part the column does not hold |
-| more than six digits after the decimal point, or more than three on a SQLite `DateTime`, which holds milliseconds | round to six digits or fewer, or three on SQLite |
-| a date or time that does not exist, such as `2024-02-30`, `25:00:00` or `24:00:00` | write a real date or time; for `24:00:00`, write ``@default(sql`'24:00:00'::time`)`` |
-| a date outside the range the column's type holds, such as a date before 24 November 4714 BC on Postgres | write a date inside the range the message names |
-| a ` BC` suffix on a SQLite `DateTime` | write a signed year, as in `-000043-03-15T00:00:00Z` for 44 BC |
+| Refused                                                                                                           | Fix                                                                                  |
+| ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| an offset on `Timestamp`, `Date` or `Time`                                                                        | remove the offset, or make the column `DateTime` if it holds an instant              |
+| no offset on `DateTime`, `Timestamptz`, `Timetz` or SQLite `DateTime`                                             | add `Z` for UTC, or the offset, as in `2024-01-01T00:00:00Z`                         |
+| a time on a `Date` column, or a date on a `Time` or `Timetz` column                                               | remove the part the column does not hold                                             |
+| more than six digits after the decimal point, or more than three on a SQLite `DateTime`, which holds milliseconds | round to six digits or fewer, or three on SQLite                                     |
+| a date or time that does not exist, such as `2024-02-30`, `25:00:00` or `24:00:00`                                | write a real date or time; for `24:00:00`, write ``@default(sql`'24:00:00'::time`)`` |
+| a date outside the range the column's type holds, such as a date before 24 November 4714 BC on Postgres           | write a date inside the range the message names                                      |
+| a ` BC` suffix on a SQLite `DateTime`                                                                             | write a signed year, as in `-000043-03-15T00:00:00Z` for 44 BC                       |
 
 Run `prisma contract emit` after each fix until it succeeds.
 

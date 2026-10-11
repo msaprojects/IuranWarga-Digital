@@ -2,13 +2,13 @@
 from: "0.10"
 to: "0.11"
 changes:
-  - id: insert-single-row-wrap-in-array
-    summary: Wrap single-row `.insert({...})` call sites in an array — `.insert([{...}])`. The single-object overload is removed; `.insert()` now exclusively accepts an array of row objects.
-    detection:
-      glob: "**/*.{ts,tsx}"
-      contains:
-        - ".insert("
-      anyMatch: true
+    - id: insert-single-row-wrap-in-array
+      summary: Wrap single-row `.insert({...})` call sites in an array — `.insert([{...}])`. The single-object overload is removed; `.insert()` now exclusively accepts an array of row objects.
+      detection:
+          glob: "**/*.{ts,tsx}"
+          contains:
+              - ".insert("
+          anyMatch: true
 ---
 
 # 0.10 → 0.11 — User upgrade instructions
@@ -20,13 +20,13 @@ Starting at the 0.11 release, the `.insert()` method on the SQL builder accepts 
 Before 0.11:
 
 ```ts
-await runtime.execute(db.sql.user.insert({ email: 'alice@example.com' }).build());
+await runtime.execute(db.sql.user.insert({ email: "alice@example.com" }).build());
 ```
 
 Starting at 0.11:
 
 ```ts
-await runtime.execute(db.sql.user.insert([{ email: 'alice@example.com' }]).build());
+await runtime.execute(db.sql.user.insert([{ email: "alice@example.com" }]).build());
 ```
 
 Walk every `.ts` / `.tsx` file matched by the `detection.glob` above. For each call site that passes a plain object directly to `.insert(...)`, wrap the argument in an array:
@@ -39,11 +39,11 @@ Variable references to a row object are safe to wrap directly:
 ```ts
 // Before
 for (const item of items) {
-  await runtime.execute(db.sql.table.insert(item).build());
+    await runtime.execute(db.sql.table.insert(item).build());
 }
 // After
 for (const item of items) {
-  await runtime.execute(db.sql.table.insert([item]).build());
+    await runtime.execute(db.sql.table.insert([item]).build());
 }
 ```
 

@@ -17,7 +17,7 @@ const organisasi = {
 
 beforeEach(() => {
     jest.spyOn(orgService, "getByKode").mockImplementation(async (kode) =>
-        kode === organisasi.kode ? organisasi : null
+        kode === organisasi.kode ? organisasi : null,
     );
     jest.spyOn(orgService, "create").mockResolvedValue(organisasi);
     jest.spyOn(orgService, "updateByKode").mockResolvedValue(organisasi);
@@ -88,7 +88,7 @@ describe("Organisasi API", () => {
 
     it("seharusnya tidak membocorkan detail error internal", async () => {
         jest.spyOn(orgService, "getByKode").mockRejectedValue(
-            new Error("database credentials must not be exposed")
+            new Error("database credentials must not be exposed"),
         );
         jest.spyOn(console, "error").mockImplementation(() => undefined);
 
@@ -126,9 +126,7 @@ describe("Organisasi API", () => {
     });
 
     it("seharusnya menolak pembuatan organisasi dengan body tidak valid", async () => {
-        const response = await request(app)
-            .post("/api/organisasi")
-            .send({ kode: "ORG001" });
+        const response = await request(app).post("/api/organisasi").send({ kode: "ORG001" });
 
         expect(response.status).toBe(400);
         expect(orgService.create).not.toHaveBeenCalled();
@@ -146,9 +144,7 @@ describe("Organisasi API", () => {
     });
 
     it("seharusnya menolak update kosong", async () => {
-        const response = await request(app)
-            .patch("/api/organisasi/ORG001")
-            .send({});
+        const response = await request(app).patch("/api/organisasi/ORG001").send({});
 
         expect(response.status).toBe(400);
         expect(orgService.updateByKode).not.toHaveBeenCalled();

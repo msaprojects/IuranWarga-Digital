@@ -2,61 +2,61 @@
 from: "8.0.0-rc.9"
 to: "8.0.0-rc.10"
 changes:
-  - id: schema-header-use-prisma-8
-    summary: |
-      The schema header that marks a Prisma 8 schema is now `// use prisma-8`. The language server
-      still serves the old header and its Format action rewrites it; new schemas and the
-      inferred-schema printer write the new form. Replace `// use prisma-next`
-      at the top of every `.prisma` file.
-    detection:
-      glob: "**/*.prisma"
-      contains:
-        - "// use prisma-next"
-  - id: env-vars-drop-next-infix
-    summary: |
-      The CLI environment variables lost their `NEXT_` infix: `PRISMA_NEXT_DISABLE_TELEMETRY`,
-      `PRISMA_NEXT_TELEMETRY_ENDPOINT`, `PRISMA_NEXT_DEBUG`, and the rest are now
-      `PRISMA_DISABLE_TELEMETRY`, `PRISMA_TELEMETRY_ENDPOINT`, `PRISMA_DEBUG`, and so on. The old
-      `PRISMA_NEXT_DISABLE_TELEMETRY` opt-out is still honoured; the others are not. Rename them
-      in shell profiles, `.env` files, and CI configuration. The per-user telemetry config also moved
-      from `~/.config/prisma-next/` to `~/.config/prisma-8/`, so the consent prompt runs once more.
-    detection:
-      glob: "**/*"
-      contains:
-        - "PRISMA_NEXT_"
-  - id: primer-file-prisma-8-md
-    summary: |
-      The quick-reference primer `init` writes at the project root is now `prisma-8.md`. Rename the
-      existing `prisma-next.md` and update any README or agent instruction that points at it.
-    detection:
-      glob: "**/prisma-next.md"
-      contains:
-        - "#"
-  - id: to-one-relations-record-nullable
-    summary: |
-      Every `1:1` and `N:1` relation in `contract.json` now carries a `nullable` boolean. A
-      contract without it still loads, with the flag derived from the foreign-key columns (or
-      fields), but its `contract.d.ts` lacks the `Models` namespace. Re-run
-      `prisma contract emit` so the emitted `contract.json` / `contract.d.ts` match the installed
-      toolchain.
-    detection:
-      glob: "**/contract.json"
-      matches:
-        - '"cardinality":\s*"(?:N:1|1:1)",\s*"on":'
-  - id: reemit-supabase-extension-version
-    summary: |
-      Contracts that use the Supabase extension carry its package version in their extension
-      metadata. Re-emit them after upgrading so `contract.json` and `contract.d.ts` say
-      `8.0.0-rc.10` instead of `8.0.0-rc.9`.
-    detection:
-      glob: "**/contract.json"
-      contains:
-        - '"id": "supabase"'
-  - id: contract-dts-exports-models
-    summary: |
-      `contract.d.ts` now exports a `Models` namespace and a `models` constant that name every
-      model with its fields and relations. The re-emit above produces them; use them with
-      `Scalars` and `Shape` to name row types without a client in scope.
+    - id: schema-header-use-prisma-8
+      summary: |
+          The schema header that marks a Prisma 8 schema is now `// use prisma-8`. The language server
+          still serves the old header and its Format action rewrites it; new schemas and the
+          inferred-schema printer write the new form. Replace `// use prisma-next`
+          at the top of every `.prisma` file.
+      detection:
+          glob: "**/*.prisma"
+          contains:
+              - "// use prisma-next"
+    - id: env-vars-drop-next-infix
+      summary: |
+          The CLI environment variables lost their `NEXT_` infix: `PRISMA_NEXT_DISABLE_TELEMETRY`,
+          `PRISMA_NEXT_TELEMETRY_ENDPOINT`, `PRISMA_NEXT_DEBUG`, and the rest are now
+          `PRISMA_DISABLE_TELEMETRY`, `PRISMA_TELEMETRY_ENDPOINT`, `PRISMA_DEBUG`, and so on. The old
+          `PRISMA_NEXT_DISABLE_TELEMETRY` opt-out is still honoured; the others are not. Rename them
+          in shell profiles, `.env` files, and CI configuration. The per-user telemetry config also moved
+          from `~/.config/prisma-next/` to `~/.config/prisma-8/`, so the consent prompt runs once more.
+      detection:
+          glob: "**/*"
+          contains:
+              - "PRISMA_NEXT_"
+    - id: primer-file-prisma-8-md
+      summary: |
+          The quick-reference primer `init` writes at the project root is now `prisma-8.md`. Rename the
+          existing `prisma-next.md` and update any README or agent instruction that points at it.
+      detection:
+          glob: "**/prisma-next.md"
+          contains:
+              - "#"
+    - id: to-one-relations-record-nullable
+      summary: |
+          Every `1:1` and `N:1` relation in `contract.json` now carries a `nullable` boolean. A
+          contract without it still loads, with the flag derived from the foreign-key columns (or
+          fields), but its `contract.d.ts` lacks the `Models` namespace. Re-run
+          `prisma contract emit` so the emitted `contract.json` / `contract.d.ts` match the installed
+          toolchain.
+      detection:
+          glob: "**/contract.json"
+          matches:
+              - '"cardinality":\s*"(?:N:1|1:1)",\s*"on":'
+    - id: reemit-supabase-extension-version
+      summary: |
+          Contracts that use the Supabase extension carry its package version in their extension
+          metadata. Re-emit them after upgrading so `contract.json` and `contract.d.ts` say
+          `8.0.0-rc.10` instead of `8.0.0-rc.9`.
+      detection:
+          glob: "**/contract.json"
+          contains:
+              - '"id": "supabase"'
+    - id: contract-dts-exports-models
+      summary: |
+          `contract.d.ts` now exports a `Models` namespace and a `models` constant that name every
+          model with its fields and relations. The re-emit above produces them; use them with
+          `Scalars` and `Shape` to name row types without a client in scope.
 ---
 
 ## `to-one-relations-record-nullable`

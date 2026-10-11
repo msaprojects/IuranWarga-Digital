@@ -76,183 +76,183 @@
  *   --check   dry-run; lists affected files and exits 1 if any still
  *             need fixing.
  */
-import { readdir, readFile, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { readdir, readFile, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 
-const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build']);
-const CONTRACT_FILES = new Set(['start-contract.json', 'end-contract.json']);
+const SKIP_DIRS = new Set(["node_modules", ".git", "dist", "build"]);
+const CONTRACT_FILES = new Set(["start-contract.json", "end-contract.json"]);
 
-const POSTGRES_ENUM_CODEC_ID = 'pg/enum@1';
+const POSTGRES_ENUM_CODEC_ID = "pg/enum@1";
 
-const dryRun = process.argv.includes('--check');
+const dryRun = process.argv.includes("--check");
 const projectRoot = process.cwd();
 
 interface Result {
-  readonly path: string;
-  readonly status: 'already-clean' | 'needs-fix' | 'fixed';
-  readonly stamped: number;
+    readonly path: string;
+    readonly status: "already-clean" | "needs-fix" | "fixed";
+    readonly stamped: number;
 }
 
 async function findContractSnapshots(root: string): Promise<string[]> {
-  const out: string[] = [];
+    const out: string[] = [];
 
-  // The `inMigrations` flag confines snapshot rewrites to the
-  // `migrations/` subtree the doc promises. Without the flag the walk
-  // would happily stamp any `start-contract.json` / `end-contract.json`
-  // found anywhere under the project root, including non-migration
-  // fixtures (e.g. inline contract test snapshots).
-  async function walk(dir: string, inMigrations: boolean): Promise<void> {
-    let entries: Awaited<ReturnType<typeof readdir>>;
-    try {
-      entries = await readdir(dir, { withFileTypes: true });
-    } catch {
-      // Unreadable directory — skip silently. Mirrors the predecessor
-      // 0.8→0.9 codemod's failure-tolerant walk; the user's project
-      // root may legitimately contain restricted directories.
-      return;
+    // The `inMigrations` flag confines snapshot rewrites to the
+    // `migrations/` subtree the doc promises. Without the flag the walk
+    // would happily stamp any `start-contract.json` / `end-contract.json`
+    // found anywhere under the project root, including non-migration
+    // fixtures (e.g. inline contract test snapshots).
+    async function walk(dir: string, inMigrations: boolean): Promise<void> {
+        let entries: Awaited<ReturnType<typeof readdir>>;
+        try {
+            entries = await readdir(dir, { withFileTypes: true });
+        } catch {
+            // Unreadable directory — skip silently. Mirrors the predecessor
+            // 0.8→0.9 codemod's failure-tolerant walk; the user's project
+            // root may legitimately contain restricted directories.
+            return;
+        }
+        for (const entry of entries) {
+            if (entry.isDirectory()) {
+                if (SKIP_DIRS.has(entry.name)) continue;
+                await walk(join(dir, entry.name), inMigrations || entry.name === "migrations");
+            } else if (inMigrations && entry.isFile() && CONTRACT_FILES.has(entry.name)) {
+                out.push(join(dir, entry.name));
+            }
+        }
     }
-    for (const entry of entries) {
-      if (entry.isDirectory()) {
-        if (SKIP_DIRS.has(entry.name)) continue;
-        await walk(join(dir, entry.name), inMigrations || entry.name === 'migrations');
-      } else if (inMigrations && entry.isFile() && CONTRACT_FILES.has(entry.name)) {
-        out.push(join(dir, entry.name));
-      }
-    }
-  }
 
-  await walk(root, false);
-  return out.sort();
+    await walk(root, false);
+    return out.sort();
 }
 
 interface UntaggedCodecTriple {
-  readonly codecId: string;
-  readonly nativeType: string;
-  readonly typeParams: Record<string, unknown>;
+    readonly codecId: string;
+    readonly nativeType: string;
+    readonly typeParams: Record<string, unknown>;
 }
 
 interface StampedCodecInstance {
-  readonly kind: 'codec-instance';
-  readonly codecId: string;
-  readonly nativeType: string;
-  readonly typeParams: Record<string, unknown>;
+    readonly kind: "codec-instance";
+    readonly codecId: string;
+    readonly nativeType: string;
+    readonly typeParams: Record<string, unknown>;
 }
 
 interface StampedPostgresEnum {
-  readonly kind: 'postgres-enum';
-  readonly name: string;
-  readonly nativeType: string;
-  readonly values: readonly string[];
-  readonly codecId: string;
+    readonly kind: "postgres-enum";
+    readonly name: string;
+    readonly nativeType: string;
+    readonly values: readonly string[];
+    readonly codecId: string;
 }
 
 type StampedEntry = StampedCodecInstance | StampedPostgresEnum;
 
 function isAlreadyStamped(value: unknown): boolean {
-  if (typeof value !== 'object' || value === null) return false;
-  const kind = (value as { kind?: unknown }).kind;
-  return kind === 'codec-instance' || kind === 'postgres-enum';
+    if (typeof value !== "object" || value === null) return false;
+    const kind = (value as { kind?: unknown }).kind;
+    return kind === "codec-instance" || kind === "postgres-enum";
 }
 
 function looksLikeUntaggedCodecTriple(value: unknown): value is UntaggedCodecTriple {
-  if (typeof value !== 'object' || value === null) return false;
-  const obj = value as Record<string, unknown>;
-  if (
-    typeof obj['codecId'] !== 'string' ||
-    typeof obj['nativeType'] !== 'string' ||
-    typeof obj['typeParams'] !== 'object' ||
-    obj['typeParams'] === null
-  ) {
-    return false;
-  }
-  // A `pg/enum@1` triple is only recognisable as an untagged enum if its
-  // `typeParams.values` is already a string[]. Without this guard a
-  // malformed enum entry would slip through the classifier and surface
-  // a different (more specific) diagnostic from `stampEntry` than the
-  // outer "neither stamped nor untagged-triple — hand-edit required"
-  // throw. Folding that case into the predicate gives every malformed
-  // entry the same single diagnostic shape.
-  if (obj['codecId'] === POSTGRES_ENUM_CODEC_ID) {
-    const values = (obj['typeParams'] as { values?: unknown })['values'];
-    if (!Array.isArray(values) || !values.every((v) => typeof v === 'string')) {
-      return false;
+    if (typeof value !== "object" || value === null) return false;
+    const obj = value as Record<string, unknown>;
+    if (
+        typeof obj["codecId"] !== "string" ||
+        typeof obj["nativeType"] !== "string" ||
+        typeof obj["typeParams"] !== "object" ||
+        obj["typeParams"] === null
+    ) {
+        return false;
     }
-  }
-  return true;
+    // A `pg/enum@1` triple is only recognisable as an untagged enum if its
+    // `typeParams.values` is already a string[]. Without this guard a
+    // malformed enum entry would slip through the classifier and surface
+    // a different (more specific) diagnostic from `stampEntry` than the
+    // outer "neither stamped nor untagged-triple — hand-edit required"
+    // throw. Folding that case into the predicate gives every malformed
+    // entry the same single diagnostic shape.
+    if (obj["codecId"] === POSTGRES_ENUM_CODEC_ID) {
+        const values = (obj["typeParams"] as { values?: unknown })["values"];
+        if (!Array.isArray(values) || !values.every((v) => typeof v === "string")) {
+            return false;
+        }
+    }
+    return true;
 }
 
 function stampEntry(name: string, raw: UntaggedCodecTriple): StampedEntry {
-  if (raw.codecId === POSTGRES_ENUM_CODEC_ID) {
-    const values = (raw.typeParams as { values?: unknown })['values'];
-    // Invariant: `looksLikeUntaggedCodecTriple` already gated this — a
-    // `pg/enum@1` entry that reaches `stampEntry` has a string[]
-    // `typeParams.values`. The runtime check stays as a defensive
-    // marker so a future loosening of the predicate doesn't silently
-    // produce a malformed StampedPostgresEnum.
-    if (!Array.isArray(values) || !values.every((v) => typeof v === 'string')) {
-      throw new Error(
-        `invariant: storage.types[${JSON.stringify(name)}] reached stampEntry with codecId="${POSTGRES_ENUM_CODEC_ID}" but typeParams.values is not a string[]; the classifier should have rejected this entry`,
-      );
+    if (raw.codecId === POSTGRES_ENUM_CODEC_ID) {
+        const values = (raw.typeParams as { values?: unknown })["values"];
+        // Invariant: `looksLikeUntaggedCodecTriple` already gated this — a
+        // `pg/enum@1` entry that reaches `stampEntry` has a string[]
+        // `typeParams.values`. The runtime check stays as a defensive
+        // marker so a future loosening of the predicate doesn't silently
+        // produce a malformed StampedPostgresEnum.
+        if (!Array.isArray(values) || !values.every((v) => typeof v === "string")) {
+            throw new Error(
+                `invariant: storage.types[${JSON.stringify(name)}] reached stampEntry with codecId="${POSTGRES_ENUM_CODEC_ID}" but typeParams.values is not a string[]; the classifier should have rejected this entry`,
+            );
+        }
+        return {
+            kind: "postgres-enum",
+            name,
+            nativeType: raw.nativeType,
+            values,
+            codecId: raw.codecId,
+        };
     }
     return {
-      kind: 'postgres-enum',
-      name,
-      nativeType: raw.nativeType,
-      values,
-      codecId: raw.codecId,
+        kind: "codec-instance",
+        codecId: raw.codecId,
+        nativeType: raw.nativeType,
+        typeParams: raw.typeParams,
     };
-  }
-  return {
-    kind: 'codec-instance',
-    codecId: raw.codecId,
-    nativeType: raw.nativeType,
-    typeParams: raw.typeParams,
-  };
 }
 
 interface ProcessOutcome {
-  readonly transformed: Record<string, unknown> | null;
-  readonly stamped: number;
+    readonly transformed: Record<string, unknown> | null;
+    readonly stamped: number;
 }
 
 function processContract(parsed: unknown, filePath: string): ProcessOutcome {
-  if (typeof parsed !== 'object' || parsed === null) {
-    return { transformed: null, stamped: 0 };
-  }
-  const root = parsed as Record<string, unknown>;
-  const storage = root['storage'];
-  if (typeof storage !== 'object' || storage === null) {
-    return { transformed: null, stamped: 0 };
-  }
-  const storageObj = storage as Record<string, unknown>;
-  const types = storageObj['types'];
-  if (typeof types !== 'object' || types === null) {
-    return { transformed: null, stamped: 0 };
-  }
-  const typesObj = types as Record<string, unknown>;
-
-  let stamped = 0;
-  const newTypes: Record<string, unknown> = {};
-  for (const [name, entry] of Object.entries(typesObj)) {
-    if (isAlreadyStamped(entry)) {
-      newTypes[name] = entry;
-      continue;
+    if (typeof parsed !== "object" || parsed === null) {
+        return { transformed: null, stamped: 0 };
     }
-    if (!looksLikeUntaggedCodecTriple(entry)) {
-      throw new Error(
-        `${filePath}: storage.types[${JSON.stringify(name)}] is neither a stamped entry nor an untagged codec triple — refusing to guess. Hand-edit required.`,
-      );
+    const root = parsed as Record<string, unknown>;
+    const storage = root["storage"];
+    if (typeof storage !== "object" || storage === null) {
+        return { transformed: null, stamped: 0 };
     }
-    newTypes[name] = stampEntry(name, entry);
-    stamped += 1;
-  }
+    const storageObj = storage as Record<string, unknown>;
+    const types = storageObj["types"];
+    if (typeof types !== "object" || types === null) {
+        return { transformed: null, stamped: 0 };
+    }
+    const typesObj = types as Record<string, unknown>;
 
-  if (stamped === 0) return { transformed: null, stamped: 0 };
+    let stamped = 0;
+    const newTypes: Record<string, unknown> = {};
+    for (const [name, entry] of Object.entries(typesObj)) {
+        if (isAlreadyStamped(entry)) {
+            newTypes[name] = entry;
+            continue;
+        }
+        if (!looksLikeUntaggedCodecTriple(entry)) {
+            throw new Error(
+                `${filePath}: storage.types[${JSON.stringify(name)}] is neither a stamped entry nor an untagged codec triple — refusing to guess. Hand-edit required.`,
+            );
+        }
+        newTypes[name] = stampEntry(name, entry);
+        stamped += 1;
+    }
 
-  return {
-    transformed: { ...root, storage: { ...storageObj, types: newTypes } },
-    stamped,
-  };
+    if (stamped === 0) return { transformed: null, stamped: 0 };
+
+    return {
+        transformed: { ...root, storage: { ...storageObj, types: newTypes } },
+        stamped,
+    };
 }
 
 /**
@@ -272,89 +272,89 @@ function processContract(parsed: unknown, filePath: string): ProcessOutcome {
 const INLINE_ARRAY_THRESHOLD = 80;
 
 function isPrimitive(value: unknown): boolean {
-  return (
-    value === null ||
-    typeof value === 'string' ||
-    typeof value === 'number' ||
-    typeof value === 'boolean'
-  );
+    return (
+        value === null ||
+        typeof value === "string" ||
+        typeof value === "number" ||
+        typeof value === "boolean"
+    );
 }
 
 function formatJson(value: unknown, indentLevel = 0): string {
-  const indent = '  '.repeat(indentLevel);
-  const childIndent = '  '.repeat(indentLevel + 1);
+    const indent = "  ".repeat(indentLevel);
+    const childIndent = "  ".repeat(indentLevel + 1);
 
-  if (value === null) return 'null';
-  if (typeof value === 'string') return JSON.stringify(value);
-  if (typeof value === 'number' || typeof value === 'boolean') return JSON.stringify(value);
+    if (value === null) return "null";
+    if (typeof value === "string") return JSON.stringify(value);
+    if (typeof value === "number" || typeof value === "boolean") return JSON.stringify(value);
 
-  if (Array.isArray(value)) {
-    if (value.length === 0) return '[]';
-    if (value.every(isPrimitive)) {
-      const inline = `[${value.map((v) => JSON.stringify(v)).join(', ')}]`;
-      if (inline.length <= INLINE_ARRAY_THRESHOLD) return inline;
+    if (Array.isArray(value)) {
+        if (value.length === 0) return "[]";
+        if (value.every(isPrimitive)) {
+            const inline = `[${value.map((v) => JSON.stringify(v)).join(", ")}]`;
+            if (inline.length <= INLINE_ARRAY_THRESHOLD) return inline;
+        }
+        const items = value.map((v) => `${childIndent}${formatJson(v, indentLevel + 1)}`);
+        return `[\n${items.join(",\n")}\n${indent}]`;
     }
-    const items = value.map((v) => `${childIndent}${formatJson(v, indentLevel + 1)}`);
-    return `[\n${items.join(',\n')}\n${indent}]`;
-  }
 
-  if (typeof value === 'object') {
-    const entries = Object.entries(value as Record<string, unknown>);
-    if (entries.length === 0) return '{}';
-    const lines = entries.map(
-      ([k, v]) => `${childIndent}${JSON.stringify(k)}: ${formatJson(v, indentLevel + 1)}`,
-    );
-    return `{\n${lines.join(',\n')}\n${indent}}`;
-  }
+    if (typeof value === "object") {
+        const entries = Object.entries(value as Record<string, unknown>);
+        if (entries.length === 0) return "{}";
+        const lines = entries.map(
+            ([k, v]) => `${childIndent}${JSON.stringify(k)}: ${formatJson(v, indentLevel + 1)}`,
+        );
+        return `{\n${lines.join(",\n")}\n${indent}}`;
+    }
 
-  throw new Error(`Unsupported value: ${typeof value}`);
+    throw new Error(`Unsupported value: ${typeof value}`);
 }
 
 async function processFile(path: string): Promise<Result> {
-  const raw = await readFile(path, 'utf-8');
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch (error) {
-    throw new Error(
-      `${path}: not valid JSON (${error instanceof Error ? error.message : String(error)})`,
-    );
-  }
-  const outcome = processContract(parsed, path);
-  if (outcome.transformed === null) {
-    return { path, status: 'already-clean', stamped: 0 };
-  }
-  const serialised = `${formatJson(outcome.transformed)}\n`;
-  if (!dryRun) await writeFile(path, serialised, 'utf-8');
-  return { path, status: dryRun ? 'needs-fix' : 'fixed', stamped: outcome.stamped };
+    const raw = await readFile(path, "utf-8");
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(raw);
+    } catch (error) {
+        throw new Error(
+            `${path}: not valid JSON (${error instanceof Error ? error.message : String(error)})`,
+        );
+    }
+    const outcome = processContract(parsed, path);
+    if (outcome.transformed === null) {
+        return { path, status: "already-clean", stamped: 0 };
+    }
+    const serialised = `${formatJson(outcome.transformed)}\n`;
+    if (!dryRun) await writeFile(path, serialised, "utf-8");
+    return { path, status: dryRun ? "needs-fix" : "fixed", stamped: outcome.stamped };
 }
 
 const contracts = await findContractSnapshots(projectRoot);
 if (contracts.length === 0) {
-  console.error(`No start-contract.json / end-contract.json files found under ${projectRoot}.`);
-  process.exit(1);
+    console.error(`No start-contract.json / end-contract.json files found under ${projectRoot}.`);
+    process.exit(1);
 }
 
 let changed = 0;
 let alreadyClean = 0;
 let totalStamped = 0;
 for (const path of contracts) {
-  const result = await processFile(path);
-  const rel = path.slice(projectRoot.length + 1);
-  if (result.status === 'already-clean') {
-    alreadyClean += 1;
-    console.log(`OK    ${rel}  (already stamped or no storage.types)`);
-  } else {
-    changed += 1;
-    totalStamped += result.stamped;
-    const verb = dryRun ? 'WOULD FIX' : 'FIXED';
-    console.log(`${verb} ${rel}  (stamped ${result.stamped} entry/entries)`);
-  }
+    const result = await processFile(path);
+    const rel = path.slice(projectRoot.length + 1);
+    if (result.status === "already-clean") {
+        alreadyClean += 1;
+        console.log(`OK    ${rel}  (already stamped or no storage.types)`);
+    } else {
+        changed += 1;
+        totalStamped += result.stamped;
+        const verb = dryRun ? "WOULD FIX" : "FIXED";
+        console.log(`${verb} ${rel}  (stamped ${result.stamped} entry/entries)`);
+    }
 }
 
 console.log();
 console.log(
-  `${contracts.length} snapshot(s) scanned: ${changed} ${dryRun ? 'needing fix' : 'fixed'} (${totalStamped} entries), ${alreadyClean} already clean.`,
+    `${contracts.length} snapshot(s) scanned: ${changed} ${dryRun ? "needing fix" : "fixed"} (${totalStamped} entries), ${alreadyClean} already clean.`,
 );
 
 if (dryRun && changed > 0) process.exit(1);

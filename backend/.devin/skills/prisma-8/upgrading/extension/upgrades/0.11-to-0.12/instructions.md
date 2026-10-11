@@ -2,86 +2,86 @@
 from: "0.11"
 to: "0.12"
 changes:
-  - id: expr-visitor-add-window-func-method
-    summary: |
-      The `ExprVisitor<R>` interface in `@internal/sql-relational-core/ast` gained a required `windowFunc(expr: WindowFuncExpr): R` method (added to support `ROW_NUMBER() OVER (…)` lowering for `.distinct(cols)`). Every `ExprVisitor<R>` implementation in your extension — typically the object literal you pass to `expr.accept({ … })` — must add the new method or TypeScript will refuse the literal. The right body depends on what the visitor does: binding/encoding/transforming visitors usually treat `WindowFuncExpr` similarly to `AggregateExpr`; visitors that reject unsupported kinds in restricted contexts (e.g. grouped `HAVING`) should reject window functions there too. No automated codemod — author the body per visitor by hand.
-    detection:
-      glob: "**/*.ts"
-      contains:
-        - "ExprVisitor"
-        - "aggregate"
-      anyMatch: false
-  - id: any-expression-exhaustive-switch-add-window-func-case
-    summary: |
-      The `AnyExpression` discriminated union in `@internal/sql-relational-core/ast` gained a `WindowFuncExpr` variant (`kind: 'window-func'`). Exhaustive switches over `expr.kind` that use the `satisfies never` exhaustiveness pattern — typically in SQL renderers, AST walkers, and analysis passes — will fail to compile until they add a `case 'window-func':` arm. The arm's body depends on the switch's purpose; the most common shape is "render the window function as `fn() OVER (…)`" (matching Postgres/SQLite syntax) or "reject as unsupported in this context".
-    detection:
-      glob: "**/*.ts"
-      contains:
-        - "case 'aggregate':"
-        - "satisfies never"
-      anyMatch: false
-  - id: distinct-cols-now-collapses-by-specified-columns
-    summary: |
-      `.distinct(cols)` on `@internal/sql-orm-client` `Collection` (and on nested `.include(…, c => c.distinct(cols)…)`) now keeps **one representative row per `(cols)` group**, matching Prisma semantics. Prior to 0.12, `.distinct(cols)` did not actually collapse rows on the specified columns — when the projection contained any other distinguishing column (typically `id`), rows that differed only in those other columns were all returned. No code change is required for consumer call sites, but any extension tests or fixtures that asserted the pre-0.12 no-collapse output will fail and need updating to reflect the new collapsed shape. The representative within each partition is picked by the user's `.orderBy(…)` (if any); when the orderBy doesn't fully order rows in a partition the pick is implementation-defined, matching Prisma's documented behaviour.
-    detection:
-      glob: "**/*.{ts,tsx}"
-      contains:
-        - ".distinct("
-      anyMatch: true
-  - id: replace-runtime-verify-options-with-verify-marker
-    summary: |
-      The `@internal/sql-runtime` export `RuntimeVerifyOptions` is removed; replaced by `VerifyMarkerOption = 'onFirstUse' | false`. Extension convenience wrappers that expose a `*OptionsBase` interface must rename `verify?: RuntimeVerifyOptions` to `verifyMarker?: VerifyMarkerOption`, drop the hard-coded `verify: { mode: 'onFirstUse', requireMarker: false }` default in the wrapper's `createRuntime(...)` call, and thread the caller's value through via `...ifDefined('verifyMarker', options.verifyMarker)` so the runtime's own default (`'onFirstUse'`) applies when the option is omitted. The runtime no longer throws `CONTRACT.MARKER_MISMATCH` / `CONTRACT.MARKER_MISSING` on drift — it emits a structured `warn`-level log line once per runtime instance (single-flighted under concurrent first queries) and proceeds.
-    detection:
-      glob: "**/*.ts"
-      contains:
-        - "RuntimeVerifyOptions"
-        - "verify: {"
-      anyMatch: true
-  - id: define-contract-drop-capabilities-generic
-    summary: |
-      The `Capabilities` type parameter is removed from the framework `baseDefineContract` factory and from `ContractInput` in `@internal/contract`. Extension authors who ship their own target-facade-style `defineContract` (a thin wrapper that re-exports `baseDefineContract` with `family` / `target` pre-bound) must drop the `Capabilities` generic from every facade type alias (`*Result`, `*BaseScaffold`, `*Definition`, `*Scaffold`) and from every overload signature; the corresponding `ContractInput<…, Capabilities>` and `baseDefineContract<…, Capabilities>` instantiations lose their trailing argument. Extensions that don't ship a facade have no source change — their emitted `contract.json` / `contract.d.ts` will pick up two new auto-contributed capabilities (`postgres.distinctOn`, `sql.lateral`) on re-emit; re-run `pnpm fixtures:emit` (or the equivalent for your extension) to refresh fixtures.
-    detection:
-      glob: "**/*.ts"
-      contains:
-        - "baseDefineContract"
-        - "Capabilities"
-      anyMatch: false
-  - id: strip-migration-labels-hints
-    summary: |
-      The 0.12 migration manifest schema is closed (`'+': 'reject'`) and the metadata model no longer carries `labels` or `hints`; any on-disk `migration.json` your extension ships (e.g. an install-extension migration under `migrations/`) still holding either key fails to load with `INVALID_MANIFEST` naming the offending key. Both fields are also dropped from the content-addressed migration identity, so `migrationHash` is now computed over `{ from, to, providedInvariants, createdAt }` plus the sibling `ops.json`. Run the colocated codemod to strip both keys from every `migration.json` and recompute its `migrationHash` over the slimmed envelope.
-    detection:
-      glob: "**/migration.json"
-      contains:
-        - '"labels"'
-        - '"hints"'
-      anyMatch: true
-    script: ./strip-migration-labels-hints.ts
-  - id: extension-public-default-baseline
-    summary: |
-      Published Postgres extension packs' empty default namespace flips `__unbound__` → `public` (`postgres-unbound-schema` → `postgres-schema`), changing the extension's `storageHash`, `migrations/refs/head.json` hash, and each baseline `migration.json` `to` / `migrationHash`. Migration ops are unchanged. Re-emit the contract-space (`pnpm build:contract-space` / `prisma-next contract emit`) and regenerate the install migration baseline so the head ref matches the new contract hash.
-    detection:
-      glob: "**/contract.json"
-      contains:
-        - '"kind": "postgres-unbound-schema"'
-      anyMatch: true
-    script: ./regenerate-extension-public-baseline.ts
-  - id: domain-plane-spi-and-testing-subpath
-    summary: |
-      Contract SPI is namespaced: read models/value objects through `contract.domain.namespaces.<ns>` (helpers: `domainModelsAtDefaultNamespace(contract.domain)`, `ContractModelDefinitions`) instead of flat `contract.models`. The `@internal/contract/testing` subpath export was removed — test factories (`createContract`, `createSqlContract`, `DUMMY_HASH`, `applicationDomainOf`) now live in `@repo/test-utils`. Run the colocated import codemod and update SPI consumption to the namespaced contract shape.
-    detection:
-      glob: "**/*.{ts,tsx}"
-      contains:
-        - "@internal/contract/testing"
-      anyMatch: true
-    script: ./migrate-contract-testing-imports.ts
-  - id: default-namespace-domain-access-retire-projection-helpers
-    summary: |
-      The transitional `@internal/contract` helpers `contractModels`, `contractValueObjects`, `resolveSingleDomainNamespaceId`, `ContractModelsMap`, and `ContractValueObjectsMap` are removed. Read models/value objects through `domainModelsAtDefaultNamespace(contract.domain)` / `domainValueObjectsAtDefaultNamespace(contract.domain)` (these read the contract's sole namespace and throw on a multi-namespace contract). Typed model shapes use `ContractModelDefinitions<Contract>`. SQL namespace concretions must expose `qualifyTable`; hydrate migration scaffolds with `PostgresContractSerializer` (not `structuredClone`) so `qualifyTable` survives. Runtime SQL is namespace-qualified on Postgres.
-    detection:
-      glob: "**/*.{ts,tsx}"
-      contains:
-        - "contractModels"
-      anyMatch: true
+    - id: expr-visitor-add-window-func-method
+      summary: |
+          The `ExprVisitor<R>` interface in `@internal/sql-relational-core/ast` gained a required `windowFunc(expr: WindowFuncExpr): R` method (added to support `ROW_NUMBER() OVER (…)` lowering for `.distinct(cols)`). Every `ExprVisitor<R>` implementation in your extension — typically the object literal you pass to `expr.accept({ … })` — must add the new method or TypeScript will refuse the literal. The right body depends on what the visitor does: binding/encoding/transforming visitors usually treat `WindowFuncExpr` similarly to `AggregateExpr`; visitors that reject unsupported kinds in restricted contexts (e.g. grouped `HAVING`) should reject window functions there too. No automated codemod — author the body per visitor by hand.
+      detection:
+          glob: "**/*.ts"
+          contains:
+              - "ExprVisitor"
+              - "aggregate"
+          anyMatch: false
+    - id: any-expression-exhaustive-switch-add-window-func-case
+      summary: |
+          The `AnyExpression` discriminated union in `@internal/sql-relational-core/ast` gained a `WindowFuncExpr` variant (`kind: 'window-func'`). Exhaustive switches over `expr.kind` that use the `satisfies never` exhaustiveness pattern — typically in SQL renderers, AST walkers, and analysis passes — will fail to compile until they add a `case 'window-func':` arm. The arm's body depends on the switch's purpose; the most common shape is "render the window function as `fn() OVER (…)`" (matching Postgres/SQLite syntax) or "reject as unsupported in this context".
+      detection:
+          glob: "**/*.ts"
+          contains:
+              - "case 'aggregate':"
+              - "satisfies never"
+          anyMatch: false
+    - id: distinct-cols-now-collapses-by-specified-columns
+      summary: |
+          `.distinct(cols)` on `@internal/sql-orm-client` `Collection` (and on nested `.include(…, c => c.distinct(cols)…)`) now keeps **one representative row per `(cols)` group**, matching Prisma semantics. Prior to 0.12, `.distinct(cols)` did not actually collapse rows on the specified columns — when the projection contained any other distinguishing column (typically `id`), rows that differed only in those other columns were all returned. No code change is required for consumer call sites, but any extension tests or fixtures that asserted the pre-0.12 no-collapse output will fail and need updating to reflect the new collapsed shape. The representative within each partition is picked by the user's `.orderBy(…)` (if any); when the orderBy doesn't fully order rows in a partition the pick is implementation-defined, matching Prisma's documented behaviour.
+      detection:
+          glob: "**/*.{ts,tsx}"
+          contains:
+              - ".distinct("
+          anyMatch: true
+    - id: replace-runtime-verify-options-with-verify-marker
+      summary: |
+          The `@internal/sql-runtime` export `RuntimeVerifyOptions` is removed; replaced by `VerifyMarkerOption = 'onFirstUse' | false`. Extension convenience wrappers that expose a `*OptionsBase` interface must rename `verify?: RuntimeVerifyOptions` to `verifyMarker?: VerifyMarkerOption`, drop the hard-coded `verify: { mode: 'onFirstUse', requireMarker: false }` default in the wrapper's `createRuntime(...)` call, and thread the caller's value through via `...ifDefined('verifyMarker', options.verifyMarker)` so the runtime's own default (`'onFirstUse'`) applies when the option is omitted. The runtime no longer throws `CONTRACT.MARKER_MISMATCH` / `CONTRACT.MARKER_MISSING` on drift — it emits a structured `warn`-level log line once per runtime instance (single-flighted under concurrent first queries) and proceeds.
+      detection:
+          glob: "**/*.ts"
+          contains:
+              - "RuntimeVerifyOptions"
+              - "verify: {"
+          anyMatch: true
+    - id: define-contract-drop-capabilities-generic
+      summary: |
+          The `Capabilities` type parameter is removed from the framework `baseDefineContract` factory and from `ContractInput` in `@internal/contract`. Extension authors who ship their own target-facade-style `defineContract` (a thin wrapper that re-exports `baseDefineContract` with `family` / `target` pre-bound) must drop the `Capabilities` generic from every facade type alias (`*Result`, `*BaseScaffold`, `*Definition`, `*Scaffold`) and from every overload signature; the corresponding `ContractInput<…, Capabilities>` and `baseDefineContract<…, Capabilities>` instantiations lose their trailing argument. Extensions that don't ship a facade have no source change — their emitted `contract.json` / `contract.d.ts` will pick up two new auto-contributed capabilities (`postgres.distinctOn`, `sql.lateral`) on re-emit; re-run `pnpm fixtures:emit` (or the equivalent for your extension) to refresh fixtures.
+      detection:
+          glob: "**/*.ts"
+          contains:
+              - "baseDefineContract"
+              - "Capabilities"
+          anyMatch: false
+    - id: strip-migration-labels-hints
+      summary: |
+          The 0.12 migration manifest schema is closed (`'+': 'reject'`) and the metadata model no longer carries `labels` or `hints`; any on-disk `migration.json` your extension ships (e.g. an install-extension migration under `migrations/`) still holding either key fails to load with `INVALID_MANIFEST` naming the offending key. Both fields are also dropped from the content-addressed migration identity, so `migrationHash` is now computed over `{ from, to, providedInvariants, createdAt }` plus the sibling `ops.json`. Run the colocated codemod to strip both keys from every `migration.json` and recompute its `migrationHash` over the slimmed envelope.
+      detection:
+          glob: "**/migration.json"
+          contains:
+              - '"labels"'
+              - '"hints"'
+          anyMatch: true
+      script: ./strip-migration-labels-hints.ts
+    - id: extension-public-default-baseline
+      summary: |
+          Published Postgres extension packs' empty default namespace flips `__unbound__` → `public` (`postgres-unbound-schema` → `postgres-schema`), changing the extension's `storageHash`, `migrations/refs/head.json` hash, and each baseline `migration.json` `to` / `migrationHash`. Migration ops are unchanged. Re-emit the contract-space (`pnpm build:contract-space` / `prisma-next contract emit`) and regenerate the install migration baseline so the head ref matches the new contract hash.
+      detection:
+          glob: "**/contract.json"
+          contains:
+              - '"kind": "postgres-unbound-schema"'
+          anyMatch: true
+      script: ./regenerate-extension-public-baseline.ts
+    - id: domain-plane-spi-and-testing-subpath
+      summary: |
+          Contract SPI is namespaced: read models/value objects through `contract.domain.namespaces.<ns>` (helpers: `domainModelsAtDefaultNamespace(contract.domain)`, `ContractModelDefinitions`) instead of flat `contract.models`. The `@internal/contract/testing` subpath export was removed — test factories (`createContract`, `createSqlContract`, `DUMMY_HASH`, `applicationDomainOf`) now live in `@repo/test-utils`. Run the colocated import codemod and update SPI consumption to the namespaced contract shape.
+      detection:
+          glob: "**/*.{ts,tsx}"
+          contains:
+              - "@internal/contract/testing"
+          anyMatch: true
+      script: ./migrate-contract-testing-imports.ts
+    - id: default-namespace-domain-access-retire-projection-helpers
+      summary: |
+          The transitional `@internal/contract` helpers `contractModels`, `contractValueObjects`, `resolveSingleDomainNamespaceId`, `ContractModelsMap`, and `ContractValueObjectsMap` are removed. Read models/value objects through `domainModelsAtDefaultNamespace(contract.domain)` / `domainValueObjectsAtDefaultNamespace(contract.domain)` (these read the contract's sole namespace and throw on a multi-namespace contract). Typed model shapes use `ContractModelDefinitions<Contract>`. SQL namespace concretions must expose `qualifyTable`; hydrate migration scaffolds with `PostgresContractSerializer` (not `structuredClone`) so `qualifyTable` survives. Runtime SQL is namespace-qualified on Postgres.
+      detection:
+          glob: "**/*.{ts,tsx}"
+          contains:
+              - "contractModels"
+          anyMatch: true
 ---
 
 # 0.11 → 0.12 — Extension-author upgrade instructions
@@ -105,12 +105,12 @@ Every `ExprVisitor<R>` implementation needs to add the new method. The natural b
 
 ```ts
 expr.accept<AnyExpression>({
-  columnRef: (e) => bindExpression(contract, e),
-  identifierRef: (e) => e,
-  subquery: (e) => bindExpression(contract, e),
-  operation: (e) => bindExpression(contract, e),
-  aggregate: (e) => bindExpression(contract, e),
-  // … other methods …
+    columnRef: (e) => bindExpression(contract, e),
+    identifierRef: (e) => e,
+    subquery: (e) => bindExpression(contract, e),
+    operation: (e) => bindExpression(contract, e),
+    aggregate: (e) => bindExpression(contract, e),
+    // … other methods …
 });
 ```
 
@@ -118,13 +118,13 @@ expr.accept<AnyExpression>({
 
 ```ts
 expr.accept<AnyExpression>({
-  columnRef: (e) => bindExpression(contract, e),
-  identifierRef: (e) => e,
-  subquery: (e) => bindExpression(contract, e),
-  operation: (e) => bindExpression(contract, e),
-  aggregate: (e) => bindExpression(contract, e),
-  windowFunc: (e) => bindExpression(contract, e), // ← new: required
-  // … other methods …
+    columnRef: (e) => bindExpression(contract, e),
+    identifierRef: (e) => e,
+    subquery: (e) => bindExpression(contract, e),
+    operation: (e) => bindExpression(contract, e),
+    aggregate: (e) => bindExpression(contract, e),
+    windowFunc: (e) => bindExpression(contract, e), // ← new: required
+    // … other methods …
 });
 ```
 
@@ -132,10 +132,10 @@ expr.accept<AnyExpression>({
 
 ```ts
 expr.accept<AnyExpression>({
-  // …
-  aggregate: rejectInThisContext,
-  windowFunc: rejectInThisContext, // ← new: required
-  // …
+    // …
+    aggregate: rejectInThisContext,
+    windowFunc: rejectInThisContext, // ← new: required
+    // …
 });
 ```
 
@@ -151,18 +151,18 @@ The most common case is in SQL renderers — Postgres and SQLite both render `Wi
 
 ```ts
 function renderExpr(expr: AnyExpression): string {
-  switch (expr.kind) {
-    case 'column-ref':
-      return renderColumn(expr);
-    case 'aggregate':
-      return renderAggregate(expr);
-    // … other cases …
-    // v8 ignore next 4
-    default:
-      throw new Error(
-        `Unsupported expression node kind: ${(expr satisfies never as { kind: string }).kind}`,
-      );
-  }
+    switch (expr.kind) {
+        case "column-ref":
+            return renderColumn(expr);
+        case "aggregate":
+            return renderAggregate(expr);
+        // … other cases …
+        // v8 ignore next 4
+        default:
+            throw new Error(
+                `Unsupported expression node kind: ${(expr satisfies never as { kind: string }).kind}`,
+            );
+    }
 }
 ```
 
@@ -170,34 +170,34 @@ function renderExpr(expr: AnyExpression): string {
 
 ```ts
 function renderExpr(expr: AnyExpression): string {
-  switch (expr.kind) {
-    case 'column-ref':
-      return renderColumn(expr);
-    case 'aggregate':
-      return renderAggregate(expr);
-    case 'window-func':
-      return renderWindowFunc(expr); // ← new: required
-    // … other cases …
-    default:
-      throw new Error(
-        `Unsupported expression node kind: ${(expr satisfies never as { kind: string }).kind}`,
-      );
-  }
+    switch (expr.kind) {
+        case "column-ref":
+            return renderColumn(expr);
+        case "aggregate":
+            return renderAggregate(expr);
+        case "window-func":
+            return renderWindowFunc(expr); // ← new: required
+        // … other cases …
+        default:
+            throw new Error(
+                `Unsupported expression node kind: ${(expr satisfies never as { kind: string }).kind}`,
+            );
+    }
 }
 
 function renderWindowFunc(expr: WindowFuncExpr): string {
-  const fn = expr.fn.toUpperCase();
-  const args = expr.args.map(renderExpr).join(', ');
-  const partition =
-    expr.partitionBy && expr.partitionBy.length > 0
-      ? `PARTITION BY ${expr.partitionBy.map(renderExpr).join(', ')}`
-      : '';
-  const order =
-    expr.orderBy && expr.orderBy.length > 0
-      ? `ORDER BY ${expr.orderBy.map((o) => `${renderExpr(o.expr)} ${o.dir.toUpperCase()}`).join(', ')}`
-      : '';
-  const over = [partition, order].filter((s) => s.length > 0).join(' ');
-  return `${fn}(${args}) OVER (${over})`;
+    const fn = expr.fn.toUpperCase();
+    const args = expr.args.map(renderExpr).join(", ");
+    const partition =
+        expr.partitionBy && expr.partitionBy.length > 0
+            ? `PARTITION BY ${expr.partitionBy.map(renderExpr).join(", ")}`
+            : "";
+    const order =
+        expr.orderBy && expr.orderBy.length > 0
+            ? `ORDER BY ${expr.orderBy.map((o) => `${renderExpr(o.expr)} ${o.dir.toUpperCase()}`).join(", ")}`
+            : "";
+    const over = [partition, order].filter((s) => s.length > 0).join(" ");
+    return `${fn}(${args}) OVER (${over})`;
 }
 ```
 
@@ -215,10 +215,9 @@ Prior to 0.12, `.distinct(cols)` did not actually collapse rows on the specified
 
 ```ts
 // Both 0.11 and 0.12 — same call site, different runtime behaviour:
-const posts = await db.Post
-  .orderBy([(p) => p.title.asc(), (p) => p.id.asc()])
-  .distinct('title')
-  .all();
+const posts = await db.Post.orderBy([(p) => p.title.asc(), (p) => p.id.asc()])
+    .distinct("title")
+    .all();
 
 // 0.11: returns every post (if seed has 3 posts including two sharing title='A',
 // you get 3 back).
@@ -255,24 +254,24 @@ If your extension ships a convenience wrapper around `createRuntime(...)` — th
 3. Drop the hard-coded default literal in the `createRuntime(...)` call.
 4. Thread the caller's value through with `ifDefined` so omitted options defer to the runtime default.
 
-The runtime's read-side behaviour also changes: it no longer throws `CONTRACT.MARKER_MISMATCH` or `CONTRACT.MARKER_MISSING` when the database marker is absent or drifted. Instead, on the first `execute()` call per runtime instance, it emits one structured `warn`-level log line (payload includes `code`, `scope`, `expected`, `actual`, `message`) and proceeds with the query. Extension authors do not need to implement this behaviour — it lives inside `@internal/sql-runtime` — but tests that previously asserted thrown errors need retargeting (see *Tests and fixtures* below).
+The runtime's read-side behaviour also changes: it no longer throws `CONTRACT.MARKER_MISMATCH` or `CONTRACT.MARKER_MISSING` when the database marker is absent or drifted. Instead, on the first `execute()` call per runtime instance, it emits one structured `warn`-level log line (payload includes `code`, `scope`, `expected`, `actual`, `message`) and proceeds with the query. Extension authors do not need to implement this behaviour — it lives inside `@internal/sql-runtime` — but tests that previously asserted thrown errors need retargeting (see _Tests and fixtures_ below).
 
 ### Before 0.12 — type import and options interface
 
 ```ts
 import type {
-  ExecutionContext,
-  Runtime,
-  RuntimeVerifyOptions,
-  SqlExecutionStackWithDriver,
-  SqlMiddleware,
-  SqlRuntimeExtensionDescriptor,
-} from '@internal/sql-runtime';
+    ExecutionContext,
+    Runtime,
+    RuntimeVerifyOptions,
+    SqlExecutionStackWithDriver,
+    SqlMiddleware,
+    SqlRuntimeExtensionDescriptor,
+} from "@internal/sql-runtime";
 
 export interface MyTargetOptionsBase {
-  readonly extensions?: readonly SqlRuntimeExtensionDescriptor<MyTargetId>[];
-  readonly middleware?: readonly SqlMiddleware[];
-  readonly verify?: RuntimeVerifyOptions;
+    readonly extensions?: readonly SqlRuntimeExtensionDescriptor<MyTargetId>[];
+    readonly middleware?: readonly SqlMiddleware[];
+    readonly verify?: RuntimeVerifyOptions;
 }
 ```
 
@@ -280,19 +279,19 @@ export interface MyTargetOptionsBase {
 
 ```ts
 import type {
-  ExecutionContext,
-  Runtime,
-  SqlExecutionStackWithDriver,
-  SqlMiddleware,
-  SqlRuntimeExtensionDescriptor,
-  VerifyMarkerOption,
-} from '@internal/sql-runtime';
-import { ifDefined } from '@internal/utils/defined';
+    ExecutionContext,
+    Runtime,
+    SqlExecutionStackWithDriver,
+    SqlMiddleware,
+    SqlRuntimeExtensionDescriptor,
+    VerifyMarkerOption,
+} from "@internal/sql-runtime";
+import { ifDefined } from "@internal/utils/defined";
 
 export interface MyTargetOptionsBase {
-  readonly extensions?: readonly SqlRuntimeExtensionDescriptor<MyTargetId>[];
-  readonly middleware?: readonly SqlMiddleware[];
-  readonly verifyMarker?: VerifyMarkerOption;
+    readonly extensions?: readonly SqlRuntimeExtensionDescriptor<MyTargetId>[];
+    readonly middleware?: readonly SqlMiddleware[];
+    readonly verifyMarker?: VerifyMarkerOption;
 }
 ```
 
@@ -302,11 +301,11 @@ Import `ifDefined` from `@internal/utils/defined` if your wrapper does not alrea
 
 ```ts
 const runtime = createRuntime({
-  stackInstance,
-  context,
-  driver,
-  verify: options.verify ?? { mode: 'onFirstUse', requireMarker: false },
-  ...ifDefined('middleware', options.middleware),
+    stackInstance,
+    context,
+    driver,
+    verify: options.verify ?? { mode: "onFirstUse", requireMarker: false },
+    ...ifDefined("middleware", options.middleware),
 });
 ```
 
@@ -316,11 +315,11 @@ The hard-coded `{ mode: 'onFirstUse', requireMarker: false }` default duplicated
 
 ```ts
 const runtime = createRuntime({
-  stackInstance,
-  context,
-  driver,
-  ...ifDefined('verifyMarker', options.verifyMarker),
-  ...ifDefined('middleware', options.middleware),
+    stackInstance,
+    context,
+    driver,
+    ...ifDefined("verifyMarker", options.verifyMarker),
+    ...ifDefined("middleware", options.middleware),
 });
 ```
 
@@ -328,13 +327,13 @@ When the caller omits `verifyMarker`, the spread adds nothing and the runtime de
 
 ### Semantics mapping for callers of your wrapper
 
-| Before 0.12 (`verify`) | Starting at 0.12 (`verifyMarker`) |
-| --- | --- |
-| `{ mode: 'onFirstUse', requireMarker: false }` (or omitted — your wrapper defaulted to this) | omit `verifyMarker` (runtime default `'onFirstUse'`) |
-| `{ mode: 'onFirstUse', requireMarker: true }` | `verifyMarker: 'onFirstUse'` — but the throw-on-missing-marker semantics are removed; use the `db-verify` CLI for fail-fast deploy checks |
-| `{ mode: 'always', requireMarker: ... }` | `verifyMarker: 'onFirstUse'` — `'always'` mode is dropped; verification is once-per-runtime |
-| `{ mode: 'startup', requireMarker: ... }` | `verifyMarker: 'onFirstUse'` — `'startup'` mode is dropped for the same reason |
-| Explicit skip | `verifyMarker: false` |
+| Before 0.12 (`verify`)                                                                       | Starting at 0.12 (`verifyMarker`)                                                                                                         |
+| -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `{ mode: 'onFirstUse', requireMarker: false }` (or omitted — your wrapper defaulted to this) | omit `verifyMarker` (runtime default `'onFirstUse'`)                                                                                      |
+| `{ mode: 'onFirstUse', requireMarker: true }`                                                | `verifyMarker: 'onFirstUse'` — but the throw-on-missing-marker semantics are removed; use the `db-verify` CLI for fail-fast deploy checks |
+| `{ mode: 'always', requireMarker: ... }`                                                     | `verifyMarker: 'onFirstUse'` — `'always'` mode is dropped; verification is once-per-runtime                                               |
+| `{ mode: 'startup', requireMarker: ... }`                                                    | `verifyMarker: 'onFirstUse'` — `'startup'` mode is dropped for the same reason                                                            |
+| Explicit skip                                                                                | `verifyMarker: false`                                                                                                                     |
 
 ### Tests and fixtures
 
@@ -344,36 +343,36 @@ Extension wrapper tests that exercised the old surface need two kinds of updates
 
 ```ts
 // Before 0.12
-it('forwards verify option to createRuntime', async () => {
-  const verify = { mode: 'always', requireMarker: true } as const;
-  const db = myTarget({ contract, verify });
-  await db.connect(/* … */);
-  expect(mocks.createRuntime).toHaveBeenCalledWith(expect.objectContaining({ verify }));
+it("forwards verify option to createRuntime", async () => {
+    const verify = { mode: "always", requireMarker: true } as const;
+    const db = myTarget({ contract, verify });
+    await db.connect(/* … */);
+    expect(mocks.createRuntime).toHaveBeenCalledWith(expect.objectContaining({ verify }));
 });
 
-it('defaults verify to onFirstUse without requireMarker', async () => {
-  const db = myTarget({ contract });
-  await db.connect(/* … */);
-  expect(mocks.createRuntime).toHaveBeenCalledWith(
-    expect.objectContaining({ verify: { mode: 'onFirstUse', requireMarker: false } }),
-  );
+it("defaults verify to onFirstUse without requireMarker", async () => {
+    const db = myTarget({ contract });
+    await db.connect(/* … */);
+    expect(mocks.createRuntime).toHaveBeenCalledWith(
+        expect.objectContaining({ verify: { mode: "onFirstUse", requireMarker: false } }),
+    );
 });
 
 // Starting at 0.12
-it('forwards verifyMarker option to createRuntime', async () => {
-  const db = myTarget({ contract, verifyMarker: false });
-  await db.connect(/* … */);
-  expect(mocks.createRuntime).toHaveBeenCalledWith(
-    expect.objectContaining({ verifyMarker: false }),
-  );
+it("forwards verifyMarker option to createRuntime", async () => {
+    const db = myTarget({ contract, verifyMarker: false });
+    await db.connect(/* … */);
+    expect(mocks.createRuntime).toHaveBeenCalledWith(
+        expect.objectContaining({ verifyMarker: false }),
+    );
 });
 
-it('omits verifyMarker from createRuntime when not provided (runtime default applies)', async () => {
-  const db = myTarget({ contract });
-  await db.connect(/* … */);
-  expect(mocks.createRuntime).toHaveBeenCalledTimes(1);
-  const callArg = mocks.createRuntime.mock.calls[0]?.[0] as Record<string, unknown>;
-  expect(callArg).not.toHaveProperty('verifyMarker');
+it("omits verifyMarker from createRuntime when not provided (runtime default applies)", async () => {
+    const db = myTarget({ contract });
+    await db.connect(/* … */);
+    expect(mocks.createRuntime).toHaveBeenCalledTimes(1);
+    const callArg = mocks.createRuntime.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(callArg).not.toHaveProperty("verifyMarker");
 });
 ```
 
@@ -382,7 +381,7 @@ it('omits verifyMarker from createRuntime when not provided (runtime default app
 ```ts
 // Before 0.12
 await expect(runtime.execute(plan).toArray()).rejects.toMatchObject({
-  code: 'CONTRACT.MARKER_MISSING',
+    code: "CONTRACT.MARKER_MISSING",
 });
 
 // Starting at 0.12
@@ -393,11 +392,14 @@ const rows = await runtime.execute(plan).toArray();
 expect(rows).toEqual(/* expected rows — query proceeds */);
 expect(log.warn).toHaveBeenCalledOnce();
 expect(log.warn).toHaveBeenCalledWith({
-  code: 'CONTRACT.MARKER_MISSING',
-  scope: 'marker-verification',
-  expected: { storageHash: contract.storage.storageHash, profileHash: contract.profileHash ?? null },
-  actual: null,
-  message: 'Contract marker not found in database',
+    code: "CONTRACT.MARKER_MISSING",
+    scope: "marker-verification",
+    expected: {
+        storageHash: contract.storage.storageHash,
+        profileHash: contract.profileHash ?? null,
+    },
+    actual: null,
+    message: "Contract marker not found in database",
 });
 ```
 
@@ -423,99 +425,95 @@ If your extension ships a `defineContract` that wraps `baseDefineContract` with 
 #### Before 0.12
 
 ```ts
-import { defineContract as baseDefineContract } from '@internal/contract';
-import type { ContractInput, ExtensionPackRef } from '@internal/contract';
+import { defineContract as baseDefineContract } from "@internal/contract";
+import type { ContractInput, ExtensionPackRef } from "@internal/contract";
 
 type MyTargetResult<
-  Types extends TypesConstraint,
-  Models extends ModelsConstraint,
-  ExtensionPacks extends Record<string, ExtensionPackRef<'sql', string>> | undefined,
-  Capabilities extends Record<string, Record<string, boolean>> | undefined,
+    Types extends TypesConstraint,
+    Models extends ModelsConstraint,
+    ExtensionPacks extends Record<string, ExtensionPackRef<"sql", string>> | undefined,
+    Capabilities extends Record<string, Record<string, boolean>> | undefined,
 > = Omit<
-  ReturnType<
-    typeof baseDefineContract<
-      MyFamily,
-      MyTargetPack,
-      Types,
-      Models,
-      ExtensionPacks,
-      Capabilities
-    >
-  >,
-  'target' | 'targetFamily'
+    ReturnType<
+        typeof baseDefineContract<
+            MyFamily,
+            MyTargetPack,
+            Types,
+            Models,
+            ExtensionPacks,
+            Capabilities
+        >
+    >,
+    "target" | "targetFamily"
 > & {
-  readonly target: MyTargetPack['targetId'];
-  readonly targetFamily: MyFamily['familyId'];
+    readonly target: MyTargetPack["targetId"];
+    readonly targetFamily: MyFamily["familyId"];
 };
 
 type MyTargetBaseScaffold<
-  ExtensionPacks extends Record<string, ExtensionPackRef<'sql', string>> | undefined,
-  Capabilities extends Record<string, Record<string, boolean>> | undefined,
+    ExtensionPacks extends Record<string, ExtensionPackRef<"sql", string>> | undefined,
+    Capabilities extends Record<string, Record<string, boolean>> | undefined,
 > = Omit<
-  ContractInput<
-    MyFamily,
-    MyTargetPack,
-    Record<never, never>,
-    Record<never, never>,
-    ExtensionPacks,
-    Capabilities
-  >,
-  'family' | 'target' | 'types' | 'models'
+    ContractInput<
+        MyFamily,
+        MyTargetPack,
+        Record<never, never>,
+        Record<never, never>,
+        ExtensionPacks,
+        Capabilities
+    >,
+    "family" | "target" | "types" | "models"
 >;
 
 export function defineContract<
-  const Types extends TypesConstraint = Record<never, never>,
-  const Models extends ModelsConstraint = Record<never, never>,
-  const ExtensionPacks extends
-    | Record<string, ExtensionPackRef<'sql', string>>
-    | undefined = undefined,
-  const Capabilities extends Record<string, Record<string, boolean>> | undefined = undefined,
+    const Types extends TypesConstraint = Record<never, never>,
+    const Models extends ModelsConstraint = Record<never, never>,
+    const ExtensionPacks extends Record<string, ExtensionPackRef<"sql", string>> | undefined =
+        undefined,
+    const Capabilities extends Record<string, Record<string, boolean>> | undefined = undefined,
 >(
-  definition: MyTargetDefinition<Types, Models, ExtensionPacks, Capabilities>,
+    definition: MyTargetDefinition<Types, Models, ExtensionPacks, Capabilities>,
 ): MyTargetResult<Types, Models, ExtensionPacks, Capabilities>;
 ```
 
 #### Starting at 0.12
 
 ```ts
-import { defineContract as baseDefineContract } from '@internal/contract';
-import type { ContractInput, ExtensionPackRef } from '@internal/contract';
+import { defineContract as baseDefineContract } from "@internal/contract";
+import type { ContractInput, ExtensionPackRef } from "@internal/contract";
 
 type MyTargetResult<
-  Types extends TypesConstraint,
-  Models extends ModelsConstraint,
-  ExtensionPacks extends Record<string, ExtensionPackRef<'sql', string>> | undefined,
+    Types extends TypesConstraint,
+    Models extends ModelsConstraint,
+    ExtensionPacks extends Record<string, ExtensionPackRef<"sql", string>> | undefined,
 > = Omit<
-  ReturnType<
-    typeof baseDefineContract<MyFamily, MyTargetPack, Types, Models, ExtensionPacks>
-  >,
-  'target' | 'targetFamily'
+    ReturnType<typeof baseDefineContract<MyFamily, MyTargetPack, Types, Models, ExtensionPacks>>,
+    "target" | "targetFamily"
 > & {
-  readonly target: MyTargetPack['targetId'];
-  readonly targetFamily: MyFamily['familyId'];
+    readonly target: MyTargetPack["targetId"];
+    readonly targetFamily: MyFamily["familyId"];
 };
 
 type MyTargetBaseScaffold<
-  ExtensionPacks extends Record<string, ExtensionPackRef<'sql', string>> | undefined,
+    ExtensionPacks extends Record<string, ExtensionPackRef<"sql", string>> | undefined,
 > = Omit<
-  ContractInput<
-    MyFamily,
-    MyTargetPack,
-    Record<never, never>,
-    Record<never, never>,
-    ExtensionPacks
-  >,
-  'family' | 'target' | 'types' | 'models'
+    ContractInput<
+        MyFamily,
+        MyTargetPack,
+        Record<never, never>,
+        Record<never, never>,
+        ExtensionPacks
+    >,
+    "family" | "target" | "types" | "models"
 >;
 
 export function defineContract<
-  const Types extends TypesConstraint = Record<never, never>,
-  const Models extends ModelsConstraint = Record<never, never>,
-  const ExtensionPacks extends
-    | Record<string, ExtensionPackRef<'sql', string>>
-    | undefined = undefined,
+    const Types extends TypesConstraint = Record<never, never>,
+    const Models extends ModelsConstraint = Record<never, never>,
+    const ExtensionPacks extends Record<string, ExtensionPackRef<"sql", string>> | undefined =
+        undefined,
 >(
-  definition: MyTargetDefinition<Types, Models, ExtensionPacks>,
+    definition: MyTargetDefinition<Types, Models, ExtensionPacks>,
 ): MyTargetResult<Types, Models, ExtensionPacks>;
 ```
 
@@ -687,13 +685,13 @@ The default namespace a bare name resolves through is **inferred** from the cont
 
 ### Removed exports (old → new)
 
-| Removed | Replacement |
-|---|---|
-| `contractModels(contract)` | `domainModelsAtDefaultNamespace(contract.domain)` (reads the sole namespace; throws on multi-namespace) |
-| `contractValueObjects(contract)` | `domainValueObjectsAtDefaultNamespace(contract.domain)` |
-| `resolveSingleDomainNamespaceId(domain)` | `soleDomainNamespaceId(domain)` (same fail-loud single-namespace behaviour) |
-| `ContractModelsMap<C>` | `ContractModelDefinitions<C>` |
-| `ContractValueObjectsMap<C>` | Read `contract.domain.namespaces[ns].valueObjects` for a specific namespace, or `domainValueObjectsAtDefaultNamespace(contract.domain)` for the default slot |
+| Removed                                  | Replacement                                                                                                                                                  |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `contractModels(contract)`               | `domainModelsAtDefaultNamespace(contract.domain)` (reads the sole namespace; throws on multi-namespace)                                                      |
+| `contractValueObjects(contract)`         | `domainValueObjectsAtDefaultNamespace(contract.domain)`                                                                                                      |
+| `resolveSingleDomainNamespaceId(domain)` | `soleDomainNamespaceId(domain)` (same fail-loud single-namespace behaviour)                                                                                  |
+| `ContractModelsMap<C>`                   | `ContractModelDefinitions<C>`                                                                                                                                |
+| `ContractValueObjectsMap<C>`             | Read `contract.domain.namespaces[ns].valueObjects` for a specific namespace, or `domainValueObjectsAtDefaultNamespace(contract.domain)` for the default slot |
 
 Import the replacements from `@internal/contract/types`.
 
@@ -706,7 +704,7 @@ Storage namespace envelopes in SQL-family contracts must carry a `qualifyTable(t
 Do not `structuredClone` hydrated contracts — it strips functions such as `qualifyTable`. Round-trip through the target serializer instead:
 
 ```ts
-import { PostgresContractSerializer } from '@internal/target-postgres/runtime';
+import { PostgresContractSerializer } from "@internal/target-postgres/runtime";
 
 const serializer = new PostgresContractSerializer();
 const hydrated = serializer.deserializeContract(serializer.serializeContract(rawContract));

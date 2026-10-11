@@ -2,129 +2,129 @@
 from: "0.13"
 to: "0.14"
 changes:
-  - id: uuid-preset-rename
-    summary: |
-      The uuid field presets are renamed: `field.uuid()` → `field.uuidString()`,
-      `field.id.uuidv4()` → `field.id.uuidv4String()`, `field.id.uuidv7()` →
-      `field.id.uuidv7String()`. These names now describe the storage encoding
-      (char(36) string). Postgres-native uuid storage uses the new
-      `field.uuidNative()` / `field.id.uuidv4Native()` / `field.id.uuidv7Native()`
-      presets from `@internal/postgres/contract-builder`.
-    detection:
-      glob: "**/*.ts"
-      contains:
-        - "field.uuid()"
-        - "field.id.uuidv4()"
-        - "field.id.uuidv7()"
-      anyMatch: true
-    script: uuid-preset-rename.ts
-  - id: qualify-flat-builder-accessors
-    summary: |
-      The builder-layer flat accessors are removed: the query builder and ORM client now
-      expose per-namespace facets only, and the Postgres facade exposes the qualified
-      surface. Code that builds queries against a Postgres (multi-namespace) contract must
-      name the namespace the table/model is declared in: `db.sql.<table>` becomes
-      `db.sql.<namespace>.<table>` and `db.orm.<Model>` becomes
-      `db.orm.<namespace>.<Model>` (for a standard single-schema Postgres project the
-      namespace is `public`). Code that calls the builder outputs directly migrates the
-      same way: `sql.<table>` → `sql.<namespace>.<table>`, `orm.<Model>` →
-      `orm.<namespace>.<Model>`. SQLite and Mongo projects are unaffected — their
-      single-namespace facade keeps flat `db.sql.<table>` / `db.orm.<Model>` working. There
-      is no codemod: the correct namespace is the one each table/model is declared in, which
-      is call-site-specific.
-    detection:
-      glob: "**/*.{ts,tsx}"
-      contains:
-        - "db.sql."
-        - "db.orm."
-      anyMatch: true
-  - id: sql-runtime-base-class-naming
-    summary: |
-      `@internal/sql-runtime` now exports `abstract class SqlRuntimeBase` (previously
-      `SqlRuntime`) — the family-layer subclass seam. Target classes are now named with
-      `Impl` suffix: `PostgresRuntimeImpl` and `SqliteRuntimeImpl`. The bare names
-      `PostgresRuntime` and `SqliteRuntime` are now interfaces — the correct types to
-      depend on in extension and app code. App code using the facade factories
-      (`postgres(...)`, `sqlite(...)`) is unaffected.
-    detection:
-      glob: "**/*.{ts,tsx}"
-      contains:
-        - "SqlRuntime"
-        - "PostgresRuntime"
-        - "SqliteRuntime"
-      anyMatch: true
-  - id: create-runtime-removed
-    summary: |
-      `createRuntime` is removed from `@internal/sql-runtime`. Use the target
-      factory (`postgres(...)` / `sqlite(...)`) or construct the target class
-      directly: `new PostgresRuntimeImpl({...})` from `@internal/postgres/runtime`,
-      `new SqliteRuntimeImpl({...})` from `@internal/sqlite/runtime`. App code
-      using the facade factories (`postgres(...)`, `sqlite(...)`) is unaffected.
-    detection:
-      glob: "**/*.{ts,tsx}"
-      contains:
-        - "createRuntime"
-  - id: migration-op-factories-to-methods
-    summary: |
-      The bare migration op factory functions are removed from
-      `@internal/postgres/migration`. Replace each import and call-site with
-      the corresponding method on `this` inside your `Migration` subclass. The
-      option shapes changed from positional arguments to a single options object.
-    detection:
-      glob: "**/migration.ts"
-      contains:
-        - "from '@internal/postgres/migration'"
-        - "from '@internal/target-postgres/migration'"
-      anyMatch: true
-    script: migration-op-factories-to-methods.ts
-  - id: postgres-contract-serializer
-    summary: |
-      `SqlContractSerializer` (from `@internal/family-sql/ir`) can no longer
-      deserialize Postgres contracts. The family serializer has an empty entries
-      registry and now rejects the `type` key that every Postgres namespace carries.
-      Any migration file or app code that calls
-      `new SqlContractSerializer().deserializeContract(postgresContractJson)` must
-      switch to `new PostgresContractSerializer()` imported from
-      `@internal/target-postgres/runtime`.
-    detection:
-      glob: "**/*.{ts,tsx}"
-      contains:
-        - "SqlContractSerializer"
-  - id: enum-becomes-domain-concept
-    summary: |
-      The PSL `enum` keyword now authors the domain enum (a text-class column whose
-      value set is enforced by a CHECK constraint) — the native Postgres
-      `CREATE TYPE … AS ENUM` semantics are gone. An `enum` block must carry
-      `@@type("<codec-id>")` (e.g. `@@type("pg/text@1")`), members map to database
-      values with `Name = "value"` (a bare member name defaults to itself where the
-      codec accepts it), and `@map` on members is removed — the member value IS the
-      mapping. The transitional `enum2` keyword is retired; rename those blocks to
-      `enum` (emitted contract is identical). The TS authoring equivalent is
-      `enumType(name, codecRef, ...member(name, value))` from
-      `@internal/postgres/contract-builder` returned under the contract's `enums`
-      key; the old native `enumType(name, values[])` / `enumColumn` from
-      `@internal/adapter-postgres/column-types` are deleted. Databases that
-      already carry a native enum type need a one-time converting migration (alter
-      column to text USING ::text, add the value-set CHECK, DROP TYPE) — `contract
-      infer` refuses native enum types by design and names them in its diagnostic.
-    detection:
-      glob: "**/*.prisma"
-      contains:
-        - "enum "
-        - "enum2 "
-      anyMatch: true
-  - id: generated-models-export-removed
-    summary: |
-      The generated `contract.d.ts` no longer emits the flat top-level
-      `export type Models`. Models resolve per-namespace from the domain plane:
-      replace a reference to the generated `Models` with
-      `Contract['domain']['namespaces']['<namespace>']['models']` (use `public`
-      for a standard single-schema Postgres project, `__unbound__` for SQLite or
-      Mongo). Re-emit the contract to drop the export.
-    detection:
-      glob: "**/*.{ts,tsx}"
-      contains:
-        - "Models"
+    - id: uuid-preset-rename
+      summary: |
+          The uuid field presets are renamed: `field.uuid()` → `field.uuidString()`,
+          `field.id.uuidv4()` → `field.id.uuidv4String()`, `field.id.uuidv7()` →
+          `field.id.uuidv7String()`. These names now describe the storage encoding
+          (char(36) string). Postgres-native uuid storage uses the new
+          `field.uuidNative()` / `field.id.uuidv4Native()` / `field.id.uuidv7Native()`
+          presets from `@internal/postgres/contract-builder`.
+      detection:
+          glob: "**/*.ts"
+          contains:
+              - "field.uuid()"
+              - "field.id.uuidv4()"
+              - "field.id.uuidv7()"
+          anyMatch: true
+      script: uuid-preset-rename.ts
+    - id: qualify-flat-builder-accessors
+      summary: |
+          The builder-layer flat accessors are removed: the query builder and ORM client now
+          expose per-namespace facets only, and the Postgres facade exposes the qualified
+          surface. Code that builds queries against a Postgres (multi-namespace) contract must
+          name the namespace the table/model is declared in: `db.sql.<table>` becomes
+          `db.sql.<namespace>.<table>` and `db.orm.<Model>` becomes
+          `db.orm.<namespace>.<Model>` (for a standard single-schema Postgres project the
+          namespace is `public`). Code that calls the builder outputs directly migrates the
+          same way: `sql.<table>` → `sql.<namespace>.<table>`, `orm.<Model>` →
+          `orm.<namespace>.<Model>`. SQLite and Mongo projects are unaffected — their
+          single-namespace facade keeps flat `db.sql.<table>` / `db.orm.<Model>` working. There
+          is no codemod: the correct namespace is the one each table/model is declared in, which
+          is call-site-specific.
+      detection:
+          glob: "**/*.{ts,tsx}"
+          contains:
+              - "db.sql."
+              - "db.orm."
+          anyMatch: true
+    - id: sql-runtime-base-class-naming
+      summary: |
+          `@internal/sql-runtime` now exports `abstract class SqlRuntimeBase` (previously
+          `SqlRuntime`) — the family-layer subclass seam. Target classes are now named with
+          `Impl` suffix: `PostgresRuntimeImpl` and `SqliteRuntimeImpl`. The bare names
+          `PostgresRuntime` and `SqliteRuntime` are now interfaces — the correct types to
+          depend on in extension and app code. App code using the facade factories
+          (`postgres(...)`, `sqlite(...)`) is unaffected.
+      detection:
+          glob: "**/*.{ts,tsx}"
+          contains:
+              - "SqlRuntime"
+              - "PostgresRuntime"
+              - "SqliteRuntime"
+          anyMatch: true
+    - id: create-runtime-removed
+      summary: |
+          `createRuntime` is removed from `@internal/sql-runtime`. Use the target
+          factory (`postgres(...)` / `sqlite(...)`) or construct the target class
+          directly: `new PostgresRuntimeImpl({...})` from `@internal/postgres/runtime`,
+          `new SqliteRuntimeImpl({...})` from `@internal/sqlite/runtime`. App code
+          using the facade factories (`postgres(...)`, `sqlite(...)`) is unaffected.
+      detection:
+          glob: "**/*.{ts,tsx}"
+          contains:
+              - "createRuntime"
+    - id: migration-op-factories-to-methods
+      summary: |
+          The bare migration op factory functions are removed from
+          `@internal/postgres/migration`. Replace each import and call-site with
+          the corresponding method on `this` inside your `Migration` subclass. The
+          option shapes changed from positional arguments to a single options object.
+      detection:
+          glob: "**/migration.ts"
+          contains:
+              - "from '@internal/postgres/migration'"
+              - "from '@internal/target-postgres/migration'"
+          anyMatch: true
+      script: migration-op-factories-to-methods.ts
+    - id: postgres-contract-serializer
+      summary: |
+          `SqlContractSerializer` (from `@internal/family-sql/ir`) can no longer
+          deserialize Postgres contracts. The family serializer has an empty entries
+          registry and now rejects the `type` key that every Postgres namespace carries.
+          Any migration file or app code that calls
+          `new SqlContractSerializer().deserializeContract(postgresContractJson)` must
+          switch to `new PostgresContractSerializer()` imported from
+          `@internal/target-postgres/runtime`.
+      detection:
+          glob: "**/*.{ts,tsx}"
+          contains:
+              - "SqlContractSerializer"
+    - id: enum-becomes-domain-concept
+      summary: |
+          The PSL `enum` keyword now authors the domain enum (a text-class column whose
+          value set is enforced by a CHECK constraint) — the native Postgres
+          `CREATE TYPE … AS ENUM` semantics are gone. An `enum` block must carry
+          `@@type("<codec-id>")` (e.g. `@@type("pg/text@1")`), members map to database
+          values with `Name = "value"` (a bare member name defaults to itself where the
+          codec accepts it), and `@map` on members is removed — the member value IS the
+          mapping. The transitional `enum2` keyword is retired; rename those blocks to
+          `enum` (emitted contract is identical). The TS authoring equivalent is
+          `enumType(name, codecRef, ...member(name, value))` from
+          `@internal/postgres/contract-builder` returned under the contract's `enums`
+          key; the old native `enumType(name, values[])` / `enumColumn` from
+          `@internal/adapter-postgres/column-types` are deleted. Databases that
+          already carry a native enum type need a one-time converting migration (alter
+          column to text USING ::text, add the value-set CHECK, DROP TYPE) — `contract
+          infer` refuses native enum types by design and names them in its diagnostic.
+      detection:
+          glob: "**/*.prisma"
+          contains:
+              - "enum "
+              - "enum2 "
+          anyMatch: true
+    - id: generated-models-export-removed
+      summary: |
+          The generated `contract.d.ts` no longer emits the flat top-level
+          `export type Models`. Models resolve per-namespace from the domain plane:
+          replace a reference to the generated `Models` with
+          `Contract['domain']['namespaces']['<namespace>']['models']` (use `public`
+          for a standard single-schema Postgres project, `__unbound__` for SQLite or
+          Mongo). Re-emit the contract to drop the export.
+      detection:
+          glob: "**/*.{ts,tsx}"
+          contains:
+              - "Models"
 ---
 
 <!--
@@ -162,9 +162,9 @@ or public-API change. Incidental substrate diff only.
 
 The uuid field preset names now include the storage encoding suffix:
 
-| Before | After |
-| --- | --- |
-| `field.uuid()` | `field.uuidString()` |
+| Before              | After                     |
+| ------------------- | ------------------------- |
+| `field.uuid()`      | `field.uuidString()`      |
 | `field.id.uuidv4()` | `field.id.uuidv4String()` |
 | `field.id.uuidv7()` | `field.id.uuidv7String()` |
 
@@ -190,7 +190,7 @@ No change to `contract.json` — both the old and new preset names emit the same
 
 The query builder and ORM client are now **always qualified by namespace**. The flat by-bare-name accessors are gone: there is no `sql.<table>` and no `orm.<Model>` at the builder layer, and the **Postgres** facade exposes the qualified surface (`db.sql` / `db.orm` are the namespace map). You reach a table or model by naming its namespace.
 
-Namespace selection separates *which namespace's table* from *the ergonomic shorthand for the single-namespace case*. The builder layer always names the namespace; the single-namespace shorthand is recovered by the facade on targets that have only one namespace (SQLite, Mongo).
+Namespace selection separates _which namespace's table_ from _the ergonomic shorthand for the single-namespace case_. The builder layer always names the namespace; the single-namespace shorthand is recovered by the facade on targets that have only one namespace (SQLite, Mongo).
 
 ### Who needs to change code
 
@@ -198,11 +198,11 @@ Namespace selection separates *which namespace's table* from *the ergonomic shor
 
 ```ts
 // Before
-const users = await db.sql.user.select('id', 'email').build().execute();
+const users = await db.sql.user.select("id", "email").build().execute();
 const alice = await db.orm.User.find({ where: { id } });
 
 // After — name the namespace the table/model is declared in (`public` for a standard schema)
-const users = await db.sql.public.user.select('id', 'email').build().execute();
+const users = await db.sql.public.user.select("id", "email").build().execute();
 const alice = await db.orm.public.User.find({ where: { id } });
 ```
 
@@ -257,17 +257,22 @@ Replace direct `createRuntime` calls with the appropriate target class construct
 
 ```ts
 // Before
-import { createRuntime } from '@internal/sql-runtime';
+import { createRuntime } from "@internal/sql-runtime";
 const runtime = createRuntime({ stackInstance, context, driver, ...opts });
 
 // After — use the target factory (recommended for app code)
-import { postgres } from '@internal/postgres';
+import { postgres } from "@internal/postgres";
 const db = postgres({ contract, ...opts });
 // runtime is accessed via db.connect() / db.runtime() etc.
 
 // Or construct the target class directly (for advanced/test use)
-import { PostgresRuntimeImpl } from '@internal/postgres/runtime';
-const runtime = new PostgresRuntimeImpl({ adapter: stackInstance.adapter, context, driver, ...opts });
+import { PostgresRuntimeImpl } from "@internal/postgres/runtime";
+const runtime = new PostgresRuntimeImpl({
+    adapter: stackInstance.adapter,
+    context,
+    driver,
+    ...opts,
+});
 ```
 
 The constructor options are identical to what `createRuntime` accepted, except `stackInstance` is not taken: pass `adapter` from `stackInstance.adapter` directly.
@@ -280,16 +285,16 @@ The option shapes also changed: positional arguments are replaced by a single op
 
 Remove the bare names from your import and replace each call-site:
 
-| Before (bare function) | After (method) |
-| --- | --- |
-| `dropColumn(schema, table, column)` | `this.dropColumn({ schema, table, column })` |
-| `setNotNull(schema, table, column)` | `this.setNotNull({ schema, table, column })` |
-| `setDefault(schema, table, column, defaultSql)` | `this.setDefault({ schema, table, column, defaultSql })` |
-| `addPrimaryKey(schema, table, name, columns)` | `this.addPrimaryKey({ schema, table, constraint: name, columns })` |
+| Before (bare function)                                                  | After (method)                                                                               |
+| ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `dropColumn(schema, table, column)`                                     | `this.dropColumn({ schema, table, column })`                                                 |
+| `setNotNull(schema, table, column)`                                     | `this.setNotNull({ schema, table, column })`                                                 |
+| `setDefault(schema, table, column, defaultSql)`                         | `this.setDefault({ schema, table, column, defaultSql })`                                     |
+| `addPrimaryKey(schema, table, name, columns)`                           | `this.addPrimaryKey({ schema, table, constraint: name, columns })`                           |
 | `addForeignKey(schema, table, { name, columns, references, onDelete })` | `this.addForeignKey({ schema, table, foreignKey: { name, columns, references, onDelete } })` |
-| `addCheckConstraint(schema, table, name, column, values)` | `this.addCheckConstraint({ schema, table, constraint: name, column, values })` |
-| `createIndex(schema, table, indexName, columns)` | `this.createIndex({ schema, table, index: indexName, columns })` |
-| `installExtension({ id, extensionName, invariantId })` | `this.installExtension({ id, extensionName, invariantId })` |
+| `addCheckConstraint(schema, table, name, column, values)`               | `this.addCheckConstraint({ schema, table, constraint: name, column, values })`               |
+| `createIndex(schema, table, indexName, columns)`                        | `this.createIndex({ schema, table, index: indexName, columns })`                             |
+| `installExtension({ id, extensionName, invariantId })`                  | `this.installExtension({ id, extensionName, invariantId })`                                  |
 
 Example:
 
@@ -343,11 +348,11 @@ Replace `SqlContractSerializer` with `PostgresContractSerializer` in any migrati
 
 ```ts
 // Before
-import { SqlContractSerializer } from '@internal/family-sql/ir';
+import { SqlContractSerializer } from "@internal/family-sql/ir";
 const contract = new SqlContractSerializer().deserializeContract(contractJson) as Contract;
 
 // After
-import { PostgresContractSerializer } from '@internal/target-postgres/runtime';
+import { PostgresContractSerializer } from "@internal/target-postgres/runtime";
 const contract = new PostgresContractSerializer().deserializeContract(contractJson) as Contract;
 ```
 
@@ -387,18 +392,18 @@ Rules:
 If you author contracts in TypeScript instead of PSL: the native `enumType(name, values[])` and `enumColumn(...)` helpers from `@internal/adapter-postgres/column-types` are deleted. Author the domain enum with `enumType` + `member` from your target's contract-builder and return it under the `enums` key:
 
 ```ts
-import { defineContract, enumType, member } from '@internal/postgres/contract-builder';
+import { defineContract, enumType, member } from "@internal/postgres/contract-builder";
 
-const pgText = { codecId: 'pg/text@1', nativeType: 'text' } as const;
-const UserType = enumType('user_type', pgText, member('admin', 'admin'), member('user', 'user'));
+const pgText = { codecId: "pg/text@1", nativeType: "text" } as const;
+const UserType = enumType("user_type", pgText, member("admin", "admin"), member("user", "user"));
 
-export const contract = defineContract({ /* … */ }, ({ field, model }) => ({
-  enums: { user_type: UserType },
-  models: {
-    User: model('User', {
-      fields: { /* … */ kind: field.namedType(UserType) },
-    }),
-  },
+export const contract = defineContract({/* … */}, ({ field, model }) => ({
+    enums: { user_type: UserType },
+    models: {
+        User: model("User", {
+            fields: { /* … */ kind: field.namedType(UserType) },
+        }),
+    },
 }));
 ```
 
@@ -430,13 +435,13 @@ If your code imported `Models` from the generated contract, read a namespace's m
 
 ```ts
 // Before
-import type { Contract, Models } from './prisma/contract';
-type UserModel = Models['User'];
+import type { Contract, Models } from "./prisma/contract";
+type UserModel = Models["User"];
 
 // After — name the namespace the model is declared in
-import type { Contract } from './prisma/contract';
-type Models = Contract['domain']['namespaces']['public']['models'];
-type UserModel = Models['User'];
+import type { Contract } from "./prisma/contract";
+type Models = Contract["domain"]["namespaces"]["public"]["models"];
+type UserModel = Models["User"];
 ```
 
 Use `public` for a standard single-schema Postgres project, or `__unbound__` for SQLite and Mongo. In a multi-schema Postgres contract, name the schema each model is declared in. Re-emit your contract (`prisma-next contract emit`) so the generated `.d.ts` drops the `Models` export; the emitted `contract.json` is unchanged.

@@ -2,48 +2,48 @@
 from: "0.12"
 to: "0.13"
 changes:
-  - id: sqlite-create-table-method
-    summary: |
-      SQLite migrations: `createTable` is no longer a free function exported from `@internal/sqlite/migration`. It is now a protected method on the `Migration` base class. If your extension ships SQLite migration files, replace every free `createTable(...)` call with `this.createTable({ table: ..., columns: [...], constraints: [...] })`. If your extension's migration facade re-export test asserts `createTable` is defined, remove that assertion. The `col()`, `lit()`, `fn()`, `primaryKey()`, `foreignKey()`, and `unique()` builder helpers are now exported from `@internal/sqlite/migration` directly.
-    detection:
-      glob: "**/migration.ts"
-      contains:
-        - "createTable"
-        - "@internal/sqlite/migration"
-      anyMatch: false
-  - id: regen-extension-contracts-strip-empty-type-params
-    summary: |
-      The canonicalizer now strips empty `typeParams: {}` from `storage.types` entries in
-      `contract.json`. Any extension that has shipped a `contract.json` with `typeParams: {}`
-      on its named-type entries (e.g. `types { Uuid = String @db.Uuid }`) must re-emit its
-      contract artefacts and re-pin its migration baselines so the on-disk hashes match the
-      new canonical form.
-    detection:
-      glob: "**/contract.json"
-      contains:
-        - '"typeParams": {}'
-      anyMatch: true
-  - id: thread-namespace-id-through-codec-ref-resolver-spi
-    summary: |
-      The codec-resolution SPI in `@internal/sql-relational-core` now takes a leading, required `namespaceId` coordinate. The `CodecDescriptorRegistry.codecRefForColumn(table, column)` build-time helper — the one AST authors call to stamp `codec` onto every column-bound `ParamRef` / `ProjectionItem`, exported from `@internal/sql-relational-core/query-lane-context` and `@internal/sql-relational-core/codec-descriptor-registry` — is now `codecRefForColumn(namespaceId, table, column)`. The underlying free function `codecRefForStorageColumn(storage, table, column)` (exported from `@internal/sql-relational-core/codec-descriptor-registry`) is now `codecRefForStorageColumn(storage, namespaceId, table, column)`. Extension authors who derive codec refs directly must thread the namespace the table sits in at every call site: pass the explicit `namespaceId` ahead of `table`. There is no codemod — the right namespace is call-site-specific (read it from the model/table you are building the ref for). Two same-bare-named tables in different namespaces now resolve to their own per-namespace columns/codecs instead of the first scan hit.
-    detection:
-      glob: "**/*.{ts,tsx}"
-      contains:
-        - "codecRefForColumn("
-        - "codecRefForStorageColumn("
-      anyMatch: true
-  - id: storage-namespace-envelope-re-emit
-    summary: |
-      The storage IR in `contract.json` moved to a namespace envelope
-      (`storage.namespaces.<ns>.entries.<kind>`). This changes `storageHash` for every
-      SQL and Mongo extension contract. Re-emit your extension contract artefacts
-      (`pnpm --filter <your-extension-package> build:contract-space`), then re-pin your
-      migration baselines so `migrations/refs/head.json`, `end-contract.json`,
-      `end-contract.d.ts`, `migration.json`, `migration.ts`, and `ops.json` all reflect
-      the new hash. No source change is required — re-emitting is sufficient.
-    detection:
-      glob: "**/contract.json"
-      anyMatch: true
+    - id: sqlite-create-table-method
+      summary: |
+          SQLite migrations: `createTable` is no longer a free function exported from `@internal/sqlite/migration`. It is now a protected method on the `Migration` base class. If your extension ships SQLite migration files, replace every free `createTable(...)` call with `this.createTable({ table: ..., columns: [...], constraints: [...] })`. If your extension's migration facade re-export test asserts `createTable` is defined, remove that assertion. The `col()`, `lit()`, `fn()`, `primaryKey()`, `foreignKey()`, and `unique()` builder helpers are now exported from `@internal/sqlite/migration` directly.
+      detection:
+          glob: "**/migration.ts"
+          contains:
+              - "createTable"
+              - "@internal/sqlite/migration"
+          anyMatch: false
+    - id: regen-extension-contracts-strip-empty-type-params
+      summary: |
+          The canonicalizer now strips empty `typeParams: {}` from `storage.types` entries in
+          `contract.json`. Any extension that has shipped a `contract.json` with `typeParams: {}`
+          on its named-type entries (e.g. `types { Uuid = String @db.Uuid }`) must re-emit its
+          contract artefacts and re-pin its migration baselines so the on-disk hashes match the
+          new canonical form.
+      detection:
+          glob: "**/contract.json"
+          contains:
+              - '"typeParams": {}'
+          anyMatch: true
+    - id: thread-namespace-id-through-codec-ref-resolver-spi
+      summary: |
+          The codec-resolution SPI in `@internal/sql-relational-core` now takes a leading, required `namespaceId` coordinate. The `CodecDescriptorRegistry.codecRefForColumn(table, column)` build-time helper — the one AST authors call to stamp `codec` onto every column-bound `ParamRef` / `ProjectionItem`, exported from `@internal/sql-relational-core/query-lane-context` and `@internal/sql-relational-core/codec-descriptor-registry` — is now `codecRefForColumn(namespaceId, table, column)`. The underlying free function `codecRefForStorageColumn(storage, table, column)` (exported from `@internal/sql-relational-core/codec-descriptor-registry`) is now `codecRefForStorageColumn(storage, namespaceId, table, column)`. Extension authors who derive codec refs directly must thread the namespace the table sits in at every call site: pass the explicit `namespaceId` ahead of `table`. There is no codemod — the right namespace is call-site-specific (read it from the model/table you are building the ref for). Two same-bare-named tables in different namespaces now resolve to their own per-namespace columns/codecs instead of the first scan hit.
+      detection:
+          glob: "**/*.{ts,tsx}"
+          contains:
+              - "codecRefForColumn("
+              - "codecRefForStorageColumn("
+          anyMatch: true
+    - id: storage-namespace-envelope-re-emit
+      summary: |
+          The storage IR in `contract.json` moved to a namespace envelope
+          (`storage.namespaces.<ns>.entries.<kind>`). This changes `storageHash` for every
+          SQL and Mongo extension contract. Re-emit your extension contract artefacts
+          (`pnpm --filter <your-extension-package> build:contract-space`), then re-pin your
+          migration baselines so `migrations/refs/head.json`, `end-contract.json`,
+          `end-contract.d.ts`, `migration.json`, `migration.ts`, and `ops.json` all reflect
+          the new hash. No source change is required — re-emitting is sufficient.
+      detection:
+          glob: "**/contract.json"
+          anyMatch: true
 ---
 
 <!--
@@ -185,10 +185,10 @@ The registry method exported from `@internal/sql-relational-core/query-lane-cont
 
 ```ts
 // Before 0.13
-const ref = descriptors.codecRefForColumn('document', 'embedding');
+const ref = descriptors.codecRefForColumn("document", "embedding");
 
 // Starting at 0.13 — namespaceId leads the coordinate args
-const ref = descriptors.codecRefForColumn('public', 'document', 'embedding');
+const ref = descriptors.codecRefForColumn("public", "document", "embedding");
 ```
 
 The namespace is whatever namespace the model/table you are building the ref for lives in — read it from the resolved table coordinate you already hold at the construction site, not a hard-coded literal. The table is now resolved strictly within that namespace, so two same-bare-named tables in different namespaces resolve to their own per-namespace column codecs without colliding.
@@ -199,10 +199,10 @@ The free function exported from `@internal/sql-relational-core/codec-descriptor-
 
 ```ts
 // Before 0.13
-const ref = codecRefForStorageColumn(storage, 'document', 'embedding');
+const ref = codecRefForStorageColumn(storage, "document", "embedding");
 
 // Starting at 0.13
-const ref = codecRefForStorageColumn(storage, 'public', 'document', 'embedding');
+const ref = codecRefForStorageColumn(storage, "public", "document", "embedding");
 ```
 
 It now resolves the table via `resolveStorageTable(storage, tableName, namespaceId)` rather than scanning every namespace for the first bare-name match, so a name that is ambiguous across namespaces is no longer silently bound to whichever namespace happened to enumerate first.

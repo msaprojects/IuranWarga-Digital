@@ -2,51 +2,51 @@
 from: "8.0.0-rc.8"
 to: "8.0.0-rc.9"
 changes:
-  - id: remove-nested-relations-from-sql-orm-upsert-and-batch-create
-    summary: |
-      SQL ORM `upsert({ create })`, `createAll()`, and `createAndCount()` payloads no longer accept nested relation mutation callbacks, which these operations cannot execute. Remove the callbacks and create related records separately, or use ordinary `create()` when the records must be created as one nested relation operation.
-  - id: namespace-qualify-sql-orm-filter-types
-    summary: |
-      SQL ORM reusable filter types now require the domain namespace before the model name: `<Contract, Namespace, Model>`.
-  - id: add-attributes-to-psl-extension-block-literals
-    summary: |
-      `PslExtensionBlock` gained a required `attributes` record (attribute name → `{ args, span }`, the kit-parsed values of the block's `@@` attributes). Every hand-built block node — synthesised blocks in scripts, inference builders, and test fixtures — must set `attributes` next to `blockAttributes` (`{}` when the block carries no attributes).
-    detection:
-      glob: "**/*.{ts,tsx}"
-      contains:
-        - "blockAttributes:"
-      anyMatch: true
-  - id: read-native-enum-map-failures-from-the-kit
-    summary: |
-      `PSL_NATIVE_ENUM_INVALID_MAP` no longer exists. A malformed `@@map` on a `native_enum` block — and every other malformed block attribute — is reported at symbol-table time as `PSL_INVALID_ATTRIBUTE_SYNTAX`; only the policy `@@map("")` empty-name rule keeps its own code (`PSL_POLICY_INVALID_MAP`). Replace references to the removed code and assert those diagnostics on the `buildSymbolTable` result rather than on the interpretation result.
-    detection:
-      glob: "**/*.{ts,tsx}"
-      contains:
-        - "PSL_NATIVE_ENUM_INVALID_MAP"
-      anyMatch: true
-  - id: arg-type-parse-is-a-property
-    summary: |
-      `ArgType.parse` is now a property function type carrying a `Ctx` parameter, so the ctx an argument type needs is checked contravariantly. A class that implements `ArgType` with a `parse(...)` method, or an object typed against `ArgType<T>` and used inside `blockAttribute()`, must declare `parse` as a function-typed property over the ctx it actually reads.
-    detection:
-      glob: "**/*.{ts,tsx}"
-      contains:
-        - "implements ArgType"
-        - "ArgType<"
-      anyMatch: true
-  - id: state-attribute-spec-contexts-explicitly
-    summary: |
-      The attribute-spec interpret contexts were reshaped. `BlockInterpretCtx` and `InterpretCtx` are gone, replaced by `AttributeCtx` (`sourceId` + `sourceFile`), `ModelAttributeCtx` (adds `selfModel`), and `FieldAttributeCtx` (adds a required `field` and `resolveReferencedModel()`). Contexts no longer carry `level`. `ArgType`, `OptionalArgType`, `Param`, `PositionalParam`, and `AttributeSpec` lost their default type arguments, so every use site must name its context. `fieldRef('self')` / `fieldRef('referenced')` became `fieldRef()` / `referencedFieldRef()`, and `FieldRefScope`, `FieldRefArgType`, and the `scope` property are removed. `oneOf` is one generic signature over a single context shared by every alternative, so a mixed alternation must be given that context by an annotation or a contextual type.
-    detection:
-      glob: "**/*.{ts,tsx}"
-      contains:
-        - "InterpretCtx"
-        - "fieldRef("
-        - "FieldRefScope"
-        - "FieldRefArgType"
-        - "ArgType<"
-        - "AttributeSpec<"
-        - "PositionalParam"
-      anyMatch: true
+    - id: remove-nested-relations-from-sql-orm-upsert-and-batch-create
+      summary: |
+          SQL ORM `upsert({ create })`, `createAll()`, and `createAndCount()` payloads no longer accept nested relation mutation callbacks, which these operations cannot execute. Remove the callbacks and create related records separately, or use ordinary `create()` when the records must be created as one nested relation operation.
+    - id: namespace-qualify-sql-orm-filter-types
+      summary: |
+          SQL ORM reusable filter types now require the domain namespace before the model name: `<Contract, Namespace, Model>`.
+    - id: add-attributes-to-psl-extension-block-literals
+      summary: |
+          `PslExtensionBlock` gained a required `attributes` record (attribute name → `{ args, span }`, the kit-parsed values of the block's `@@` attributes). Every hand-built block node — synthesised blocks in scripts, inference builders, and test fixtures — must set `attributes` next to `blockAttributes` (`{}` when the block carries no attributes).
+      detection:
+          glob: "**/*.{ts,tsx}"
+          contains:
+              - "blockAttributes:"
+          anyMatch: true
+    - id: read-native-enum-map-failures-from-the-kit
+      summary: |
+          `PSL_NATIVE_ENUM_INVALID_MAP` no longer exists. A malformed `@@map` on a `native_enum` block — and every other malformed block attribute — is reported at symbol-table time as `PSL_INVALID_ATTRIBUTE_SYNTAX`; only the policy `@@map("")` empty-name rule keeps its own code (`PSL_POLICY_INVALID_MAP`). Replace references to the removed code and assert those diagnostics on the `buildSymbolTable` result rather than on the interpretation result.
+      detection:
+          glob: "**/*.{ts,tsx}"
+          contains:
+              - "PSL_NATIVE_ENUM_INVALID_MAP"
+          anyMatch: true
+    - id: arg-type-parse-is-a-property
+      summary: |
+          `ArgType.parse` is now a property function type carrying a `Ctx` parameter, so the ctx an argument type needs is checked contravariantly. A class that implements `ArgType` with a `parse(...)` method, or an object typed against `ArgType<T>` and used inside `blockAttribute()`, must declare `parse` as a function-typed property over the ctx it actually reads.
+      detection:
+          glob: "**/*.{ts,tsx}"
+          contains:
+              - "implements ArgType"
+              - "ArgType<"
+          anyMatch: true
+    - id: state-attribute-spec-contexts-explicitly
+      summary: |
+          The attribute-spec interpret contexts were reshaped. `BlockInterpretCtx` and `InterpretCtx` are gone, replaced by `AttributeCtx` (`sourceId` + `sourceFile`), `ModelAttributeCtx` (adds `selfModel`), and `FieldAttributeCtx` (adds a required `field` and `resolveReferencedModel()`). Contexts no longer carry `level`. `ArgType`, `OptionalArgType`, `Param`, `PositionalParam`, and `AttributeSpec` lost their default type arguments, so every use site must name its context. `fieldRef('self')` / `fieldRef('referenced')` became `fieldRef()` / `referencedFieldRef()`, and `FieldRefScope`, `FieldRefArgType`, and the `scope` property are removed. `oneOf` is one generic signature over a single context shared by every alternative, so a mixed alternation must be given that context by an annotation or a contextual type.
+      detection:
+          glob: "**/*.{ts,tsx}"
+          contains:
+              - "InterpretCtx"
+              - "fieldRef("
+              - "FieldRefScope"
+              - "FieldRefArgType"
+              - "ArgType<"
+              - "AttributeSpec<"
+              - "PositionalParam"
+          anyMatch: true
 ---
 
 # 8.0.0-rc.8 → 8.0.0-rc.9 — Extension author upgrade instructions

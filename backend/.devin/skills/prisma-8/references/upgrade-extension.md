@@ -8,7 +8,7 @@ The per-transition instructions this reference reads live under [`../upgrading/e
 
 ## Step 0 — Upgrade to the newest instructions, then re-read
 
-The upgrade instructions ship inside the installed Prisma packages, so the copy on disk describes the version currently installed — not the version being upgraded *to*. Bug fixes to *old* per-transition instructions ship with each release as part of the cumulative set, so the newest copy is the one to run.
+The upgrade instructions ship inside the installed Prisma packages, so the copy on disk describes the version currently installed — not the version being upgraded _to_. Bug fixes to _old_ per-transition instructions ship with each release as part of the cumulative set, so the newest copy is the one to run.
 
 Do the version bump first (step 1 of the per-step flow below), re-sync the skills from the newly installed packages (`prisma skills sync`), and re-read this reference and the per-transition instructions before applying any code translation.
 
@@ -55,35 +55,35 @@ For each `(from, to)` step in the chain:
 
 3. **Check pins.** Every `@prisma/orm-*` entry other than `@prisma/orm-extension-*` across `dependencies`, `peerDependencies`, and `optionalDependencies` must now be the single exact string `<to>`. This prints any entry that is not, and exits 1:
 
-   ```bash
-   node -e 'const p=require("./package.json");const to=process.argv[1];const bad=[];for(const f of ["dependencies","peerDependencies","optionalDependencies"])for(const [n,v] of Object.entries(p[f]??{}))if(n.startsWith("@prisma/orm-")&&!n.startsWith("@prisma/orm-extension-")&&v!==to)bad.push(f+": "+n+"@"+v);if(bad.length){console.error(bad.join("\n"));process.exit(1)}' <to>
-   ```
+    ```bash
+    node -e 'const p=require("./package.json");const to=process.argv[1];const bad=[];for(const f of ["dependencies","peerDependencies","optionalDependencies"])for(const [n,v] of Object.entries(p[f]??{}))if(n.startsWith("@prisma/orm-")&&!n.startsWith("@prisma/orm-extension-")&&v!==to)bad.push(f+": "+n+"@"+v);if(bad.length){console.error(bad.join("\n"));process.exit(1)}' <to>
+    ```
 
-   If it fails, the bump step did not rewrite every spec — fix the offending entries and re-run before proceeding.
+    If it fails, the bump step did not rewrite every spec — fix the offending entries and re-run before proceeding.
 
 4. **Read the upgrade instructions.** Re-sync the skills (`prisma skills sync`) so the tree matches the version just installed, then load `../upgrading/extension/upgrades/<from>-to-<to>/instructions.md`. Parse the YAML frontmatter and pay particular attention to its `changes[]` array.
 
 5. **Apply each change.** For each entry in `changes[]`:
-   - If the entry has a `detection` block (a glob + content predicate), run it. If no files match, skip this change. Run the glob over the project's own files: skip `node_modules`, and build output such as `dist`, `build`, `.next` or `out` (whatever directories the project's build writes). A match there is generated code, which the next build rewrites; editing it changes nothing. Migration snapshots under `migrations/snapshots/` are committed files, not build output, so keep them.
-   - How a `detection` block runs: `glob` selects files relative to the project root. Each `matches` entry, once read from the YAML, is a JavaScript regular expression, built as `new RegExp(pattern)` with no flags and tested against the whole content of one file at a time; each `contains` entry is a plain substring. A file is a hit when any entry matches it. Patterns may span lines, and some look at the whole file (for example, to skip a file that declares something elsewhere in it), so a line-by-line search such as `grep` or `rg` without `-U` is not the same test and can report files the pattern excludes. From a shell, `rg -U --pcre2 -l -e '<pattern>' <files>` tests whole files and gives the same hits.
-   - If the entry has no `detection`, apply unconditionally.
-   - If the entry names a `script:` (a relative path next to `instructions.md`), invoke it from the project root:
-     - `*.ts` → `pnpm exec tsx <skill>/upgrading/extension/upgrades/<from>-to-<to>/<script>`
-     - `*.sh` → `bash <skill>/upgrading/extension/upgrades/<from>-to-<to>/<script>`
-     - codemods → invoke per the script's own `instructions.md` prose.
-   - If the entry has no `script`, follow the prose body in `instructions.md` directly.
+    - If the entry has a `detection` block (a glob + content predicate), run it. If no files match, skip this change. Run the glob over the project's own files: skip `node_modules`, and build output such as `dist`, `build`, `.next` or `out` (whatever directories the project's build writes). A match there is generated code, which the next build rewrites; editing it changes nothing. Migration snapshots under `migrations/snapshots/` are committed files, not build output, so keep them.
+    - How a `detection` block runs: `glob` selects files relative to the project root. Each `matches` entry, once read from the YAML, is a JavaScript regular expression, built as `new RegExp(pattern)` with no flags and tested against the whole content of one file at a time; each `contains` entry is a plain substring. A file is a hit when any entry matches it. Patterns may span lines, and some look at the whole file (for example, to skip a file that declares something elsewhere in it), so a line-by-line search such as `grep` or `rg` without `-U` is not the same test and can report files the pattern excludes. From a shell, `rg -U --pcre2 -l -e '<pattern>' <files>` tests whole files and gives the same hits.
+    - If the entry has no `detection`, apply unconditionally.
+    - If the entry names a `script:` (a relative path next to `instructions.md`), invoke it from the project root:
+        - `*.ts` → `pnpm exec tsx <skill>/upgrading/extension/upgrades/<from>-to-<to>/<script>`
+        - `*.sh` → `bash <skill>/upgrading/extension/upgrades/<from>-to-<to>/<script>`
+        - codemods → invoke per the script's own `instructions.md` prose.
+    - If the entry has no `script`, follow the prose body in `instructions.md` directly.
 
-   If `changes[]` is empty (the placeholder shape for transitions with no extension-side breaking changes), this sub-step is a no-op — proceed to validation.
+    If `changes[]` is empty (the placeholder shape for transitions with no extension-side breaking changes), this sub-step is a no-op — proceed to validation.
 
 6. **Validate.** Run `pnpm build && pnpm test` (or the project's equivalent — the `scripts` field of the extension's `package.json` is the discovery surface). If anything is red, halt the chain. Do **not** auto-roll-back; surface the failure to the user with the failing change's `id` (from the frontmatter), the file paths the change operated on, and the inferred remediation.
 
 7. **Commit.** Create one commit containing this step's changes: the `package.json` bump, the lockfile churn from `pnpm install`, and any source-file rewrites from the applied changes. Use the message:
 
-   ```text
-   chore: upgrade @prisma/orm-* to <to-version>
-   ```
+    ```text
+    chore: upgrade @prisma/orm-* to <to-version>
+    ```
 
-   (Or the extension's own commit-message convention, if it has one.) One commit per step — never squash steps.
+    (Or the extension's own commit-message convention, if it has one.) One commit per step — never squash steps.
 
 Move on to the next step. Repeat.
 

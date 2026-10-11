@@ -2,22 +2,22 @@
 from: "0.9"
 to: "0.10"
 changes:
-  - id: stamp-storage-types-kind-on-contract-snapshots
-    summary: Stamp the `kind` discriminator (`"codec-instance"` / `"postgres-enum"`) on every entry in `storage.types` inside every committed `start-contract.json` / `end-contract.json` snapshot (extension seed migrations included). The SQL family's contract serializer is now strict — untagged entries fail to load with a deserializer diagnostic naming the offending entry.
-    detection:
-      glob: "**/migrations/**/{start,end}-contract.json"
-      contains:
-        - '"codecId"'
-      anyMatch: true
-    script: ./stamp-storage-types-kind.ts
-  - id: stamp-storage-types-kind-in-source
-    summary: Wrap untagged codec-triple inputs to `SqlStorage` (or any builder that materialises `storage.types`) with `toStorageTypeInstance(...)`, and use the target-specific `PostgresEnumType` class for Postgres-enum entries — the `SqlStorage` constructor now throws on untagged entries instead of papering over them.
-    detection:
-      glob: "**/*.{ts,tsx}"
-      contains:
-        - "storage.types"
-        - "codecId"
-      anyMatch: true
+    - id: stamp-storage-types-kind-on-contract-snapshots
+      summary: Stamp the `kind` discriminator (`"codec-instance"` / `"postgres-enum"`) on every entry in `storage.types` inside every committed `start-contract.json` / `end-contract.json` snapshot (extension seed migrations included). The SQL family's contract serializer is now strict — untagged entries fail to load with a deserializer diagnostic naming the offending entry.
+      detection:
+          glob: "**/migrations/**/{start,end}-contract.json"
+          contains:
+              - '"codecId"'
+          anyMatch: true
+      script: ./stamp-storage-types-kind.ts
+    - id: stamp-storage-types-kind-in-source
+      summary: Wrap untagged codec-triple inputs to `SqlStorage` (or any builder that materialises `storage.types`) with `toStorageTypeInstance(...)`, and use the target-specific `PostgresEnumType` class for Postgres-enum entries — the `SqlStorage` constructor now throws on untagged entries instead of papering over them.
+      detection:
+          glob: "**/*.{ts,tsx}"
+          contains:
+              - "storage.types"
+              - "codecId"
+          anyMatch: true
 ---
 
 # 0.9 → 0.10 — Extension-author upgrade instructions
@@ -32,15 +32,15 @@ Before 0.10, seed snapshots looked like this:
 
 ```jsonc
 {
-  "storage": {
-    "types": {
-      "Embedding1536": {
-        "codecId": "pg/vector@1",
-        "nativeType": "vector",
-        "typeParams": { "length": 1536 }
-      }
-    }
-  }
+    "storage": {
+        "types": {
+            "Embedding1536": {
+                "codecId": "pg/vector@1",
+                "nativeType": "vector",
+                "typeParams": { "length": 1536 },
+            },
+        },
+    },
 }
 ```
 
@@ -48,16 +48,16 @@ Starting at 0.10 the same entries must look like this:
 
 ```jsonc
 {
-  "storage": {
-    "types": {
-      "Embedding1536": {
-        "kind": "codec-instance",
-        "codecId": "pg/vector@1",
-        "nativeType": "vector",
-        "typeParams": { "length": 1536 }
-      }
-    }
-  }
+    "storage": {
+        "types": {
+            "Embedding1536": {
+                "kind": "codec-instance",
+                "codecId": "pg/vector@1",
+                "nativeType": "vector",
+                "typeParams": { "length": 1536 },
+            },
+        },
+    },
 }
 ```
 
@@ -85,59 +85,59 @@ There is no codemod for this — extensions construct `SqlStorage` via too many 
 
 - **Codec-triple literal passed to `new SqlStorage({...})` or a builder that flattens to it** (e.g. `types: { Embedding1536: { codecId: 'pg/vector@1', nativeType: 'vector', typeParams: { length: 1536 } } }`): wrap each value with `toStorageTypeInstance(...)`:
 
-  ```ts
-  import { toStorageTypeInstance } from '@internal/sql-contract';
+    ```ts
+    import { toStorageTypeInstance } from "@internal/sql-contract";
 
-  const storage = new SqlStorage({
-    types: {
-      Embedding1536: toStorageTypeInstance({
-        codecId: 'pg/vector@1',
-        nativeType: 'vector',
-        typeParams: { length: 1536 },
-      }),
-    },
-    // …
-  });
-  ```
+    const storage = new SqlStorage({
+        types: {
+            Embedding1536: toStorageTypeInstance({
+                codecId: "pg/vector@1",
+                nativeType: "vector",
+                typeParams: { length: 1536 },
+            }),
+        },
+        // …
+    });
+    ```
 
-  The helper is idempotent — input already carrying the `kind` field passes through unchanged.
+    The helper is idempotent — input already carrying the `kind` field passes through unchanged.
 
 - **Postgres-enum literal** (e.g. `types: { user_type: { codecId: 'pg/enum@1', nativeType: 'user_type', typeParams: { values: ['admin', 'user'] } } }`): the canonical fix is to replace with a `PostgresEnumType` class instance from `@internal/postgres`:
 
-  ```ts
-  import { PostgresEnumType } from '@internal/postgres';
+    ```ts
+    import { PostgresEnumType } from "@internal/postgres";
 
-  const storage = new SqlStorage({
-    types: {
-      user_type: new PostgresEnumType({
-        name: 'user_type',
-        nativeType: 'user_type',
-        values: ['admin', 'user'],
-      }),
-    },
-    // …
-  });
-  ```
+    const storage = new SqlStorage({
+        types: {
+            user_type: new PostgresEnumType({
+                name: "user_type",
+                nativeType: "user_type",
+                values: ["admin", "user"],
+            }),
+        },
+        // …
+    });
+    ```
 
-  The class instance carries `kind: 'postgres-enum'` and the structural shape the family discriminates on. Plain object literals with `kind: 'postgres-enum'` are rejected — the constructor route is mandatory because hydration of raw JSON envelopes is the target-specific serializer's job (cross-domain layering: the SQL family doesn't know about Postgres-enum's concrete class).
+    The class instance carries `kind: 'postgres-enum'` and the structural shape the family discriminates on. Plain object literals with `kind: 'postgres-enum'` are rejected — the constructor route is mandatory because hydration of raw JSON envelopes is the target-specific serializer's job (cross-domain layering: the SQL family doesn't know about Postgres-enum's concrete class).
 
-  **Minimal-fix alternative for fixtures / round-trip tests.** If the code in question only round-trips the codec triple as a plain envelope (no target-specific enum behaviour — e.g. a planner test fixture that never reaches Postgres-enum planning hooks), stamping `kind: 'codec-instance'` on the existing literal is a sufficient and idempotent fix:
+    **Minimal-fix alternative for fixtures / round-trip tests.** If the code in question only round-trips the codec triple as a plain envelope (no target-specific enum behaviour — e.g. a planner test fixture that never reaches Postgres-enum planning hooks), stamping `kind: 'codec-instance'` on the existing literal is a sufficient and idempotent fix:
 
-  ```ts
-  const fixtureStorage: SqlStorageInput = {
-    types: {
-      user_type: {
-        kind: 'codec-instance',
-        codecId: 'pg/enum@1',
-        nativeType: 'user_type',
-        typeParams: { values: ['admin', 'user'] },
-      },
-    },
-    // …
-  };
-  ```
+    ```ts
+    const fixtureStorage: SqlStorageInput = {
+        types: {
+            user_type: {
+                kind: "codec-instance",
+                codecId: "pg/enum@1",
+                nativeType: "user_type",
+                typeParams: { values: ["admin", "user"] },
+            },
+        },
+        // …
+    };
+    ```
 
-  The SQL family treats the entry as an opaque codec triple and round-trips it unchanged. Use this form only when you do not need `PostgresEnumType`'s enum-specific structural fields (`name`, `values` lifted out of `typeParams`) or its enum-planning behaviour — otherwise prefer the `PostgresEnumType` constructor above.
+    The SQL family treats the entry as an opaque codec triple and round-trips it unchanged. Use this form only when you do not need `PostgresEnumType`'s enum-specific structural fields (`name`, `values` lifted out of `typeParams`) or its enum-planning behaviour — otherwise prefer the `PostgresEnumType` constructor above.
 
 - **Test fixtures that round-trip a contract through JSON** (e.g. `JSON.parse(JSON.stringify(contract))`): ensure the source-side contract is constructed with stamped entries before the round-trip; the deserializer now refuses to silently re-stamp on the read.
 

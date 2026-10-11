@@ -1,86 +1,70 @@
 [
-  {
-    "id": "column.public.organisasi.activeAt",
-    "label": "Add column \"activeAt\" to \"organisasi\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "column",
-        "name": "activeAt",
-        "table": "organisasi"
-      }
+    {
+        "id": "column.public.organisasi.activeAt",
+        "label": "Add column \"activeAt\" to \"organisasi\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "column",
+                "name": "activeAt",
+                "table": "organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure column \"activeAt\" is missing",
+                "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+                "params": ["public", "organisasi", "activeAt"]
+            }
+        ],
+        "execute": [
+            {
+                "description": "add column \"activeAt\"",
+                "sql": "ALTER TABLE \"public\".\"organisasi\" ADD COLUMN \"activeAt\" timestamptz"
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify column \"activeAt\" exists",
+                "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+                "params": ["public", "organisasi", "activeAt"]
+            }
+        ]
     },
-    "precheck": [
-      {
-        "description": "ensure column \"activeAt\" is missing",
-        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
-        "params": [
-          "public",
-          "organisasi",
-          "activeAt"
+    {
+        "id": "column.public.organisasi.isActive",
+        "label": "Add column \"isActive\" to \"organisasi\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "column",
+                "name": "isActive",
+                "table": "organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure column \"isActive\" is missing",
+                "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+                "params": ["public", "organisasi", "isActive"]
+            }
+        ],
+        "execute": [
+            {
+                "description": "add column \"isActive\"",
+                "sql": "ALTER TABLE \"public\".\"organisasi\" ADD COLUMN \"isActive\" bool DEFAULT true NOT NULL"
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify column \"isActive\" exists",
+                "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+                "params": ["public", "organisasi", "isActive"]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "add column \"activeAt\"",
-        "sql": "ALTER TABLE \"public\".\"organisasi\" ADD COLUMN \"activeAt\" timestamptz"
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify column \"activeAt\" exists",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
-        "params": [
-          "public",
-          "organisasi",
-          "activeAt"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "column.public.organisasi.isActive",
-    "label": "Add column \"isActive\" to \"organisasi\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "column",
-        "name": "isActive",
-        "table": "organisasi"
-      }
-    },
-    "precheck": [
-      {
-        "description": "ensure column \"isActive\" is missing",
-        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
-        "params": [
-          "public",
-          "organisasi",
-          "isActive"
-        ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "add column \"isActive\"",
-        "sql": "ALTER TABLE \"public\".\"organisasi\" ADD COLUMN \"isActive\" bool DEFAULT true NOT NULL"
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify column \"isActive\" exists",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
-        "params": [
-          "public",
-          "organisasi",
-          "isActive"
-        ]
-      }
-    ]
-  }
+    }
 ]

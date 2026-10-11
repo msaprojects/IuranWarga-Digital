@@ -2,82 +2,82 @@
 from: "8.0.0-rc.15"
 to: "8.0.0-rc.16"
 changes:
-  - id: engine-pin-moves-to-0-6-3
-    summary: |
-      The toolchain now peers `@prisma/cli-engine@0.6.3` (up from 0.6.2). An extension package that pins `@prisma/cli-engine` for its tests or tooling must move the pin to `0.6.3`. The engine's only change is that it accepts any ArkType `^2.2.7`, so it shares one ArkType copy with the Prisma ORM packages.
-    detection:
-      glob: "**/package.json"
-      contains:
-        - '"@prisma/cli-engine": "0.6.2"'
-  - id: spec-contexts-carry-data-types
-    summary: |
-      `ControlDefaultRegistries` loses `dataTypeEntries`. An attribute spec context carries the stack's data types as `dataTypes: DataTypeSupport`, and `createBinder` and the Mongo PSL interpreter take them as `dataTypes`.
-    detection:
-      glob: "**/*.{ts,mts,cts}"
-      matches:
-        - '\bcontrolMutationDefaults\s*:\s*\{[^}]*\bdataTypeEntries\s*:'
-        - '\b(AttributeSpecContext|FieldAttributeSpecContext|ControlDefaultRegistries)\b'
-        - '\bcreateBinder\s*\('
-        - '\binterpretPslDocumentToMongoContract\s*\('
-  - id: stack-and-source-context-carry-data-types
-    summary: |
-      `ControlStack` replaces `dataTypeLookup` with `dataTypes: DataTypeSupport`. `ContractSourceContext`, `InterpretPslDocumentToSqlContractInput` and `InterpretPrisma7DocumentsInput` replace `dataTypeLookup` with `dataTypes: DataTypeSupport`.
-    detection:
-      glob: "**/*.{ts,mts,cts}"
-      matches:
-        - '\bdataTypeLookup\s*:'
-        - '\b(context|stack)\.dataTypeLookup\b'
-  - id: print-path-carries-data-types
-    summary: |
-      `SqlPslBuildContext` replaces `dataTypeLookup` and `authoringContributions.dataTypes` with `dataTypes: DataTypeSupport`. `DefaultMappingOptions` replaces `dataTypeEntries` and `dataTypeLookup` with `dataTypes: DataTypeSupport`.
-    detection:
-      glob: "**/*.{ts,mts,cts}"
-      matches:
-        - '\b(SqlPslBuildContext|DefaultMappingOptions)\b'
-        - '\bdataTypeEntries\s*:'
-        - '\bcontext\.authoringContributions\.dataTypes\b'
-  - id: cast-rule-moves-to-the-framework
-    summary: |
-      `entryForTag`, `WrittenValue` and `DataTypeSupport` are no longer exported from `@internal/sql-contract-psl/resolution`. Import them from `@internal/framework-components/authoring`, which also exports the cast rule for one written value. `DefaultRefusal` is the framework's refusals plus the default-only ones: its `no-cast` arm names `receivingType`, not `columnType`, and `readDataTypeDefault` takes `dataTypes`, not `support`.
-    detection:
-      glob: "**/*.{ts,mts,cts}"
-      matches:
-        - 'import\s*(type\s*)?\{[^}]*\b(entryForTag|WrittenValue|DataTypeSupport)\b[^}]*\}\s*from\s*[''"]@internal/sql-contract-psl/resolution[''"]'
-        - '\b(readDataTypeDefault|DefaultRefusal)\b'
-  - id: tagged-literal-text-renames
-    summary: |
-      The canonical value of a tagged literal is its text: `TaggedLiteralCanonicalization` carries `text`, not `body`; `TaggedLiteralExprAst.body()` is `text()`; `parseJsonBody` and `printJsonBody` are `parseJsonText` and `printJsonText`; `checkSqlDefaultBody` and `reservedSqlDefaultBody` are `checkSqlDefaultText` and `reservedSqlDefaultText`.
-    detection:
-      glob: "**/*.{ts,mts,cts}"
-      matches:
-        - '\b(parseJsonBody|printJsonBody)\b'
-        - '\b(canonicalizeTaggedLiteralBody|TaggedLiteralCanonicalization|TaggedLiteralExprAst)\b'
-        - '\b(checkSqlDefaultBody|reservedSqlDefaultBody)\b'
-  - id: one-of-returns-the-claiming-alternative
-    summary: |
-      An argument type may claim an argument whose shape is its own (`ArgType.claims`); `funcCall` claims a call to its name. When exactly one `oneOf` alternative claims the argument, `oneOf` returns its result, success or failure, and tries no other alternative.
-    detection:
-      glob: "**/*.{ts,mts,cts}"
-      matches:
-        - '\bfuncCall\s*\('
-  - id: default-refusals-point-at-the-written-value
-    summary: |
-      `@default` reports `PSL_VALUE_TYPE_INCOMPATIBLE` and `PSL_INVALID_LITERAL` at the written value, or at the list element they are about, not at the whole attribute. The `@default` list no longer offers `sql` as an element.
-    detection:
-      glob: "**/*.{ts,mts,cts,js,mjs}"
-      matches:
-        - '\bPSL_VALUE_TYPE_INCOMPATIBLE\b'
-        - '\bPSL_INVALID_LITERAL\b'
-        - 'list of \([^)]*\bsql`\.\.\.`'
-  - id: default-refusals-say-what-to-write
-    summary: |
-      A `@default` refusal from the cast rule starts with what to write instead, as in `Expected a number`, not the list of types the column casts from. It names the column's type and the value's type only when a value of an admitted form is still refused, such as a number too large for the column. `Unknown literal tag` in a `@default` starts with the field it is about, and `this target has no data type for` comes after what to write.
-    detection:
-      glob: "**/*.{ts,mts,cts,js,mjs,json}"
-      matches:
-        - '; it casts from '
-        - '(: |[''"`])this target has no data type for a (string|boolean|number) value[''"`]'
-        - '[''"`]Unknown literal tag '
+    - id: engine-pin-moves-to-0-6-3
+      summary: |
+          The toolchain now peers `@prisma/cli-engine@0.6.3` (up from 0.6.2). An extension package that pins `@prisma/cli-engine` for its tests or tooling must move the pin to `0.6.3`. The engine's only change is that it accepts any ArkType `^2.2.7`, so it shares one ArkType copy with the Prisma ORM packages.
+      detection:
+          glob: "**/package.json"
+          contains:
+              - '"@prisma/cli-engine": "0.6.2"'
+    - id: spec-contexts-carry-data-types
+      summary: |
+          `ControlDefaultRegistries` loses `dataTypeEntries`. An attribute spec context carries the stack's data types as `dataTypes: DataTypeSupport`, and `createBinder` and the Mongo PSL interpreter take them as `dataTypes`.
+      detection:
+          glob: "**/*.{ts,mts,cts}"
+          matches:
+              - '\bcontrolMutationDefaults\s*:\s*\{[^}]*\bdataTypeEntries\s*:'
+              - '\b(AttributeSpecContext|FieldAttributeSpecContext|ControlDefaultRegistries)\b'
+              - '\bcreateBinder\s*\('
+              - '\binterpretPslDocumentToMongoContract\s*\('
+    - id: stack-and-source-context-carry-data-types
+      summary: |
+          `ControlStack` replaces `dataTypeLookup` with `dataTypes: DataTypeSupport`. `ContractSourceContext`, `InterpretPslDocumentToSqlContractInput` and `InterpretPrisma7DocumentsInput` replace `dataTypeLookup` with `dataTypes: DataTypeSupport`.
+      detection:
+          glob: "**/*.{ts,mts,cts}"
+          matches:
+              - '\bdataTypeLookup\s*:'
+              - '\b(context|stack)\.dataTypeLookup\b'
+    - id: print-path-carries-data-types
+      summary: |
+          `SqlPslBuildContext` replaces `dataTypeLookup` and `authoringContributions.dataTypes` with `dataTypes: DataTypeSupport`. `DefaultMappingOptions` replaces `dataTypeEntries` and `dataTypeLookup` with `dataTypes: DataTypeSupport`.
+      detection:
+          glob: "**/*.{ts,mts,cts}"
+          matches:
+              - '\b(SqlPslBuildContext|DefaultMappingOptions)\b'
+              - '\bdataTypeEntries\s*:'
+              - '\bcontext\.authoringContributions\.dataTypes\b'
+    - id: cast-rule-moves-to-the-framework
+      summary: |
+          `entryForTag`, `WrittenValue` and `DataTypeSupport` are no longer exported from `@internal/sql-contract-psl/resolution`. Import them from `@internal/framework-components/authoring`, which also exports the cast rule for one written value. `DefaultRefusal` is the framework's refusals plus the default-only ones: its `no-cast` arm names `receivingType`, not `columnType`, and `readDataTypeDefault` takes `dataTypes`, not `support`.
+      detection:
+          glob: "**/*.{ts,mts,cts}"
+          matches:
+              - 'import\s*(type\s*)?\{[^}]*\b(entryForTag|WrittenValue|DataTypeSupport)\b[^}]*\}\s*from\s*[''"]@internal/sql-contract-psl/resolution[''"]'
+              - '\b(readDataTypeDefault|DefaultRefusal)\b'
+    - id: tagged-literal-text-renames
+      summary: |
+          The canonical value of a tagged literal is its text: `TaggedLiteralCanonicalization` carries `text`, not `body`; `TaggedLiteralExprAst.body()` is `text()`; `parseJsonBody` and `printJsonBody` are `parseJsonText` and `printJsonText`; `checkSqlDefaultBody` and `reservedSqlDefaultBody` are `checkSqlDefaultText` and `reservedSqlDefaultText`.
+      detection:
+          glob: "**/*.{ts,mts,cts}"
+          matches:
+              - '\b(parseJsonBody|printJsonBody)\b'
+              - '\b(canonicalizeTaggedLiteralBody|TaggedLiteralCanonicalization|TaggedLiteralExprAst)\b'
+              - '\b(checkSqlDefaultBody|reservedSqlDefaultBody)\b'
+    - id: one-of-returns-the-claiming-alternative
+      summary: |
+          An argument type may claim an argument whose shape is its own (`ArgType.claims`); `funcCall` claims a call to its name. When exactly one `oneOf` alternative claims the argument, `oneOf` returns its result, success or failure, and tries no other alternative.
+      detection:
+          glob: "**/*.{ts,mts,cts}"
+          matches:
+              - '\bfuncCall\s*\('
+    - id: default-refusals-point-at-the-written-value
+      summary: |
+          `@default` reports `PSL_VALUE_TYPE_INCOMPATIBLE` and `PSL_INVALID_LITERAL` at the written value, or at the list element they are about, not at the whole attribute. The `@default` list no longer offers `sql` as an element.
+      detection:
+          glob: "**/*.{ts,mts,cts,js,mjs}"
+          matches:
+              - '\bPSL_VALUE_TYPE_INCOMPATIBLE\b'
+              - '\bPSL_INVALID_LITERAL\b'
+              - 'list of \([^)]*\bsql`\.\.\.`'
+    - id: default-refusals-say-what-to-write
+      summary: |
+          A `@default` refusal from the cast rule starts with what to write instead, as in `Expected a number`, not the list of types the column casts from. It names the column's type and the value's type only when a value of an admitted form is still refused, such as a number too large for the column. `Unknown literal tag` in a `@default` starts with the field it is about, and `this target has no data type for` comes after what to write.
+      detection:
+          glob: "**/*.{ts,mts,cts,js,mjs,json}"
+          matches:
+              - "; it casts from "
+              - '(: |[''"`])this target has no data type for a (string|boolean|number) value[''"`]'
+              - '[''"`]Unknown literal tag '
 ---
 
 # 8.0.0-rc.15 → 8.0.0-rc.16 — Extension author upgrade instructions
@@ -93,13 +93,13 @@ Engine 0.6.2 required ArkType `2.2.3` exactly, while the Prisma ORM packages acc
 `ControlDefaultRegistries` held the function registry and the stack's data type authoring entries. It now holds only `defaultFunctionRegistry`. The data types move to the attribute spec context, with their lookup:
 
 ```ts
-import type { DataTypeSupport } from '@internal/framework-components/authoring';
+import type { DataTypeSupport } from "@internal/framework-components/authoring";
 
 interface AttributeSpecContext {
-  readonly symbols: SymbolTable;
-  readonly model: ModelSymbol;
-  readonly controlMutationDefaults: ControlDefaultRegistries;
-  readonly dataTypes: DataTypeSupport; // { entries, lookup }
+    readonly symbols: SymbolTable;
+    readonly model: ModelSymbol;
+    readonly controlMutationDefaults: ControlDefaultRegistries;
+    readonly dataTypes: DataTypeSupport; // { entries, lookup }
 }
 ```
 
@@ -180,12 +180,12 @@ An alternative of your own that accepts call expressions, placed beside a `funcC
 
 The body is what is written between the quotes; the text is the canonical value. These names change:
 
-| Old | New |
-| --- | --- |
-| `TaggedLiteralCanonicalization` `{ ok: true, body }`, from `canonicalizeTaggedLiteralBody` | `{ ok: true, text }` |
-| `TaggedLiteralExprAst.body()` | `TaggedLiteralExprAst.text()` |
-| `parseJsonBody`, `printJsonBody` from `@internal/sql-contract/data-type-support` | `parseJsonText`, `printJsonText` from `@internal/sql-contract/data-type-support` |
-| `checkSqlDefaultBody`, `reservedSqlDefaultBody` from `@internal/sql-contract/validators` (and `checkSqlDefaultBody` from `@internal/family-sql/control`) | `checkSqlDefaultText`, `reservedSqlDefaultText` |
+| Old                                                                                                                                                      | New                                                                              |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `TaggedLiteralCanonicalization` `{ ok: true, body }`, from `canonicalizeTaggedLiteralBody`                                                               | `{ ok: true, text }`                                                             |
+| `TaggedLiteralExprAst.body()`                                                                                                                            | `TaggedLiteralExprAst.text()`                                                    |
+| `parseJsonBody`, `printJsonBody` from `@internal/sql-contract/data-type-support`                                                                         | `parseJsonText`, `printJsonText` from `@internal/sql-contract/data-type-support` |
+| `checkSqlDefaultBody`, `reservedSqlDefaultBody` from `@internal/sql-contract/validators` (and `checkSqlDefaultBody` from `@internal/family-sql/control`) | `checkSqlDefaultText`, `reservedSqlDefaultText`                                  |
 
 An entry that registers the `json` tag changes its imports:
 
@@ -208,16 +208,16 @@ The list arm of `@default` no longer offers `sql` as an element, so its label is
 
 `@default` and every other position that takes a value of a data type now word a refusal of the cast rule the same way. A refusal starts with what to write instead, the forms the column's type admits, as in `Expected a number`, not the list of types it casts from. It names the column's type and the value's type only when the value has an admitted form and is still refused, such as a number too large for the column. A quoted string on a column whose type has a tag also gets that string as a tagged literal to write, when the column's type takes it, as the `Jsonb` row shows. An element of a list written on a column whose type has a list cast, such as a vector, is refused with the forms of the list cast's element types. The two other refusals change as the table shows. The codes do not change.
 
-| Written | Message before | Message now |
-| --- | --- | --- |
-| `count Int @default(100000000000000099)` | `Field "N.count": pg/int4 has no cast from pg/int8; it casts from pg/int2` | `Field "N.count": Expected a number that pg/int4 can hold; got pg/int8` |
-| `meta Jsonb @default("{}")` | `Field "N.meta": pg/jsonb has no cast from pg/text; it casts from pg/json` | ``Field "N.meta": Expected json`...`; write json`{}` `` |
-| `count Int @default([1])` | `Field "N.count": pg/int4 has no cast from a list; it casts from pg/int2` | `Field "N.count": Expected a number; got a list` |
-| `embed pgvector.Vector(3) @default([1, "x", 3])` | `Field "N.embed" at element 2: pgvector/vector has no cast from pg/text; it casts from pg/int2, pg/int4, pg/int8, pg/numeric` | `Field "N.embed" at element 2: Expected a number` |
-| `active Int @default(true)` on SQLite | `Field "N.active": this target has no data type for a boolean value` | `Field "N.active": Expected a number; this target has no data type for a boolean value` |
-| ``v String @default(pg.sql`x`)`` | `Unknown literal tag "pg.sql". Known tags: sql, json.` | `Field "N.v": Unknown literal tag "pg.sql". Known tags: sql, json.` |
-| ``tags String[] @default([sql`'a'`])`` | `Field "Post.tags" at element 1: pg/text has no cast from sql/expression; it casts from nothing` | `Field "Post.tags" at element 1: Expected a quoted string` |
-| `enum P { @@type("pg/text@1") Low = 1 }` | `enum "P" member "Low": pg/text has no cast from pg/int2; it casts from nothing` | `enum "P" member "Low": Expected a quoted string` |
-| `enum P { Low = 3000000000 }`, an enum without `@@type` | `enum "P" member "Low": pg/int4 has no cast from pg/int8; it casts from pg/int2` | `enum "P" member "Low": Expected a number that pg/int4 can hold; got pg/int8` |
+| Written                                                 | Message before                                                                                                                | Message now                                                                             |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `count Int @default(100000000000000099)`                | `Field "N.count": pg/int4 has no cast from pg/int8; it casts from pg/int2`                                                    | `Field "N.count": Expected a number that pg/int4 can hold; got pg/int8`                 |
+| `meta Jsonb @default("{}")`                             | `Field "N.meta": pg/jsonb has no cast from pg/text; it casts from pg/json`                                                    | ``Field "N.meta": Expected json`...`; write json`{}` ``                                 |
+| `count Int @default([1])`                               | `Field "N.count": pg/int4 has no cast from a list; it casts from pg/int2`                                                     | `Field "N.count": Expected a number; got a list`                                        |
+| `embed pgvector.Vector(3) @default([1, "x", 3])`        | `Field "N.embed" at element 2: pgvector/vector has no cast from pg/text; it casts from pg/int2, pg/int4, pg/int8, pg/numeric` | `Field "N.embed" at element 2: Expected a number`                                       |
+| `active Int @default(true)` on SQLite                   | `Field "N.active": this target has no data type for a boolean value`                                                          | `Field "N.active": Expected a number; this target has no data type for a boolean value` |
+| ``v String @default(pg.sql`x`)``                        | `Unknown literal tag "pg.sql". Known tags: sql, json.`                                                                        | `Field "N.v": Unknown literal tag "pg.sql". Known tags: sql, json.`                     |
+| ``tags String[] @default([sql`'a'`])``                  | `Field "Post.tags" at element 1: pg/text has no cast from sql/expression; it casts from nothing`                              | `Field "Post.tags" at element 1: Expected a quoted string`                              |
+| `enum P { @@type("pg/text@1") Low = 1 }`                | `enum "P" member "Low": pg/text has no cast from pg/int2; it casts from nothing`                                              | `enum "P" member "Low": Expected a quoted string`                                       |
+| `enum P { Low = 3000000000 }`, an enum without `@@type` | `enum "P" member "Low": pg/int4 has no cast from pg/int8; it casts from pg/int2`                                              | `enum "P" member "Low": Expected a number that pg/int4 can hold; got pg/int8`           |
 
 Update an assertion on one of these messages to the new text.

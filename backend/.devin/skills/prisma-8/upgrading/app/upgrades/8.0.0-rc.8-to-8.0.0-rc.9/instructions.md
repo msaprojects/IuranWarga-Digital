@@ -2,36 +2,36 @@
 from: "8.0.0-rc.8"
 to: "8.0.0-rc.9"
 changes:
-  - id: reemit-supabase-extension-version
-    summary: |
-      Re-emit contracts using the Supabase extension so their extension version metadata matches the installed rc.9 package.
-  - id: mongo-index-projections-use-native-lists
-    summary: |
-      MongoDB wildcard index `include` and `exclude` projections in Prisma schema files must use native PSL lists instead of encoded list strings.
-    detection:
-      glob: "**/*.prisma"
-      matches:
-        - '\b(?:include|exclude)\s*:\s*"\[[^"\r\n]*\]"'
-  - id: mongo-text-index-weights-use-native-records
-    summary: |
-      MongoDB text-index `weights` in Prisma schema files must use native PSL records instead of encoded JSON strings.
-    detection:
-      glob: "**/*.prisma"
-      matches:
-        - '\bweights\s*:\s*"\{\s*(?:\\.|[^"\\])*\}"'
-  - id: explicit-enum-sort-values
-    summary: |
-      PostgreSQL text-backed enums now sort by stored value rather than declaration order; encode semantic ranks explicitly when ordering matters.
-  - id: namespace-qualify-sql-orm-filter-types
-    summary: |
-      SQL ORM reusable filter types now require the domain namespace before the model name: `<Contract, Namespace, Model>`.
-  - id: mongo-unlowered-attributes-are-rejected
-    summary: |
-      MongoDB Prisma schema files must not carry `@default(...)`, `@updatedAt`, or `@db.*` attributes; the Mongo interpreter never lowered them and now rejects them.
-    detection:
-      glob: "**/*.prisma"
-      matches:
-        - '@(?:default\(|updatedAt\b|db\.)'
+    - id: reemit-supabase-extension-version
+      summary: |
+          Re-emit contracts using the Supabase extension so their extension version metadata matches the installed rc.9 package.
+    - id: mongo-index-projections-use-native-lists
+      summary: |
+          MongoDB wildcard index `include` and `exclude` projections in Prisma schema files must use native PSL lists instead of encoded list strings.
+      detection:
+          glob: "**/*.prisma"
+          matches:
+              - '\b(?:include|exclude)\s*:\s*"\[[^"\r\n]*\]"'
+    - id: mongo-text-index-weights-use-native-records
+      summary: |
+          MongoDB text-index `weights` in Prisma schema files must use native PSL records instead of encoded JSON strings.
+      detection:
+          glob: "**/*.prisma"
+          matches:
+              - '\bweights\s*:\s*"\{\s*(?:\\.|[^"\\])*\}"'
+    - id: explicit-enum-sort-values
+      summary: |
+          PostgreSQL text-backed enums now sort by stored value rather than declaration order; encode semantic ranks explicitly when ordering matters.
+    - id: namespace-qualify-sql-orm-filter-types
+      summary: |
+          SQL ORM reusable filter types now require the domain namespace before the model name: `<Contract, Namespace, Model>`.
+    - id: mongo-unlowered-attributes-are-rejected
+      summary: |
+          MongoDB Prisma schema files must not carry `@default(...)`, `@updatedAt`, or `@db.*` attributes; the Mongo interpreter never lowered them and now rejects them.
+      detection:
+          glob: "**/*.prisma"
+          matches:
+              - '@(?:default\(|updatedAt\b|db\.)'
 ---
 
 # 8.0.0-rc.8 → 8.0.0-rc.9 — User upgrade instructions
