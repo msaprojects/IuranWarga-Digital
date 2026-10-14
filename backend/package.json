@@ -51,7 +51,7 @@
         "db:status": "prisma migration status",
         "dev": "bun --watch src/server.ts",
         "build": "bun build src/server.ts --outdir dist --target bun",
-        "start": "bun dist/server.ts",
+        "start": "bun dist/server.js",
         "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --no-cache --detectOpenHandles",
         "format": "prettier --write .",
         "format:check": "prettier --check .",

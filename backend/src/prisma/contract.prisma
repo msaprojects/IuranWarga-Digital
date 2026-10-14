@@ -38,6 +38,7 @@ model user {
   name     String?
   password String
   role     Role
+  isActive Boolean @default(true)
 
   // Nullable:
   // null = user tidak terikat ke organisasi tertentu
@@ -64,7 +65,7 @@ model user {
 // PESERTA / RUMAH
 //
 // Satu peserta = satu rumah / unit pembayar iuran.
-// detail_peserta = anggota keluarga yang tinggal di rumah tersebut.
+// detail_peserta = anggota keluarga yang tinggal di rumah / ikut organisasi tersebut.
 // ============================================================
 
 model peserta {
