@@ -9,6 +9,8 @@ const organisasi = {
     createdAt: "2025-01-01T00:00:00.000Z",
     id: 1,
     isActive: true,
+    email: null,
+    contact: null,
     kode: "ORG001",
     nama: "Organisasi",
     updatedAt: "2025-01-01T00:00:00.000Z",

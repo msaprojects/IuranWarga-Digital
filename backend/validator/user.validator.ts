@@ -1,6 +1,6 @@
 import z from "zod";
 
-const getDetailUserByIdAndKodeOrganisasiSchema = z.strictObject({
+export const getDetailUserByIdAndKodeOrganisasiSchema = z.strictObject({
     id: z.number().int().positive(),
     kode: z.string().trim().min(6).max(8),
 });

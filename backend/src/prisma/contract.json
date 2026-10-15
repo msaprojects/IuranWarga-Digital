@@ -877,10 +877,24 @@
                   "kind": "scalar"
                 }
               },
+              "contact": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "email": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -1042,8 +1056,14 @@
                 "alamat": {
                   "column": "alamat"
                 },
+                "contact": {
+                  "column": "contact"
+                },
                 "createdAt": {
                   "column": "createdAt"
+                },
+                "email": {
+                  "column": "email"
                 },
                 "id": {
                   "column": "id"
@@ -1753,10 +1773,24 @@
           },
           "user": {
             "fields": {
+              "contact": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "email": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -1925,8 +1959,14 @@
             },
             "storage": {
               "fields": {
+                "contact": {
+                  "column": "contact"
+                },
                 "createdAt": {
                   "column": "createdAt"
+                },
+                "email": {
+                  "column": "email"
                 },
                 "id": {
                   "column": "id"
@@ -2661,6 +2701,11 @@
                   "dataType": "pg/text",
                   "nullable": true
                 },
+                "contact": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
                 "createdAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "dataType": "pg/timestamptz",
@@ -2669,6 +2714,11 @@
                     "kind": "function"
                   },
                   "nullable": false
+                },
+                "email": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
                 },
                 "id": {
                   "codecId": "pg/int4@1",
@@ -2733,6 +2783,11 @@
                 {
                   "columns": [
                     "kode"
+                  ]
+                },
+                {
+                  "columns": [
+                    "email"
                   ]
                 }
               ]
@@ -3383,6 +3438,11 @@
                 }
               ],
               "columns": {
+                "contact": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
                 "createdAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "dataType": "pg/timestamptz",
@@ -3391,6 +3451,11 @@
                     "kind": "function"
                   },
                   "nullable": false
+                },
+                "email": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
                 },
                 "id": {
                   "codecId": "pg/int4@1",
@@ -3502,6 +3567,16 @@
                   "columns": [
                     "username"
                   ]
+                },
+                {
+                  "columns": [
+                    "email"
+                  ]
+                },
+                {
+                  "columns": [
+                    "contact"
+                  ]
                 }
               ]
             }
@@ -3566,7 +3641,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "c92a323e173e1a94dc3269de877dbb156cac4752eacc00618cf797f33700c998"
+    "storageHash": "fcb61b6a6c410d1204295cb853b4a96b2d7d6f59a85e9494b9ec74582deccf2f"
   },
   "capabilities": {
     "postgres": {
