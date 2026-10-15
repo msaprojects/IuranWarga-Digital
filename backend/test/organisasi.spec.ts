@@ -39,6 +39,14 @@ describe("Organisasi API", () => {
 
         expect(specResponse.status).toBe(200);
         expect(specResponse.body.openapi).toBe("3.1.0");
+        expect(
+            specResponse.body.paths["/organisasi"].post.requestBody.content["application/json"]
+                .schema.$ref,
+        ).toBe("#/components/schemas/CreateOrganisasiWithUserInput");
+        expect(specResponse.body.components.schemas.CreateOrganisasiWithUserInput.required).toEqual([
+            "organisasi",
+            "user",
+        ]);
         expect(specResponse.body.paths["/organisasi/{kode}"].patch).toBeDefined();
         expect(uiResponse.status).toBe(200);
         expect(uiResponse.text).toContain("Swagger UI");
@@ -112,16 +120,34 @@ describe("Organisasi API", () => {
     it("seharusnya membuat organisasi dengan nilai opsional default", async () => {
         const response = await request(app)
             .post("/api/organisasi")
-            .send({ kode: " ORG001 ", nama: " Organisasi " });
+            .send({
+                organisasi: { kode: " ORG001 ", nama: " Warga01 " },
+                user: {
+                    username: " admin01 ",
+                    name: " Admin Organisasi ",
+                    password: "password1",
+                },
+            });
 
         expect(response.status).toBe(201);
         expect(orgService.create).toHaveBeenCalledWith({
-            kode: "ORG001",
-            nama: "Organisasi",
-            alamat: null,
-            website: null,
-            isActive: true,
-            activeAt: null,
+            organisasi: {
+                kode: "ORG001",
+                nama: "Warga01",
+                alamat: null,
+                website: null,
+                isActive: true,
+                activeAt: null,
+                email: null,
+                contact: null,
+            },
+            user: {
+                username: "admin01",
+                name: "Admin Organisasi",
+                password: "password1",
+                email: null,
+                contact: null,
+            },
         });
     });
 

@@ -3,12 +3,13 @@ import { orgService } from "../services/organisasi.service.ts";
 import { resHandler } from "../utils/response_handler.ts";
 import type {
     CreateOrganisasiBody,
+    CreateOrganisasiWithUserBody,
     OrganisasiByKodeParams,
     UpdateOrganisasiBody,
 } from "../../validator/organisasi.validator.ts";
 
 type ParamsLocals = { validated: { params: OrganisasiByKodeParams } };
-type CreateLocals = { validated: { body: CreateOrganisasiBody } };
+type CreateLocals = { validated: { body: CreateOrganisasiWithUserBody } };
 type UpdateLocals = {
     validated: {
         params: OrganisasiByKodeParams;

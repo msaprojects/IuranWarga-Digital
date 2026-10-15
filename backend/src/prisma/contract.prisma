@@ -11,6 +11,8 @@ model organisasi {
   alamat   String?
   website  String?
   isActive Boolean @default(true)
+  email    String? @unique
+  contact  String?
 
   createdAt TimestamptzString  @default(now())
   updatedAt TimestamptzString  @default(now())
@@ -39,6 +41,8 @@ model user {
   password String
   role     Role
   isActive Boolean @default(true)
+  email    String? @unique
+  contact  String? @unique
 
   // Nullable:
   // null = user tidak terikat ke organisasi tertentu

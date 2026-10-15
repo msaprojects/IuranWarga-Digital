@@ -4,19 +4,13 @@ const organisasiPaths = {
             tags: ["Organisasi"],
             summary: "Buat organisasi",
             description:
-                "Membuat organisasi baru. Field alamat, website, isActive, dan activeAt bersifat opsional.",
+                "Membuat organisasi beserta user admin pertamanya. Role ADMIN dan organisasi_id ditentukan oleh server. Field opsional yang tidak dikirim akan menggunakan nilai default null (atau true untuk isActive).",
             operationId: "createOrganisasi",
             requestBody: {
                 required: true,
                 content: {
                     "application/json": {
-                        schema: { $ref: "#/components/schemas/CreateOrganisasiInput" },
-                        example: {
-                            kode: "ORG001",
-                            nama: "Warga Harmoni",
-                            alamat: "Jl. Melati No. 10",
-                            website: "https://wargaharmoni.example",
-                        },
+                        schema: { $ref: "#/components/schemas/CreateOrganisasiWithUserInput" },
                     },
                 },
             },
@@ -54,8 +48,8 @@ const organisasiPaths = {
                 name: "kode",
                 in: "path",
                 required: true,
-                description: "Kode organisasi, minimal 6 dan maksimal 64 karakter.",
-                schema: { type: "string", minLength: 6, maxLength: 64 },
+                description: "Kode organisasi, minimal 6 dan maksimal 8 karakter.",
+                schema: { type: "string", minLength: 6, maxLength: 8 },
                 example: "ORG001",
             },
         ],

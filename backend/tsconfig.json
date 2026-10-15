@@ -26,6 +26,9 @@
         "noUnusedLocals": false,
         "noUnusedParameters": false,
         "noPropertyAccessFromIndexSignature": false,
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
+
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true
     }
 }

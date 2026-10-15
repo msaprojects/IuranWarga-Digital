@@ -1,11 +1,12 @@
 import apiInfo from "./openapi/info.ts";
 import organisasiPaths from "./openapi/organisasi.ts";
-import schemas from "./openapi/schemas.ts";
+import organisasiSchemas from "./openapi/schemas/organisasi.ts";
+import userSchemas from "./openapi/schemas/user.ts";
 
 const openApiSpec = {
     ...apiInfo,
     paths: organisasiPaths,
-    components: { schemas },
+    components: { schemas: { ...organisasiSchemas, ...userSchemas } },
 } as const;
 
 export default openApiSpec;
