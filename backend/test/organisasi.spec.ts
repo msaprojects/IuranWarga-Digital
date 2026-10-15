@@ -19,7 +19,7 @@ beforeEach(() => {
     jest.spyOn(orgService, "getByKode").mockImplementation(async (kode) =>
         kode === organisasi.kode ? organisasi : null,
     );
-    jest.spyOn(orgService, "create").mockResolvedValue(organisasi);
+    jest.spyOn(orgService, "create").mockResolvedValue(undefined);
     jest.spyOn(orgService, "updateByKode").mockResolvedValue(organisasi);
     jest.spyOn(orgService, "deactivateByKode").mockResolvedValue({
         ...organisasi,

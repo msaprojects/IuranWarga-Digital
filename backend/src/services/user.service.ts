@@ -6,12 +6,13 @@ export type CreateUserInput = {
     password: string;
     role: "USER" | "ADMIN" | "SUPER_ADMIN";
     organisasi_id: number;
-    latestLogin: string;
-    isActive: boolean|true;
+    isActive?: boolean;
+    email: string | null;
+    contact: string | null;
 };
 
 export type UpdateUserInput = Partial<
-    Pick<CreateUserInput, "username" | "name" | "password" | "role" | "latestLogin" | "isActive">
+    Pick<CreateUserInput, "username" | "name" | "password" | "role" | "organisasi_id" | "email" | "contact" | "isActive">
 >;
 
 class UserService {
@@ -67,7 +68,10 @@ class UserService {
             password: input.password,
             role: input.role,
             organisasi_id: organizationId,
-            latestLogin: input.latestLogin,
+            isActive: input.isActive ?? true,
+            email: input.email,
+            contact: input.contact,
+     
         });
     }
 
@@ -82,8 +86,10 @@ class UserService {
                 name: input.name ?? user.name,
                 password: input.password ?? user.password,
                 role: input.role ?? user.role,
-                latestLogin: input.latestLogin ?? user.latestLogin,
-                isActive: input.isActive ?? user.isActive
+                organisasi_id: input.organisasi_id ?? user.organisasi_id,
+                isActive: input.isActive ?? user.isActive,
+                email: input.email ?? user.email,
+                contact: input.contact ?? user.contact
             });
     }
 }

@@ -2,7 +2,6 @@ import type { Request, Response } from "express";
 import { orgService } from "../services/organisasi.service.ts";
 import { resHandler } from "../utils/response_handler.ts";
 import type {
-    CreateOrganisasiBody,
     CreateOrganisasiWithUserBody,
     OrganisasiByKodeParams,
     UpdateOrganisasiBody,

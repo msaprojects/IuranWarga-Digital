@@ -38,24 +38,31 @@ class OrganisasiService {
 
         // ketika kode organisasi sudah ada, maka throw error
         const existingOrganisasi = await db.orm.public.organisasi
-            .where({ kode: input.organisasi.kode, isActive: true })
+            .where({ kode: input.organisasi.kode })
             .first();
         if (existingOrganisasi) {
             throw new Error("Kode organisasi sudah ada.");
         }
+        const existingUser = await db.orm.public.user
+            .where({ username: input.user.username })
+            .first();
+        if (existingUser) {
+            throw new Error("Username sudah digunakan.");
+        }
 
-        // create organisasi and user too!
-        const createOrganisasi = await db.orm.public.organisasi.create(input.organisasi);
-        await db.orm.public.user.create({
-            username: input.user.username,
-            name: input.user.name,
-            password: await hash(input.user.password, 12),
-            organisasi_id: createOrganisasi.id,
-            role: "ADMIN",
-            isActive: true,
+        return db.transaction(async (tx) => {
+            // create organisasi and user too!
+            const createOrganisasi = await tx.orm.public.organisasi.create(input.organisasi);
+
+            await tx.orm.public.user.create({
+                username: input.user.username,
+                name: input.user.name,
+                password: await hash(input.user.password, 12),
+                organisasi_id: createOrganisasi.id,
+                role: "ADMIN",
+                isActive: true,
+            });
         });
-
-        return createOrganisasi;
     }
 
     updateByKode(kode: string, input: UpdateOrganisasiInput) {
