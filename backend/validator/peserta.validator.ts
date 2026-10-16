@@ -9,6 +9,10 @@ export const getDetailPesertaByIdParamsSchema = z.strictObject({
     id: z.coerce.number().int().positive(),
 });
 
+export const decryptQRCodeStringSchema = z.strictObject({
+    qrCodeString: z.string().trim().min(3).max(256),
+});
+
 export const createPesertaSchema = z.strictObject({
     kode: z.string().trim().min(6).max(8).optional(),
     nama: z.string().trim().min(3).max(45),
@@ -38,3 +42,4 @@ export type GetDetailPesertaByIdAndKodeOrganisasiParams = z.output<
 export type GetDetailPesertaByIdParams = z.output<typeof getDetailPesertaByIdParamsSchema>;
 export type CreatePesertaBody = z.output<typeof createPesertaSchema>;
 export type UpdatePesertaBody = z.output<typeof updatePesertaSchema>;
+export type DecryptQRCodeStringBody = z.output<typeof decryptQRCodeStringSchema>;

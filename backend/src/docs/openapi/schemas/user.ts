@@ -6,11 +6,12 @@ const userSchemas = {
         properties: {
             username: { type: "string", minLength: 6, maxLength: 12 },
             name: { type: "string", minLength: 3, maxLength: 45 },
-            password: { type: "string", minLength: 8, maxLength: 12 },
+            password: { type: "string", minLength: 8, maxLength: 12, writeOnly: true },
             role: { type: "string", enum: ["ADMIN", "USER"] },
-            organisasi_id: { type: "integer" },
+            organisasi_id: { type: "integer", minimum: 1 },
+            isActive: { type: "boolean", default: true },
             email: { type: ["string", "null"], format: "email", default: null },
-            contact: { type: ["string", "null"], maxLength: 20, default: null },
+            contact: { type: ["string", "null"], default: null },
         },
     },
     UpdateUserInput: {
@@ -20,10 +21,12 @@ const userSchemas = {
         properties: {
             username: { type: "string", minLength: 6, maxLength: 12 },
             name: { type: "string", minLength: 3, maxLength: 45 },
-            password: { type: "string", minLength: 8, maxLength: 12 },
+            password: { type: "string", minLength: 8, maxLength: 12, writeOnly: true },
             role: { type: "string", enum: ["ADMIN", "USER"] },
+            organisasi_id: { type: "integer", minimum: 1 },
+            isActive: { type: "boolean" },
             email: { type: ["string", "null"], format: "email" },
-            contact: { type: ["string", "null"], maxLength: 20 },
+            contact: { type: ["string", "null"] },
         },
     },
     User: {
@@ -31,18 +34,18 @@ const userSchemas = {
         properties: {
             id: { type: "integer", example: 1 },
             username: { type: "string", example: "johndoe" },
-            name: { type: "string", example: "John Doe" },
+            name: { type: ["string", "null"], example: "John Doe" },
             role: { type: "string", enum: ["ADMIN", "USER"] },
-            organisasi_id: { type: "integer", example: 1 },
+            organisasi_id: { type: ["integer", "null"], example: 1 },
             email: { type: ["string", "null"], format: "email" },
-            contact: { type: ["string", "null"], maxLength: 20 },
+            contact: { type: ["string", "null"] },
             latestLogin: { type: ["string", "null"], format: "date-time" },
             isActive: { type: "boolean" },
             createdAt: { type: "string", format: "date-time" },
             updatedAt: { type: "string", format: "date-time" },
         },
     },
-    OrganisasiSuccess: {
+    UserSuccess: {
         type: "object",
         required: ["status", "message", "data"],
         properties: {
@@ -51,31 +54,13 @@ const userSchemas = {
             data: { $ref: "#/components/schemas/User" },
         },
     },
-    Error: {
+    UserListSuccess: {
         type: "object",
-        required: ["status", "message"],
+        required: ["status", "message", "data"],
         properties: {
-            status: { type: "string", const: "failed" },
+            status: { type: "string", const: "success" },
             message: { type: "string" },
-        },
-    },
-    ValidationError: {
-        type: "object",
-        required: ["status", "message", "errors"],
-        properties: {
-            status: { type: "string", const: "failed" },
-            message: { type: "string", example: "Validation Error" },
-            errors: {
-                type: "array",
-                items: {
-                    type: "object",
-                    required: ["field", "message"],
-                    properties: {
-                        field: { type: "string" },
-                        message: { type: "string" },
-                    },
-                },
-            },
+            data: { type: "array", items: { $ref: "#/components/schemas/User" } },
         },
     },
 } as const;

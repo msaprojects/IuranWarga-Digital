@@ -71,6 +71,8 @@ const organisasiSchemas = {
             alamat: { type: ["string", "null"], maxLength: 500 },
             website: { type: ["string", "null"], maxLength: 2048 },
             activeAt: { type: ["string", "null"], format: "date-time" },
+            email: { type: ["string", "null"], format: "email", maxLength: 320 },
+            contact: { type: ["string", "null"], maxLength: 20 },
         },
     },
     Organisasi: {
@@ -81,6 +83,8 @@ const organisasiSchemas = {
             nama: { type: "string", example: "Warga Harmoni" },
             alamat: { type: ["string", "null"] },
             website: { type: ["string", "null"] },
+            email: { type: ["string", "null"], format: "email" },
+            contact: { type: ["string", "null"] },
             isActive: { type: "boolean" },
             activeAt: { type: ["string", "null"], format: "date-time" },
             createdAt: { type: "string", format: "date-time" },
@@ -94,33 +98,6 @@ const organisasiSchemas = {
             status: { type: "string", const: "success" },
             message: { type: "string" },
             data: { $ref: "#/components/schemas/Organisasi" },
-        },
-    },
-    Error: {
-        type: "object",
-        required: ["status", "message"],
-        properties: {
-            status: { type: "string", const: "failed" },
-            message: { type: "string" },
-        },
-    },
-    ValidationError: {
-        type: "object",
-        required: ["status", "message", "errors"],
-        properties: {
-            status: { type: "string", const: "failed" },
-            message: { type: "string", example: "Validation Error" },
-            errors: {
-                type: "array",
-                items: {
-                    type: "object",
-                    required: ["field", "message"],
-                    properties: {
-                        field: { type: "string" },
-                        message: { type: "string" },
-                    },
-                },
-            },
         },
     },
 } as const;

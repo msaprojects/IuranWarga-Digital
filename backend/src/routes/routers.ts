@@ -1,3 +1,5 @@
+import { getDetailPesertaByIdAndKodeOrganisasiSchema, createPesertaSchema, getDetailPesertaByIdParamsSchema, updatePesertaSchema, decryptQRCodeStringSchema } from './../../validator/peserta.validator';
+import { pesertaController } from './../controllers/peserta.controller';
 import { createUserSchema, getDetailUserByIdAndKodeOrganisasiSchema, getDetailUserByIdParamsSchema, updateUserSchema } from './../../validator/user.validator';
 import { Router } from "express";
 import { orgController } from "../controllers/organisasi.controller.ts";
@@ -41,3 +43,12 @@ router.get('/users/:kode', validate(organisasiByKodeParamsSchema, 'params'), use
 router.get('/user/:id/:kode', validate(getDetailUserByIdAndKodeOrganisasiSchema, 'params'), userController.getDetailUserByOrganizationCode);
 router.post('/user', validate(createUserSchema, 'body'), userController.createUser);
 router.patch('/user/:id', validate(getDetailUserByIdParamsSchema, 'params'), validate(updateUserSchema, 'body'), userController.updateUser);
+
+// PESERTA
+router.get('/peserta/:kode', validate(organisasiByKodeParamsSchema, 'params'), pesertaController.getPesertaByOrganizationCode);
+router.get('/peserta/:id/:kode', validate(getDetailPesertaByIdAndKodeOrganisasiSchema, 'params'), pesertaController.getDetailPesertaByOrganizationCode);
+router.post('/peserta', validate(createPesertaSchema, 'body'), pesertaController.createPeserta);
+router.patch('/peserta/:id', validate(getDetailPesertaByIdParamsSchema, 'params'), validate(updatePesertaSchema, 'body'), pesertaController.updatePeserta);
+router.get('/peserta/qr/decrypt/:qrCodeString', validate(decryptQRCodeStringSchema, 'params'), pesertaController.decryptQRCode);
+router.get('/peserta/qr/revoke/:id/:kode', validate(getDetailPesertaByIdAndKodeOrganisasiSchema, 'params'), pesertaController.revokeQRCode);
+router.get('/peserta/qr/generate/:id/:kode', validate(getDetailPesertaByIdAndKodeOrganisasiSchema, 'params'), pesertaController.generateQRCode);
