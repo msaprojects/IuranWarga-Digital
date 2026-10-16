@@ -1,140 +1,400 @@
 // use prisma-8
 
+// ============================================================
+// ORGANISASI
+// ============================================================
+
 model organisasi {
-  id        Int               @id @default(autoincrement())
-  kode      String
-  nama      String
-  alamat    String?
-  website   String?
-  createdAt TimestamptzString @default(now())
-  updatedAt TimestamptzString @updatedAt
+  id       Int     @id @default(autoincrement())
+  kode     String  @unique
+  nama     String
+  alamat   String?
+  website  String?
+  isActive Boolean @default(true)
+  email    String? @unique
+  contact  String?
+
+  createdAt TimestamptzString  @default(now())
+  updatedAt TimestamptzString  @default(now())
+  activeAt  TimestamptzString?
+
+  // Relations
+  users              user[]
+  peserta            peserta[]
+  jenis_iuran        jenis_iuran[]
+  tagihan_iuran      tagihan_iuran[]
+  pembayaran         pembayaran_iuran[]
+  keuangan           keuangan[]
+  transaction_ledger transaction_ledger[]
+
+  @@index([nama])
 }
+
+// ============================================================
+// USER
+// ============================================================
 
 model user {
-  id            Int                @id @default(autoincrement())
-  username      String             @unique
-  name          String?
-  password      String
-  role          Role
+  id       Int     @id @default(autoincrement())
+  username String  @unique
+  name     String?
+  password String
+  role     Role
+  isActive Boolean @default(true)
+  email    String? @unique
+  contact  String? @unique
+
+  // Nullable:
+  // null = user tidak terikat ke organisasi tertentu
   organisasi_id Int?
-  organisasi    organisasi?        @relation(fields: [organisasi_id], references: [id])
-  createdAt     TimestamptzString  @default(now())
-  updatedAt     TimestamptzString  @updatedAt
-  latestLogin   TimestamptzString?
+  organisasi    organisasi? @relation(fields: [organisasi_id], references: [id])
+
+  latestLogin TimestamptzString?
+
+  createdAt TimestamptzString @default(now())
+  updatedAt TimestamptzString @default(now())
+
+  // Relations
+  peserta            peserta[]
+  pembayaran_iuran   pembayaran_iuran[]
+  keuangan           keuangan[]
+  transaction_ledger transaction_ledger[]
+
+  @@index([organisasi_id])
+  @@index([role])
 }
 
-model jenis_iuran {
-  id            Int               @id @default(autoincrement())
-  judul         String
-  periode_iuran PeriodeIuran
-  nominal       Float
-  tanggal_awal  Date
-  tanggal_akhir Date
-  isActive      Boolean
-  organisasi_id Int
-  organisasi    organisasi?       @relation(fields: [organisasi_id], references: [id])
-  createdAt     TimestamptzString @default(now())
-  updatedAt     TimestamptzString @updatedAt
-}
+// ============================================================
+// PESERTA / RUMAH
+//
+// Satu peserta = satu rumah / unit pembayar iuran.
+// detail_peserta = anggota keluarga yang tinggal di rumah / ikut organisasi tersebut.
+// ============================================================
 
-/**
- * Model peserta
- * model ini digunakan sebagai parent dari model detail_peserta dimana ini dimaksudkan untuk menghubungkan grup peserta
- * contoh : Rumah dan Daftar Keluarga.
- * Rumah adalah model peserta, dan Daftar Keluarga adalah model detail_peserta.
- */
 model peserta {
-  id            Int               @id @default(autoincrement())
-  kode          String            @unique
-  nomor_kk      String?
-  nomor_rumah   String?
-  alamat        String
-  deskripsi     String?
-  qr_code       String?
-  isActive      Boolean
-  organisasi_id Int
-  organisasi    organisasi?       @relation(fields: [organisasi_id], references: [id])
-  user_id       Int?
-  user          user?             @relation(fields: [user_id], references: [id])
-  createdAt     TimestamptzString @default(now())
-  updatedAt     TimestamptzString @updatedAt
+  id Int @id @default(autoincrement())
 
-  @@index([kode])
+  // Kode internal peserta.
+  // Unik hanya di dalam satu organisasi.
+  kode String
+
+  nama    String?
+  nomor_rumah String?
+  alamat      String?
+  deskripsi   String?
+
+  // Token yang digunakan untuk QR Code.
+  // Jangan simpan NIK/KK/nama langsung sebagai isi QR.
+  qr_token String? @unique
+
+  isActive Boolean @default(true)
+
+  organisasi_id Int
+  organisasi    organisasi @relation(fields: [organisasi_id], references: [id])
+
+  // User yang memiliki akses terhadap rumah/peserta.
+  // Nullable karena tidak semua rumah harus memiliki akun.
+  user_id Int?
+  user    user? @relation(fields: [user_id], references: [id])
+
+  createdAt TimestamptzString @default(now())
+  updatedAt TimestamptzString @default(now())
+
+  // Relations
+  anggota_keluarga detail_peserta[]
+  tagihan_iuran    tagihan_iuran[]
+  pembayaran       pembayaran_iuran[]
+
+  @@unique([organisasi_id, kode])
+  @@index([organisasi_id])
+  @@index([nomor_rumah])
+  @@index([user_id])
+  @@index([isActive])
 }
+
+// ============================================================
+// DETAIL PESERTA / ANGGOTA KELUARGA
+// ============================================================
 
 model detail_peserta {
-  id              Int               @id @default(autoincrement())
-  peserta_id      Int
-  peserta         peserta?          @relation(fields: [peserta_id], references: [id])
+  id Int @id @default(autoincrement())
+
+  peserta_id Int
+  peserta    peserta @relation(fields: [peserta_id], references: [id])
+
   nama            String
-  status_keluarga String?
-  isActive        Boolean
-  user_id         Int?
-  user            user?             @relation(fields: [user_id], references: [id])
-  organisasi_id   Int
-  organisasi      organisasi?       @relation(fields: [organisasi_id], references: [id])
-  createdAt       TimestamptzString @default(now())
-  updatedAt       TimestamptzString @updatedAt
+  status_keluarga StatusKeluarga
+
+  isActive Boolean @default(true)
+
+  createdAt TimestamptzString @default(now())
+  updatedAt TimestamptzString @default(now())
+
+  @@index([peserta_id])
+  @@index([isActive])
 }
+
+// ============================================================
+// JENIS IURAN
+//
+// Contoh:
+// - Iuran Kebersihan
+// - Iuran Keamanan
+// - Iuran RT
+// - Iuran Sampah
+// ============================================================
+
+model jenis_iuran {
+  id Int @id @default(autoincrement())
+
+  judul         String
+  periode_iuran PeriodeIuran
+
+  nominal Decimal
+
+  tanggal_awal  Date
+  tanggal_akhir Date
+
+  isActive Boolean @default(true)
+
+  organisasi_id Int
+  organisasi    organisasi @relation(fields: [organisasi_id], references: [id])
+
+  createdAt TimestamptzString @default(now())
+  updatedAt TimestamptzString @default(now())
+
+  // Relations
+  tagihan_iuran tagihan_iuran[]
+
+  @@index([organisasi_id])
+  @@index([isActive])
+  @@index([periode_iuran])
+}
+
+// ============================================================
+// TAGIHAN IURAN
+//
+// Tagihan dibuat terlebih dahulu.
+// Pembayaran terjadi terhadap tagihan.
+//
+// Contoh:
+//
+// Tagihan Januari = Rp50.000
+//
+// Payment 1 = Rp20.000
+// Payment 2 = Rp30.000
+//
+// Status tagihan kemudian menjadi SUDAH_BAYAR.
+// ============================================================
+
+model tagihan_iuran {
+  id Int @id @default(autoincrement())
+
+  // Nomor tagihan yang bisa ditampilkan kepada user.
+  nomor_tagihan String @unique
+
+  organisasi_id Int
+  organisasi    organisasi @relation(fields: [organisasi_id], references: [id])
+
+  jenis_iuran_id Int
+  jenis_iuran    jenis_iuran @relation(fields: [jenis_iuran_id], references: [id])
+
+  peserta_id Int
+  peserta    peserta @relation(fields: [peserta_id], references: [id])
+
+  // Periode tagihan.
+  tahun Int
+  bulan Int?
+
+  tanggal_terbit      Date
+  tanggal_jatuh_tempo Date
+
+  // Nominal yang wajib dibayar.
+  nominal_tagihan Decimal
+
+  // Total yang sudah dibayar.
+  nominal_terbayar Decimal
+
+  status StatusTagihan
+
+  keterangan String?
+
+  createdAt TimestamptzString @default(now())
+  updatedAt TimestamptzString @default(now())
+
+  // Relations
+  pembayaran pembayaran_iuran[]
+
+  @@unique([peserta_id, jenis_iuran_id, tahun, bulan])
+  @@index([organisasi_id])
+  @@index([jenis_iuran_id])
+  @@index([peserta_id])
+  @@index([status])
+  @@index([tanggal_jatuh_tempo])
+  @@index([tahun, bulan])
+}
+
+// ============================================================
+// PEMBAYARAN IURAN
+//
+// Satu tagihan dapat memiliki lebih dari satu pembayaran.
+// Cocok untuk:
+// - pembayaran penuh
+// - pembayaran cicilan / partial
+// - pembayaran ulang
+// ============================================================
 
 model pembayaran_iuran {
-  id             Int               @id @default(autoincrement())
-  organisasi_id  Int
-  organisasi     organisasi?       @relation(fields: [organisasi_id], references: [id])
+  id Int @id @default(autoincrement())
+
+  nomor_transaksi String @unique
+
+  organisasi_id Int
+  organisasi    organisasi @relation(fields: [organisasi_id], references: [id])
+
+  tagihan_iuran_id Int
+  tagihan_iuran    tagihan_iuran @relation(fields: [tagihan_iuran_id], references: [id])
+
+  // Snapshot relasi agar histori transaksi tetap mudah
+  // ditelusuri tanpa harus bergantung pada perubahan data master.
   jenis_iuran_id Int
-  jenis_iuran    jenis_iuran?      @relation(fields: [jenis_iuran_id], references: [id])
-  peserta_id     Int
-  peserta        peserta?          @relation(fields: [peserta_id], references: [id])
-  tahun_bayar    Int
-  bulan_bayar    Int
-  nominal_bayar  Float
-  tanggal_bayar  Date
-  status         StatusBayar
-  isPosting      Boolean
-  user_id        Int?
-  user           user?             @relation(fields: [id], references: [id])
-  createdAt      TimestamptzString @default(now())
-  updatedAt      TimestamptzString @updatedAt
+  jenis_iuran    jenis_iuran @relation(fields: [jenis_iuran_id], references: [id])
+
+  peserta_id Int
+  peserta    peserta @relation(fields: [peserta_id], references: [id])
+
+  nominal_bayar Decimal
+
+  tanggal_bayar Date
+
+  status StatusPembayaran
+
+  // Waktu transaksi dibuat / dicatat.
+  createdAt TimestamptzString @default(now())
+  updatedAt TimestamptzString @default(now())
+
+  // User yang mencatat pembayaran.
+  // Nullable untuk transaksi yang berasal dari sistem otomatis.
+  user_id Int?
+  user    user? @relation(fields: [user_id], references: [id])
+
+  // Waktu transaksi diposting ke buku keuangan.
+  // null = belum diposting.
+  postedAt TimestamptzString?
+
+  // Relations
+  keuangan_detail keuangan_detail[]
+
+  @@index([organisasi_id])
+  @@index([tagihan_iuran_id])
+  @@index([jenis_iuran_id])
+  @@index([peserta_id])
+  @@index([user_id])
+  @@index([tanggal_bayar])
+  @@index([status])
 }
+
+// ============================================================
+// KEUANGAN
+//
+// Buku transaksi keuangan organisasi.
+//
+// Contoh:
+// PEMASUKAN:
+// - Pembayaran iuran
+//
+// PENGELUARAN:
+// - Beli alat kebersihan
+// - Biaya operasional
+// ============================================================
 
 model keuangan {
-  id             Int               @id @default(autoincrement())
-  organisasi_id  Int
-  organisasi     organisasi?       @relation(fields: [organisasi_id], references: [id])
-  total          Float
-  tanggal        Date
-  user_id        Int?
-  user           user?             @relation(fields: [user_id], references: [id])
-  keterangan     String?
+  id Int @id @default(autoincrement())
+
+  organisasi_id Int
+  organisasi    organisasi @relation(fields: [organisasi_id], references: [id])
+
+  tanggal Date
+
+  user_id Int?
+  user    user? @relation(fields: [user_id], references: [id])
+
+  keterangan String?
+
   jenis_keuangan JenisKeuangan
-  createdAt      TimestamptzString @default(now())
-  updatedAt      TimestamptzString @updatedAt
+
+  createdAt TimestamptzString @default(now())
+  updatedAt TimestamptzString @default(now())
+
+  // Relations
+  detail             keuangan_detail[]
+  transaction_ledger transaction_ledger[]
+
+  @@index([organisasi_id])
+  @@index([tanggal])
+  @@index([jenis_keuangan])
+  @@index([user_id])
 }
+
+// ============================================================
+// DETAIL KEUANGAN
+//
+// Digunakan untuk menghubungkan transaksi keuangan dengan
+// sumber transaksi.
+//
+// pembayaran_iuran_id nullable:
+// null = transaksi keuangan umum
+// ada  = transaksi berasal dari pembayaran iuran
+// ============================================================
 
 model keuangan_detail {
-  id                  Int               @id @default(autoincrement())
-  keuangan_id         Int
-  keuangan            keuangan?         @relation(fields: [keuangan_id], references: [id])
-  nominal             Float
+  id Int @id @default(autoincrement())
+
+  keuangan_id Int
+  keuangan    keuangan @relation(fields: [keuangan_id], references: [id])
+
+  nominal Decimal
+
   pembayaran_iuran_id Int?
   pembayaran_iuran    pembayaran_iuran? @relation(fields: [pembayaran_iuran_id], references: [id])
-  keterangan          String?
+
+  keterangan String?
+
+  createdAt TimestamptzString  @default(now())
+  updatedAt TimestamptzString  @default(now())
+  deletedAt TimestamptzString?
+
+  @@index([keuangan_id])
+  @@index([pembayaran_iuran_id])
 }
 
-model log {
-  id               Int               @id @default(autoincrement())
-  organisasi_id    Int
-  organisasi       organisasi?       @relation(fields: [organisasi_id], references: [id])
-  user_id          Int?
-  user             user?             @relation(fields: [user_id], references: [id])
-  transaction_type String
-  keterangan       String
-  createdAt        TimestamptzString @default(now())
+// ============================================================
+// TRANSACACTION LEDGER
+// ============================================================
+model transaction_ledger {
+  id            String     @id @default(uuid(7))
+  keuangan_id   Int
+  keuangan      keuangan   @relation(fields: [keuangan_id], references: [id])
+  organisasi_id Int
+  organisasi    organisasi @relation(fields: [organisasi_id], references: [id])
+  user_id       Int
+  user          user       @relation(fields: [user_id], references: [id])
+
+  nominal        Decimal
+  tipe           LedgerSign
+  system_details String?
+
+  createdAt TimestamptzString @default(now())
 }
+
+// ============================================================
+// ENUM
+// ============================================================
 
 enum Role {
   USER
   ADMIN
+  SUPER_ADMIN
 }
 
 enum PeriodeIuran {
@@ -144,15 +404,35 @@ enum PeriodeIuran {
   TAHUNAN
 }
 
-enum StatusBayar {
+enum StatusTagihan {
   BELUM_BAYAR
-  SUDAH_BAYAR
-  CANCELLED
   PARTIAL
+  SUDAH_BAYAR
   OVERDUE
+  CANCELLED
+}
+
+enum StatusPembayaran {
+  BERHASIL
+  CANCELLED
+  REFUNDED
+}
+
+enum StatusKeluarga {
+  KEPALA_KELUARGA
+  SUAMI
+  ISTRI
+  ANAK
+  ORANG_TUA
+  LAINNYA
 }
 
 enum JenisKeuangan {
   PEMASUKAN
   PENGELUARAN
+}
+
+enum LedgerSign {
+  DEBIT
+  KREDIT
 }
