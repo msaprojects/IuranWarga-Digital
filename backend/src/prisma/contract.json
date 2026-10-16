@@ -1196,7 +1196,7 @@
           "peserta": {
             "fields": {
               "alamat": {
-                "nullable": false,
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -1230,13 +1230,6 @@
                   "kind": "scalar"
                 }
               },
-              "jenis": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
               "kode": {
                 "nullable": false,
                 "type": {
@@ -1244,7 +1237,7 @@
                   "kind": "scalar"
                 }
               },
-              "nomor_kk": {
+              "nama": {
                 "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
@@ -1383,14 +1376,11 @@
                 "isActive": {
                   "column": "isActive"
                 },
-                "jenis": {
-                  "column": "jenis"
-                },
                 "kode": {
                   "column": "kode"
                 },
-                "nomor_kk": {
-                  "column": "nomor_kk"
+                "nama": {
+                  "column": "nama"
                 },
                 "nomor_rumah": {
                   "column": "nomor_rumah"
@@ -2866,7 +2856,7 @@
                 "alamat": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
-                  "nullable": false
+                  "nullable": true
                 },
                 "createdAt": {
                   "codecId": "pg/timestamptz-string@1",
@@ -2900,17 +2890,12 @@
                   },
                   "nullable": false
                 },
-                "jenis": {
-                  "codecId": "pg/text@1",
-                  "dataType": "pg/text",
-                  "nullable": false
-                },
                 "kode": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
                   "nullable": false
                 },
-                "nomor_kk": {
+                "nama": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
                   "nullable": true
@@ -3619,7 +3604,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "12215829162ad2ef221fbb9afd3da0aa8545beaec7069888bf915192a643b2a0"
+    "storageHash": "8aa1b11e3b297a630bacd2522d075533b5155aad244b6da0df3c44f4b0e655e7"
   },
   "execution": {
     "executionHash": "5a97b77418540dec627a48c686dafc19ce7d676c6c9525a2b3210d0b9992b995",

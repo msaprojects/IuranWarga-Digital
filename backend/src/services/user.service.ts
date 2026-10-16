@@ -40,7 +40,7 @@ class UserService {
 
         return db.orm.public.user
             .where({ id, organisasi_id: organizationId })
-            .select("id", "username", "name", "role", "organisasi_id", "latestLogin")
+            .select("id", "username", "name", "role", "organisasi_id", "latestLogin", "isActive", "email", "contact")
             .first();
     }
 

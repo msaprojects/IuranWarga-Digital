@@ -2,4 +2,3 @@ backend/.agents
 backend/.davin
 backend/.claude
 backend/.cursor
-backend/migrations/

@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'12215829162ad2ef221fbb9afd3da0aa8545beaec7069888bf915192a643b2a0'>;
+  StorageHashBase<'8aa1b11e3b297a630bacd2522d075533b5155aad244b6da0df3c44f4b0e655e7'>;
 export type ExecutionHash =
   ExecutionHashBase<'5a97b77418540dec627a48c686dafc19ce7d676c6c9525a2b3210d0b9992b995'>;
 export type ProfileHash =
@@ -305,14 +305,13 @@ export type FieldOutputTypes = {
       readonly user_id: CodecTypes['pg/int4@1']['output'] | null;
     };
     readonly peserta: {
-      readonly alamat: CodecTypes['pg/text@1']['output'];
+      readonly alamat: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly deskripsi: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly isActive: CodecTypes['pg/bool@1']['output'];
-      readonly jenis: CodecTypes['pg/text@1']['output'];
       readonly kode: CodecTypes['pg/text@1']['output'];
-      readonly nomor_kk: CodecTypes['pg/text@1']['output'] | null;
+      readonly nama: CodecTypes['pg/text@1']['output'] | null;
       readonly nomor_rumah: CodecTypes['pg/text@1']['output'] | null;
       readonly organisasi_id: CodecTypes['pg/int4@1']['output'];
       readonly qr_token: CodecTypes['pg/text@1']['output'] | null;
@@ -435,14 +434,13 @@ export type FieldInputTypes = {
       readonly user_id: CodecTypes['pg/int4@1']['input'] | null;
     };
     readonly peserta: {
-      readonly alamat: CodecTypes['pg/text@1']['input'];
+      readonly alamat: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly deskripsi: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly isActive: CodecTypes['pg/bool@1']['input'];
-      readonly jenis: CodecTypes['pg/text@1']['input'];
       readonly kode: CodecTypes['pg/text@1']['input'];
-      readonly nomor_kk: CodecTypes['pg/text@1']['input'] | null;
+      readonly nama: CodecTypes['pg/text@1']['input'] | null;
       readonly nomor_rumah: CodecTypes['pg/text@1']['input'] | null;
       readonly organisasi_id: CodecTypes['pg/int4@1']['input'];
       readonly qr_token: CodecTypes['pg/text@1']['input'] | null;
@@ -565,14 +563,13 @@ export type StorageColumnTypes = {
       readonly user_id: CodecTypes['pg/int4@1']['output'] | null;
     };
     readonly peserta: {
-      readonly alamat: CodecTypes['pg/text@1']['output'];
+      readonly alamat: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly deskripsi: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/int4@1']['output'];
       readonly isActive: CodecTypes['pg/bool@1']['output'];
-      readonly jenis: CodecTypes['pg/text@1']['output'];
       readonly kode: CodecTypes['pg/text@1']['output'];
-      readonly nomor_kk: CodecTypes['pg/text@1']['output'] | null;
+      readonly nama: CodecTypes['pg/text@1']['output'] | null;
       readonly nomor_rumah: CodecTypes['pg/text@1']['output'] | null;
       readonly organisasi_id: CodecTypes['pg/int4@1']['output'];
       readonly qr_token: CodecTypes['pg/text@1']['output'] | null;
@@ -695,14 +692,13 @@ export type StorageColumnInputTypes = {
       readonly user_id: CodecTypes['pg/int4@1']['input'] | null;
     };
     readonly peserta: {
-      readonly alamat: CodecTypes['pg/text@1']['input'];
+      readonly alamat: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly deskripsi: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/int4@1']['input'];
       readonly isActive: CodecTypes['pg/bool@1']['input'];
-      readonly jenis: CodecTypes['pg/text@1']['input'];
       readonly kode: CodecTypes['pg/text@1']['input'];
-      readonly nomor_kk: CodecTypes['pg/text@1']['input'] | null;
+      readonly nama: CodecTypes['pg/text@1']['input'] | null;
       readonly nomor_rumah: CodecTypes['pg/text@1']['input'] | null;
       readonly organisasi_id: CodecTypes['pg/int4@1']['input'];
       readonly qr_token: CodecTypes['pg/text@1']['input'] | null;
@@ -860,14 +856,13 @@ export namespace Models {
       'jenis_iuran' | 'keuangan_detail' | 'organisasi' | 'peserta' | 'tagihan_iuran' | 'user';
   };
   export type public_peserta = {
-    alamat: CodecTypes['pg/text@1']['output'];
+    alamat: CodecTypes['pg/text@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
     deskripsi: CodecTypes['pg/text@1']['output'] | null;
     id: CodecTypes['pg/int4@1']['output'];
     isActive: CodecTypes['pg/bool@1']['output'];
-    jenis: CodecTypes['pg/text@1']['output'];
     kode: CodecTypes['pg/text@1']['output'];
-    nomor_kk: CodecTypes['pg/text@1']['output'] | null;
+    nama: CodecTypes['pg/text@1']['output'] | null;
     nomor_rumah: CodecTypes['pg/text@1']['output'] | null;
     organisasi_id: CodecTypes['pg/int4@1']['output'];
     qr_token: CodecTypes['pg/text@1']['output'] | null;
@@ -1676,7 +1671,7 @@ type ContractBase = Omit<
                 readonly alamat: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly createdAt: {
@@ -1712,19 +1707,13 @@ type ContractBase = Omit<
                   };
                   readonly many: false;
                 };
-                readonly jenis: {
-                  readonly dataType: 'pg/text';
-                  readonly codecId: 'pg/text@1';
-                  readonly nullable: false;
-                  readonly many: false;
-                };
                 readonly kode: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
                   readonly many: false;
                 };
-                readonly nomor_kk: {
+                readonly nama: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: true;
@@ -2973,7 +2962,7 @@ type ContractBase = Omit<
           readonly peserta: {
             readonly fields: {
               readonly alamat: {
-                readonly nullable: false;
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly createdAt: {
@@ -2995,15 +2984,11 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
               };
-              readonly jenis: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
-              };
               readonly kode: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
-              readonly nomor_kk: {
+              readonly nama: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
@@ -3096,9 +3081,8 @@ type ContractBase = Omit<
                 readonly deskripsi: { readonly column: 'deskripsi' };
                 readonly id: { readonly column: 'id' };
                 readonly isActive: { readonly column: 'isActive' };
-                readonly jenis: { readonly column: 'jenis' };
                 readonly kode: { readonly column: 'kode' };
-                readonly nomor_kk: { readonly column: 'nomor_kk' };
+                readonly nama: { readonly column: 'nama' };
                 readonly nomor_rumah: { readonly column: 'nomor_rumah' };
                 readonly organisasi_id: { readonly column: 'organisasi_id' };
                 readonly qr_token: { readonly column: 'qr_token' };

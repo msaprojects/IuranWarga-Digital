@@ -1,0 +1,171 @@
+[
+  {
+    "id": "dropColumn.peserta.jenis",
+    "label": "Drop column \"jenis\" from \"peserta\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "jenis",
+        "table": "peserta"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"jenis\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "peserta",
+          "jenis"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"jenis\"",
+        "sql": "ALTER TABLE \"public\".\"peserta\" DROP COLUMN \"jenis\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"jenis\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "peserta",
+          "jenis"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.peserta.nomor_kk",
+    "label": "Drop column \"nomor_kk\" from \"peserta\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "nomor_kk",
+        "table": "peserta"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"nomor_kk\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "peserta",
+          "nomor_kk"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"nomor_kk\"",
+        "sql": "ALTER TABLE \"public\".\"peserta\" DROP COLUMN \"nomor_kk\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"nomor_kk\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "peserta",
+          "nomor_kk"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.peserta.nama",
+    "label": "Add column \"nama\" to \"peserta\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "nama",
+        "table": "peserta"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"nama\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "peserta",
+          "nama"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"nama\"",
+        "sql": "ALTER TABLE \"public\".\"peserta\" ADD COLUMN \"nama\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"nama\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "peserta",
+          "nama"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "alterNullability.dropNotNull.peserta.alamat",
+    "label": "Drop NOT NULL on \"peserta\".\"alamat\"",
+    "operationClass": "widening",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "alamat",
+        "table": "peserta"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"alamat\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "peserta",
+          "alamat"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop NOT NULL on \"alamat\"",
+        "sql": "ALTER TABLE \"public\".\"peserta\" ALTER COLUMN \"alamat\" DROP NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"alamat\" is nullable",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "peserta",
+          "alamat",
+          "YES"
+        ]
+      }
+    ]
+  }
+]

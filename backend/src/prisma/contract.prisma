@@ -78,12 +78,9 @@ model peserta {
   // Unik hanya di dalam satu organisasi.
   kode String
 
-  // jenis peserta seperti warga / organisasi atau lainnya...
-  jenis String
-
-  nomor_kk    String?
+  nama    String?
   nomor_rumah String?
-  alamat      String
+  alamat      String?
   deskripsi   String?
 
   // Token yang digunakan untuk QR Code.

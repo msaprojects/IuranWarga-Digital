@@ -1,4 +1,4 @@
-import { getDetailUserByIdAndKodeOrganisasiSchema } from './../../validator/user.validator';
+import { createUserSchema, getDetailUserByIdAndKodeOrganisasiSchema, getDetailUserByIdParamsSchema, updateUserSchema } from './../../validator/user.validator';
 import { Router } from "express";
 import { orgController } from "../controllers/organisasi.controller.ts";
 import { validate } from "../middlewares/zod_validator.ts";
@@ -39,5 +39,5 @@ router.delete(
 //USER
 router.get('/users/:kode', validate(organisasiByKodeParamsSchema, 'params'), userController.getUserByOrganizationCode);
 router.get('/user/:id/:kode', validate(getDetailUserByIdAndKodeOrganisasiSchema, 'params'), userController.getDetailUserByOrganizationCode);
-router.post('/user', validate(createOrganisasiWithUserSchema, 'body'), userController.createUser);
-router.patch('/user/:id', validate(getDetailUserByIdAndKodeOrganisasiSchema, 'params'), validate(updateOrganisasiSchema, 'body'), userController.updateUser);
+router.post('/user', validate(createUserSchema, 'body'), userController.createUser);
+router.patch('/user/:id', validate(getDetailUserByIdParamsSchema, 'params'), validate(updateUserSchema, 'body'), userController.updateUser);
