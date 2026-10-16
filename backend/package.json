@@ -56,7 +56,7 @@
         "dev": "bun --watch src/server.ts",
         "build": "bun build src/server.ts --outdir dist --target bun",
         "start": "bun dist/server.js",
-        "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --no-cache --detectOpenHandles",
+        "test": "node --disable-warning=ExperimentalWarning --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --no-cache --detectOpenHandles",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "lint": "eslint src test validator eslint.config.js",
