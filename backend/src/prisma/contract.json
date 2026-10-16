@@ -20,10 +20,6 @@
       "model": "keuangan_detail",
       "namespace": "public"
     },
-    "log": {
-      "model": "log",
-      "namespace": "public"
-    },
     "organisasi": {
       "model": "organisasi",
       "namespace": "public"
@@ -38,6 +34,10 @@
     },
     "tagihan_iuran": {
       "model": "tagihan_iuran",
+      "namespace": "public"
+    },
+    "transaction_ledger": {
+      "model": "transaction_ledger",
       "namespace": "public"
     },
     "user": {
@@ -59,6 +59,19 @@
               {
                 "name": "PENGELUARAN",
                 "value": "PENGELUARAN"
+              }
+            ]
+          },
+          "LedgerSign": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "DEBIT",
+                "value": "DEBIT"
+              },
+              {
+                "name": "KREDIT",
+                "value": "KREDIT"
               }
             ]
           },
@@ -203,13 +216,6 @@
                   "kind": "scalar"
                 }
               },
-              "organisasi_id": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
               "peserta_id": {
                 "nullable": false,
                 "type": {
@@ -236,32 +242,9 @@
                   "codecId": "pg/timestamptz-string@1",
                   "kind": "scalar"
                 }
-              },
-              "user_id": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
               }
             },
             "relations": {
-              "organisasi": {
-                "cardinality": "N:1",
-                "nullable": false,
-                "on": {
-                  "localFields": [
-                    "organisasi_id"
-                  ],
-                  "targetFields": [
-                    "id"
-                  ]
-                },
-                "to": {
-                  "model": "organisasi",
-                  "namespace": "public"
-                }
-              },
               "peserta": {
                 "cardinality": "N:1",
                 "nullable": false,
@@ -275,22 +258,6 @@
                 },
                 "to": {
                   "model": "peserta",
-                  "namespace": "public"
-                }
-              },
-              "user": {
-                "cardinality": "N:1",
-                "nullable": true,
-                "on": {
-                  "localFields": [
-                    "user_id"
-                  ],
-                  "targetFields": [
-                    "id"
-                  ]
-                },
-                "to": {
-                  "model": "user",
                   "namespace": "public"
                 }
               }
@@ -309,9 +276,6 @@
                 "nama": {
                   "column": "nama"
                 },
-                "organisasi_id": {
-                  "column": "organisasi_id"
-                },
                 "peserta_id": {
                   "column": "peserta_id"
                 },
@@ -320,9 +284,6 @@
                 },
                 "updatedAt": {
                   "column": "updatedAt"
-                },
-                "user_id": {
-                  "column": "user_id"
                 }
               },
               "namespaceId": "public",
@@ -528,13 +489,6 @@
                   "kind": "scalar"
                 }
               },
-              "total": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/numeric@1",
-                  "kind": "scalar"
-                }
-              },
               "updatedAt": {
                 "nullable": false,
                 "type": {
@@ -582,6 +536,21 @@
                   "namespace": "public"
                 }
               },
+              "transaction_ledger": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "keuangan_id"
+                  ]
+                },
+                "to": {
+                  "model": "transaction_ledger",
+                  "namespace": "public"
+                }
+              },
               "user": {
                 "cardinality": "N:1",
                 "nullable": true,
@@ -619,9 +588,6 @@
                 "tanggal": {
                   "column": "tanggal"
                 },
-                "total": {
-                  "column": "total"
-                },
                 "updatedAt": {
                   "column": "updatedAt"
                 },
@@ -635,6 +601,20 @@
           },
           "keuangan_detail": {
             "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "deletedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
               "id": {
                 "nullable": false,
                 "type": {
@@ -667,6 +647,13 @@
                 "nullable": true,
                 "type": {
                   "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
                   "kind": "scalar"
                 }
               }
@@ -707,6 +694,12 @@
             },
             "storage": {
               "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "deletedAt": {
+                  "column": "deletedAt"
+                },
                 "id": {
                   "column": "id"
                 },
@@ -721,144 +714,13 @@
                 },
                 "pembayaran_iuran_id": {
                   "column": "pembayaran_iuran_id"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
                 }
               },
               "namespaceId": "public",
               "table": "keuangan_detail"
-            }
-          },
-          "log": {
-            "fields": {
-              "action": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "createdAt": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/timestamptz-string@1",
-                  "kind": "scalar"
-                }
-              },
-              "entity": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "entity_id": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
-              "id": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
-              "keterangan": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
-              "metadata": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/json@1",
-                  "kind": "scalar"
-                }
-              },
-              "organisasi_id": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              },
-              "user_id": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/int4@1",
-                  "kind": "scalar"
-                }
-              }
-            },
-            "relations": {
-              "organisasi": {
-                "cardinality": "N:1",
-                "nullable": false,
-                "on": {
-                  "localFields": [
-                    "organisasi_id"
-                  ],
-                  "targetFields": [
-                    "id"
-                  ]
-                },
-                "to": {
-                  "model": "organisasi",
-                  "namespace": "public"
-                }
-              },
-              "user": {
-                "cardinality": "N:1",
-                "nullable": true,
-                "on": {
-                  "localFields": [
-                    "user_id"
-                  ],
-                  "targetFields": [
-                    "id"
-                  ]
-                },
-                "to": {
-                  "model": "user",
-                  "namespace": "public"
-                }
-              }
-            },
-            "storage": {
-              "fields": {
-                "action": {
-                  "column": "action"
-                },
-                "createdAt": {
-                  "column": "createdAt"
-                },
-                "entity": {
-                  "column": "entity"
-                },
-                "entity_id": {
-                  "column": "entity_id"
-                },
-                "id": {
-                  "column": "id"
-                },
-                "keterangan": {
-                  "column": "keterangan"
-                },
-                "metadata": {
-                  "column": "metadata"
-                },
-                "organisasi_id": {
-                  "column": "organisasi_id"
-                },
-                "user_id": {
-                  "column": "user_id"
-                }
-              },
-              "namespaceId": "public",
-              "table": "log"
             }
           },
           "organisasi": {
@@ -972,21 +834,6 @@
                   "namespace": "public"
                 }
               },
-              "logs": {
-                "cardinality": "1:N",
-                "on": {
-                  "localFields": [
-                    "id"
-                  ],
-                  "targetFields": [
-                    "organisasi_id"
-                  ]
-                },
-                "to": {
-                  "model": "log",
-                  "namespace": "public"
-                }
-              },
               "pembayaran": {
                 "cardinality": "1:N",
                 "on": {
@@ -1029,6 +876,21 @@
                 },
                 "to": {
                   "model": "tagihan_iuran",
+                  "namespace": "public"
+                }
+              },
+              "transaction_ledger": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organisasi_id"
+                  ]
+                },
+                "to": {
+                  "model": "transaction_ledger",
                   "namespace": "public"
                 }
               },
@@ -1368,6 +1230,13 @@
                   "kind": "scalar"
                 }
               },
+              "jenis": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "kode": {
                 "nullable": false,
                 "type": {
@@ -1513,6 +1382,9 @@
                 },
                 "isActive": {
                   "column": "isActive"
+                },
+                "jenis": {
+                  "column": "jenis"
                 },
                 "kode": {
                   "column": "kode"
@@ -1771,6 +1643,152 @@
               "table": "tagihan_iuran"
             }
           },
+          "transaction_ledger": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "keuangan_id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "nominal": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "organisasi_id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "system_details": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "tipe": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "LedgerSign",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "user_id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "keuangan": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "keuangan_id"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "keuangan",
+                  "namespace": "public"
+                }
+              },
+              "organisasi": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organisasi_id"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "organisasi",
+                  "namespace": "public"
+                }
+              },
+              "user": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "user_id"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "user",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "keuangan_id": {
+                  "column": "keuangan_id"
+                },
+                "nominal": {
+                  "column": "nominal"
+                },
+                "organisasi_id": {
+                  "column": "organisasi_id"
+                },
+                "system_details": {
+                  "column": "system_details"
+                },
+                "tipe": {
+                  "column": "tipe"
+                },
+                "user_id": {
+                  "column": "user_id"
+                }
+              },
+              "namespaceId": "public",
+              "table": "transaction_ledger"
+            }
+          },
           "user": {
             "fields": {
               "contact": {
@@ -1865,21 +1883,6 @@
               }
             },
             "relations": {
-              "detail_peserta": {
-                "cardinality": "1:N",
-                "on": {
-                  "localFields": [
-                    "id"
-                  ],
-                  "targetFields": [
-                    "user_id"
-                  ]
-                },
-                "to": {
-                  "model": "detail_peserta",
-                  "namespace": "public"
-                }
-              },
               "keuangan": {
                 "cardinality": "1:N",
                 "on": {
@@ -1892,21 +1895,6 @@
                 },
                 "to": {
                   "model": "keuangan",
-                  "namespace": "public"
-                }
-              },
-              "logs": {
-                "cardinality": "1:N",
-                "on": {
-                  "localFields": [
-                    "id"
-                  ],
-                  "targetFields": [
-                    "user_id"
-                  ]
-                },
-                "to": {
-                  "model": "log",
                   "namespace": "public"
                 }
               },
@@ -1953,6 +1941,21 @@
                 },
                 "to": {
                   "model": "peserta",
+                  "namespace": "public"
+                }
+              },
+              "transaction_ledger": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "user_id"
+                  ]
+                },
+                "to": {
+                  "model": "transaction_ledger",
                   "namespace": "public"
                 }
               }
@@ -2050,11 +2053,6 @@
                   "dataType": "pg/text",
                   "nullable": false
                 },
-                "organisasi_id": {
-                  "codecId": "pg/int4@1",
-                  "dataType": "pg/int4",
-                  "nullable": false
-                },
                 "peserta_id": {
                   "codecId": "pg/int4@1",
                   "dataType": "pg/int4",
@@ -2079,11 +2077,6 @@
                     "kind": "function"
                   },
                   "nullable": false
-                },
-                "user_id": {
-                  "codecId": "pg/int4@1",
-                  "dataType": "pg/int4",
-                  "nullable": true
                 }
               },
               "foreignKeys": [
@@ -2102,38 +2095,6 @@
                     "namespaceId": "public",
                     "tableName": "peserta"
                   }
-                },
-                {
-                  "source": {
-                    "columns": [
-                      "user_id"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "detail_peserta"
-                  },
-                  "target": {
-                    "columns": [
-                      "id"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "user"
-                  }
-                },
-                {
-                  "source": {
-                    "columns": [
-                      "organisasi_id"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "detail_peserta"
-                  },
-                  "target": {
-                    "columns": [
-                      "id"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "organisasi"
-                  }
                 }
               ],
               "indexes": [
@@ -2147,26 +2108,10 @@
                 },
                 {
                   "columns": [
-                    "organisasi_id"
-                  ],
-                  "name": "detail_peserta_organisasi_id_idx_2f5facc4",
-                  "prefix": "detail_peserta_organisasi_id_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
                     "peserta_id"
                   ],
                   "name": "detail_peserta_peserta_id_idx_52c9abf0",
                   "prefix": "detail_peserta_peserta_id_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
-                    "user_id"
-                  ],
-                  "name": "detail_peserta_user_id_idx_6c952402",
-                  "prefix": "detail_peserta_user_id_idx",
                   "unique": false
                 }
               ],
@@ -2363,11 +2308,6 @@
                   "dataType": "pg/date",
                   "nullable": false
                 },
-                "total": {
-                  "codecId": "pg/numeric@1",
-                  "dataType": "pg/numeric",
-                  "nullable": false
-                },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "dataType": "pg/timestamptz",
@@ -2460,6 +2400,20 @@
             },
             "keuangan_detail": {
               "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "deletedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
                 "id": {
                   "codecId": "pg/int4@1",
                   "dataType": "pg/int4",
@@ -2488,6 +2442,15 @@
                   "codecId": "pg/int4@1",
                   "dataType": "pg/int4",
                   "nullable": true
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
                 }
               },
               "foreignKeys": [
@@ -2539,146 +2502,6 @@
                   ],
                   "name": "keuangan_detail_pembayaran_iuran_id_idx_1169ed50",
                   "prefix": "keuangan_detail_pembayaran_iuran_id_idx",
-                  "unique": false
-                }
-              ],
-              "primaryKey": {
-                "columns": [
-                  "id"
-                ]
-              },
-              "uniques": []
-            },
-            "log": {
-              "columns": {
-                "action": {
-                  "codecId": "pg/text@1",
-                  "dataType": "pg/text",
-                  "nullable": false
-                },
-                "createdAt": {
-                  "codecId": "pg/timestamptz-string@1",
-                  "dataType": "pg/timestamptz",
-                  "default": {
-                    "expression": "now()",
-                    "kind": "function"
-                  },
-                  "nullable": false
-                },
-                "entity": {
-                  "codecId": "pg/text@1",
-                  "dataType": "pg/text",
-                  "nullable": true
-                },
-                "entity_id": {
-                  "codecId": "pg/int4@1",
-                  "dataType": "pg/int4",
-                  "nullable": true
-                },
-                "id": {
-                  "codecId": "pg/int4@1",
-                  "dataType": "pg/int4",
-                  "default": {
-                    "expression": "autoincrement()",
-                    "kind": "function"
-                  },
-                  "nullable": false
-                },
-                "keterangan": {
-                  "codecId": "pg/text@1",
-                  "dataType": "pg/text",
-                  "nullable": true
-                },
-                "metadata": {
-                  "codecId": "pg/json@1",
-                  "dataType": "pg/json",
-                  "nullable": true
-                },
-                "organisasi_id": {
-                  "codecId": "pg/int4@1",
-                  "dataType": "pg/int4",
-                  "nullable": false
-                },
-                "user_id": {
-                  "codecId": "pg/int4@1",
-                  "dataType": "pg/int4",
-                  "nullable": true
-                }
-              },
-              "foreignKeys": [
-                {
-                  "source": {
-                    "columns": [
-                      "organisasi_id"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "log"
-                  },
-                  "target": {
-                    "columns": [
-                      "id"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "organisasi"
-                  }
-                },
-                {
-                  "source": {
-                    "columns": [
-                      "user_id"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "log"
-                  },
-                  "target": {
-                    "columns": [
-                      "id"
-                    ],
-                    "namespaceId": "public",
-                    "tableName": "user"
-                  }
-                }
-              ],
-              "indexes": [
-                {
-                  "columns": [
-                    "action"
-                  ],
-                  "name": "log_action_idx_cd0d2116",
-                  "prefix": "log_action_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
-                    "createdAt"
-                  ],
-                  "name": "log_createdAt_idx_9575dbd7",
-                  "prefix": "log_createdAt_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
-                    "entity",
-                    "entity_id"
-                  ],
-                  "name": "log_entity_entity_id_idx_6c9a2949",
-                  "prefix": "log_entity_entity_id_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
-                    "organisasi_id"
-                  ],
-                  "name": "log_organisasi_id_idx_2f5facc4",
-                  "prefix": "log_organisasi_id_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
-                    "user_id"
-                  ],
-                  "name": "log_user_id_idx_6c952402",
-                  "prefix": "log_user_id_idx",
                   "unique": false
                 }
               ],
@@ -3077,6 +2900,11 @@
                   },
                   "nullable": false
                 },
+                "jenis": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
                 "kode": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -3429,6 +3257,149 @@
                 }
               ]
             },
+            "transaction_ledger": {
+              "checks": [
+                {
+                  "expression": "\"tipe\" IN ('DEBIT', 'KREDIT')",
+                  "name": "transaction_ledger_tipe_check_f766c1dc",
+                  "prefix": "transaction_ledger_tipe_check"
+                }
+              ],
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "keuangan_id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "nominal": {
+                  "codecId": "pg/numeric@1",
+                  "dataType": "pg/numeric",
+                  "nullable": false
+                },
+                "organisasi_id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "system_details": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "tipe": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "LedgerSign",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "user_id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "keuangan_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "transaction_ledger"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "keuangan"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "organisasi_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "transaction_ledger"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "organisasi"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "user_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "transaction_ledger"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "keuangan_id"
+                  ],
+                  "name": "transaction_ledger_keuangan_id_idx_8badb741",
+                  "prefix": "transaction_ledger_keuangan_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organisasi_id"
+                  ],
+                  "name": "transaction_ledger_organisasi_id_idx_2f5facc4",
+                  "prefix": "transaction_ledger_organisasi_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "user_id"
+                  ],
+                  "name": "transaction_ledger_user_id_idx_6c952402",
+                  "prefix": "transaction_ledger_user_id_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "user": {
               "checks": [
                 {
@@ -3589,6 +3560,13 @@
                 "PENGELUARAN"
               ]
             },
+            "LedgerSign": {
+              "kind": "valueSet",
+              "values": [
+                "DEBIT",
+                "KREDIT"
+              ]
+            },
             "PeriodeIuran": {
               "kind": "valueSet",
               "values": [
@@ -3641,7 +3619,25 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "fcb61b6a6c410d1204295cb853b4a96b2d7d6f59a85e9494b9ec74582deccf2f"
+    "storageHash": "12215829162ad2ef221fbb9afd3da0aa8545beaec7069888bf915192a643b2a0"
+  },
+  "execution": {
+    "executionHash": "5a97b77418540dec627a48c686dafc19ce7d676c6c9525a2b3210d0b9992b995",
+    "mutations": {
+      "defaults": [
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "transaction_ledger",
+            "field": "id",
+            "namespace": "public"
+          }
+        }
+      ]
+    }
   },
   "capabilities": {
     "postgres": {

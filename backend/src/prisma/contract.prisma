@@ -19,13 +19,13 @@ model organisasi {
   activeAt  TimestamptzString?
 
   // Relations
-  users         user[]
-  peserta       peserta[]
-  jenis_iuran   jenis_iuran[]
-  tagihan_iuran tagihan_iuran[]
-  pembayaran    pembayaran_iuran[]
-  keuangan      keuangan[]
-  logs          log[]
+  users              user[]
+  peserta            peserta[]
+  jenis_iuran        jenis_iuran[]
+  tagihan_iuran      tagihan_iuran[]
+  pembayaran         pembayaran_iuran[]
+  keuangan           keuangan[]
+  transaction_ledger transaction_ledger[]
 
   @@index([nama])
 }
@@ -55,11 +55,10 @@ model user {
   updatedAt TimestamptzString @default(now())
 
   // Relations
-  peserta          peserta[]
-  detail_peserta   detail_peserta[]
-  pembayaran_iuran pembayaran_iuran[]
-  keuangan         keuangan[]
-  logs             log[]
+  peserta            peserta[]
+  pembayaran_iuran   pembayaran_iuran[]
+  keuangan           keuangan[]
+  transaction_ledger transaction_ledger[]
 
   @@index([organisasi_id])
   @@index([role])
@@ -78,6 +77,9 @@ model peserta {
   // Kode internal peserta.
   // Unik hanya di dalam satu organisasi.
   kode String
+
+  // jenis peserta seperti warga / organisasi atau lainnya...
+  jenis String
 
   nomor_kk    String?
   nomor_rumah String?
@@ -128,20 +130,10 @@ model detail_peserta {
 
   isActive Boolean @default(true)
 
-  // Opsional:
-  // satu anggota keluarga bisa memiliki akun sendiri
-  user_id Int?
-  user    user? @relation(fields: [user_id], references: [id])
-
-  organisasi_id Int
-  organisasi    organisasi @relation(fields: [organisasi_id], references: [id])
-
   createdAt TimestamptzString @default(now())
   updatedAt TimestamptzString @default(now())
 
   @@index([peserta_id])
-  @@index([organisasi_id])
-  @@index([user_id])
   @@index([isActive])
 }
 
@@ -325,8 +317,6 @@ model keuangan {
   organisasi_id Int
   organisasi    organisasi @relation(fields: [organisasi_id], references: [id])
 
-  total Decimal
-
   tanggal Date
 
   user_id Int?
@@ -340,7 +330,8 @@ model keuangan {
   updatedAt TimestamptzString @default(now())
 
   // Relations
-  detail keuangan_detail[]
+  detail             keuangan_detail[]
+  transaction_ledger transaction_ledger[]
 
   @@index([organisasi_id])
   @@index([tanggal])
@@ -372,60 +363,31 @@ model keuangan_detail {
 
   keterangan String?
 
+  createdAt TimestamptzString  @default(now())
+  updatedAt TimestamptzString  @default(now())
+  deletedAt TimestamptzString?
+
   @@index([keuangan_id])
   @@index([pembayaran_iuran_id])
 }
 
 // ============================================================
-// LOG / AUDIT TRAIL
+// TRANSACACTION LEDGER
 // ============================================================
-
-model log {
-  id Int @id @default(autoincrement())
-
+model transaction_ledger {
+  id            String     @id @default(uuid(7))
+  keuangan_id   Int
+  keuangan      keuangan   @relation(fields: [keuangan_id], references: [id])
   organisasi_id Int
   organisasi    organisasi @relation(fields: [organisasi_id], references: [id])
+  user_id       Int
+  user          user       @relation(fields: [user_id], references: [id])
 
-  user_id Int?
-  user    user? @relation(fields: [user_id], references: [id])
-
-  // Contoh:
-  // CREATE
-  // UPDATE
-  // DELETE
-  // LOGIN
-  // PAYMENT
-  // POSTING
-  // CANCEL_PAYMENT
-  action String
-
-  // Contoh:
-  // peserta
-  // tagihan_iuran
-  // pembayaran_iuran
-  // keuangan
-  entity String?
-
-  // ID record yang terkena perubahan.
-  entity_id Int?
-
-  keterangan String?
-
-  // Metadata tambahan untuk menyimpan informasi seperti:
-  // {
-  //   "ip": "...",
-  //   "old_status": "...",
-  //   "new_status": "..."
-  // }
-  metadata Json?
+  nominal        Decimal
+  tipe           LedgerSign
+  system_details String?
 
   createdAt TimestamptzString @default(now())
-
-  @@index([organisasi_id])
-  @@index([user_id])
-  @@index([action])
-  @@index([entity, entity_id])
-  @@index([createdAt])
 }
 
 // ============================================================
@@ -471,4 +433,9 @@ enum StatusKeluarga {
 enum JenisKeuangan {
   PEMASUKAN
   PENGELUARAN
+}
+
+enum LedgerSign {
+  DEBIT
+  KREDIT
 }
