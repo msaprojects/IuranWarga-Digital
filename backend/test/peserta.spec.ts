@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals
 import request from "supertest"
 import app from "../src/app.ts"
 import { pesertaService } from "../src/services/peserta.service"
+import { HttpError } from "../src/utils/http_error.ts"
 
 const peserta = {
     id: 1,
@@ -130,6 +131,19 @@ describe("Peserta API", () => {
         })
     })
 
+    it("mengembalikan 409 jika kode peserta sudah digunakan", async () => {
+        jest.spyOn(pesertaService, "createPeserta").mockRejectedValueOnce(
+            new HttpError(409, "Kode peserta sudah digunakan, silakan gunakan kode lain."),
+        )
+
+        const response = await request(app)
+            .post("/api/peserta")
+            .send({ ...createPayload, kode: "PST001" })
+
+        expect(response.status).toBe(409)
+        expect(response.body.message).toBe("Kode peserta sudah digunakan, silakan gunakan kode lain.")
+    })
+
     it("menolak pembuatan peserta dengan body tidak valid", async () => {
         const response = await request(app)
             .post("/api/peserta")
@@ -189,16 +203,16 @@ describe("Peserta API", () => {
         expect(pesertaService.generateQrCode).not.toHaveBeenCalled()
     })
 
-    it("mengembalikan 500 jika generate QR Code gagal", async () => {
+    it("mengembalikan 404 jika peserta untuk QR Code tidak ditemukan", async () => {
         jest.spyOn(console, "error").mockImplementation(() => {})
         jest.spyOn(pesertaService, "generateQrCode").mockRejectedValue(
-            new Error("Data Peserta tidak ditemukan."),
+            new HttpError(404, "Data Peserta tidak ditemukan."),
         )
 
         const response = await request(app).get("/api/peserta/qr/generate/PST001/ORG001")
 
-        expect(response.status).toBe(500)
-        expect(response.body).toEqual({ status: "failed", message: "Internal Server Error" })
+        expect(response.status).toBe(404)
+        expect(response.body).toEqual({ status: "failed", message: "Data Peserta tidak ditemukan." })
     })
 
     it("mencabut QR Code peserta berdasarkan ID dan kode organisasi", async () => {
@@ -251,17 +265,19 @@ describe("Peserta API", () => {
         expect(pesertaService.downloadQrCode).not.toHaveBeenCalled()
     })
 
-    it("mengembalikan 500 jika QR Code tidak ditemukan saat download", async () => {
-        jest.spyOn(console, "error").mockImplementation(() => {})
+    it("mengembalikan 404 jika QR Code tidak ditemukan saat download", async () => {
         jest.spyOn(pesertaService, "downloadQrCode").mockRejectedValue(
-            new Error("QR Code tidak ditemukan atau kadaluarsa, harap generate kembali."),
+            new HttpError(404, "QR Code tidak ditemukan atau kadaluarsa, harap generate kembali."),
         )
 
         const response = await request(app).get(
             `/api/peserta/qr/download/${encodeURIComponent("/uploads/qrcodes/tidak-ada.png")}`,
         )
 
-        expect(response.status).toBe(500)
-        expect(response.body).toEqual({ status: "failed", message: "Internal Server Error" })
+        expect(response.status).toBe(404)
+        expect(response.body).toEqual({
+            status: "failed",
+            message: "QR Code tidak ditemukan atau kadaluarsa, harap generate kembali.",
+        })
     })
 })

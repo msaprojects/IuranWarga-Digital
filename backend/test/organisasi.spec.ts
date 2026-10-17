@@ -2,6 +2,7 @@ import request from "supertest";
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals";
 import app from "../src/app.ts";
 import { orgService } from "../src/services/organisasi.service.ts";
+import { HttpError } from "../src/utils/http_error.ts";
 
 const organisasi = {
     activeAt: null,
@@ -153,6 +154,23 @@ describe("Organisasi API", () => {
         });
     });
 
+    it("seharusnya mengembalikan 409 saat kode organisasi sudah digunakan", async () => {
+        jest.spyOn(orgService, "create").mockRejectedValueOnce(
+            new HttpError(409, "Kode organisasi sudah ada."),
+        );
+
+        const response = await request(app).post("/api/organisasi").send({
+            organisasi: { kode: "ORG001", nama: "Warga01" },
+            user: { username: "admin01", name: "Admin Organisasi", password: "password1" },
+        });
+
+        expect(response.status).toBe(409);
+        expect(response.body).toEqual({
+            status: "failed",
+            message: "Kode organisasi sudah ada.",
+        });
+    });
+
     it("seharusnya menolak pembuatan organisasi dengan body tidak valid", async () => {
         const response = await request(app).post("/api/organisasi").send({ kode: "ORG001" });
 
@@ -169,6 +187,19 @@ describe("Organisasi API", () => {
         expect(orgService.updateByKode).toHaveBeenCalledWith("ORG001", {
             nama: "Nama Baru",
         });
+    });
+
+    it("seharusnya mengembalikan 409 saat kode organisasi tujuan sudah digunakan", async () => {
+        jest.spyOn(orgService, "updateByKode").mockRejectedValueOnce(
+            new HttpError(409, "Kode organisasi sudah ada."),
+        );
+
+        const response = await request(app)
+            .patch("/api/organisasi/ORG001")
+            .send({ kode: "ORG002" });
+
+        expect(response.status).toBe(409);
+        expect(response.body.message).toBe("Kode organisasi sudah ada.");
     });
 
     it("seharusnya menolak update kosong", async () => {

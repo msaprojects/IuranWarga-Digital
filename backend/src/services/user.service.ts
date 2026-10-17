@@ -1,4 +1,5 @@
 import { db } from "../prisma/db.ts";
+import { HttpError } from "../utils/http_error.ts";
 
 export type CreateUserInput = {
     username: string;
@@ -57,9 +58,29 @@ class UserService {
     }
 
     async createUser(input: CreateUserInput) {
-        const organizationId = await this.getActiveOrganizationId(input.organisasi_id.toString());
-        if (organizationId === null) {
-            throw new Error("Organisasi tidak ditemukan atau tidak aktif.");
+        const organization = await db.orm.public.organisasi
+            .where({ id: input.organisasi_id, isActive: true })
+            .select("id")
+            .first();
+        if (!organization) {
+            throw new HttpError(404, "Organisasi tidak ditemukan atau tidak aktif.");
+        }
+
+        const existingUser = await db.orm.public.user.where({ username: input.username }).first();
+        if (existingUser) {
+            throw new HttpError(409, "Username sudah digunakan.");
+        }
+        if (
+            input.email &&
+            (await db.orm.public.user.where({ email: input.email }).first())
+        ) {
+            throw new HttpError(409, "Email sudah digunakan.");
+        }
+        if (
+            input.contact &&
+            (await db.orm.public.user.where({ contact: input.contact }).first())
+        ) {
+            throw new HttpError(409, "Nomor kontak sudah digunakan.");
         }
 
         return db.orm.public.user.create({
@@ -67,7 +88,7 @@ class UserService {
             name: input.name,
             password: input.password,
             role: input.role,
-            organisasi_id: organizationId,
+            organisasi_id: organization.id,
             isActive: input.isActive ?? true,
             email: input.email,
             contact: input.contact,
@@ -78,7 +99,26 @@ class UserService {
     async updateUser(id: number, input: UpdateUserInput) {
         const user = await db.orm.public.user.where({ id }).first();
         if (!user) {
-            throw new Error("User tidak ditemukan.");
+            throw new HttpError(404, "User tidak ditemukan.");
+        }
+
+        if (input.username && input.username !== user.username) {
+            const existingUser = await db.orm.public.user.where({ username: input.username }).first();
+            if (existingUser) {
+                throw new HttpError(409, "Username sudah digunakan.");
+            }
+        }
+        if (input.email && input.email !== user.email) {
+            const existingUser = await db.orm.public.user.where({ email: input.email }).first();
+            if (existingUser) {
+                throw new HttpError(409, "Email sudah digunakan.");
+            }
+        }
+        if (input.contact && input.contact !== user.contact) {
+            const existingUser = await db.orm.public.user.where({ contact: input.contact }).first();
+            if (existingUser) {
+                throw new HttpError(409, "Nomor kontak sudah digunakan.");
+            }
         }
 
         return db.orm.public.user.where({ id }).update({

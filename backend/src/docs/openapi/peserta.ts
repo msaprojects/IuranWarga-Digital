@@ -31,9 +31,14 @@ const pesertaPaths = {
                         },
                     },
                 },
+                "404": {
+                    description: "Organisasi tidak ditemukan atau tidak aktif.",
+                    content: {
+                        "application/json": { schema: { $ref: "#/components/schemas/Error" } },
+                    },
+                },
                 "500": {
-                    description:
-                        "Kesalahan server, termasuk jika organisasi tidak ditemukan atau tidak aktif.",
+                    description: "Kesalahan server.",
                     content: {
                         "application/json": { schema: { $ref: "#/components/schemas/Error" } },
                     },
@@ -79,6 +84,12 @@ const pesertaPaths = {
                         "application/json": {
                             schema: { $ref: "#/components/schemas/ValidationError" },
                         },
+                    },
+                },
+                "404": {
+                    description: "Peserta tidak ditemukan.",
+                    content: {
+                        "application/json": { schema: { $ref: "#/components/schemas/Error" } },
                     },
                 },
                 "500": {
@@ -138,8 +149,7 @@ const pesertaPaths = {
                     },
                 },
                 "500": {
-                    description:
-                        "Kesalahan server, termasuk jika organisasi tidak ditemukan atau tidak aktif.",
+                    description: "Kesalahan server.",
                     content: {
                         "application/json": { schema: { $ref: "#/components/schemas/Error" } },
                     },
@@ -178,9 +188,27 @@ const pesertaPaths = {
                         },
                     },
                 },
-                "500": {
+                "404": {
+                    description: "Organisasi tidak ditemukan atau tidak aktif.",
+                    content: {
+                        "application/json": { schema: { $ref: "#/components/schemas/Error" } },
+                    },
+                },
+                "409": {
                     description:
-                        "Kesalahan server, termasuk jika kode peserta yang diberikan sudah digunakan.",
+                        "Kode peserta yang dikirim atau token QR sudah digunakan di organisasi tersebut.",
+                    content: {
+                        "application/json": { schema: { $ref: "#/components/schemas/Error" } },
+                    },
+                },
+                "503": {
+                    description: "Kode peserta otomatis tidak dapat dibuat saat ini.",
+                    content: {
+                        "application/json": { schema: { $ref: "#/components/schemas/Error" } },
+                    },
+                },
+                "500": {
+                    description: "Kesalahan server.",
                     content: {
                         "application/json": { schema: { $ref: "#/components/schemas/Error" } },
                     },
@@ -217,13 +245,18 @@ const pesertaPaths = {
                     description: "String QR Code tidak valid.",
                     content: {
                         "application/json": {
-                            schema: { $ref: "#/components/schemas/ValidationError" },
+                            schema: { $ref: "#/components/schemas/Error" },
                         },
                     },
                 },
+                "404": {
+                    description: "Organisasi atau peserta QR tidak ditemukan atau tidak aktif.",
+                    content: {
+                        "application/json": { schema: { $ref: "#/components/schemas/Error" } },
+                    },
+                },
                 "500": {
-                    description:
-                        "QR Code tidak dapat didekripsi atau data organisasi/peserta tidak ditemukan.",
+                    description: "Kesalahan server.",
                     content: {
                         "application/json": { schema: { $ref: "#/components/schemas/Error" } },
                     },
@@ -271,6 +304,12 @@ const pesertaPaths = {
                         "application/json": {
                             schema: { $ref: "#/components/schemas/ValidationError" },
                         },
+                    },
+                },
+                "404": {
+                    description: "Peserta QR tidak ditemukan.",
+                    content: {
+                        "application/json": { schema: { $ref: "#/components/schemas/Error" } },
                     },
                 },
                 "500": {
@@ -322,6 +361,12 @@ const pesertaPaths = {
                         "application/json": {
                             schema: { $ref: "#/components/schemas/ValidationError" },
                         },
+                    },
+                },
+                "404": {
+                    description: "Peserta tidak ditemukan atau tidak aktif.",
+                    content: {
+                        "application/json": { schema: { $ref: "#/components/schemas/Error" } },
                     },
                 },
                 "500": {

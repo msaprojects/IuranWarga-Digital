@@ -31,6 +31,14 @@ const organisasiPaths = {
                         },
                     },
                 },
+                "409": {
+                    description: "Kode organisasi atau username sudah digunakan",
+                    content: {
+                        "application/json": {
+                            schema: { $ref: "#/components/schemas/Error" },
+                        },
+                    },
+                },
                 "500": {
                     description: "Kesalahan server",
                     content: {
@@ -121,6 +129,14 @@ const organisasiPaths = {
                     content: {
                         "application/json": {
                             schema: { $ref: "#/components/schemas/ValidationError" },
+                        },
+                    },
+                },
+                "409": {
+                    description: "Kode organisasi sudah digunakan.",
+                    content: {
+                        "application/json": {
+                            schema: { $ref: "#/components/schemas/Error" },
                         },
                     },
                 },

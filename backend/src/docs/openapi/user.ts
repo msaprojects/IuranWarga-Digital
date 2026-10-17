@@ -131,9 +131,20 @@ const userPaths = {
                         },
                     },
                 },
+                "404": {
+                    description: "Organisasi tidak ditemukan atau tidak aktif.",
+                    content: {
+                        "application/json": { schema: { $ref: "#/components/schemas/Error" } },
+                    },
+                },
+                "409": {
+                    description: "Username, email, atau nomor kontak sudah digunakan.",
+                    content: {
+                        "application/json": { schema: { $ref: "#/components/schemas/Error" } },
+                    },
+                },
                 "500": {
-                    description:
-                        "Kesalahan server, termasuk jika organisasi tidak ditemukan atau tidak aktif.",
+                    description: "Kesalahan server.",
                     content: {
                         "application/json": { schema: { $ref: "#/components/schemas/Error" } },
                     },
@@ -183,8 +194,20 @@ const userPaths = {
                         },
                     },
                 },
+                "404": {
+                    description: "User tidak ditemukan.",
+                    content: {
+                        "application/json": { schema: { $ref: "#/components/schemas/Error" } },
+                    },
+                },
+                "409": {
+                    description: "Username, email, atau nomor kontak sudah digunakan.",
+                    content: {
+                        "application/json": { schema: { $ref: "#/components/schemas/Error" } },
+                    },
+                },
                 "500": {
-                    description: "Kesalahan server, termasuk jika user tidak ditemukan.",
+                    description: "Kesalahan server.",
                     content: {
                         "application/json": { schema: { $ref: "#/components/schemas/Error" } },
                     },

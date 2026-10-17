@@ -4,6 +4,7 @@ import { orgService } from "./organisasi.service.ts"
 import QRCode from "qrcode"
 import path from "path"
 import * as fs from "node:fs"
+import { HttpError } from "../utils/http_error.ts"
 
 export type CreatePesertaInput = {
     kode?: string
@@ -29,7 +30,7 @@ class PesertaService {
         const findOrganisasiByKode = await orgService.getByKode(organizationCode)
 
         if (!findOrganisasiByKode) {
-            throw new Error("Organisasi tidak ditemukan, atau sudah tidak aktif.")
+            throw new HttpError(404, "Organisasi tidak ditemukan, atau sudah tidak aktif.")
         }
 
         return db.orm.public.peserta
@@ -52,7 +53,7 @@ class PesertaService {
     async getAllPesertaByOrganizationCode(organizationCode: string) {
         const findOrganisasiByKode = await orgService.getByKode(organizationCode)
         if (!findOrganisasiByKode) {
-            throw new Error("Organisasi tidak ditemukan, atau sudah tidak aktif.")
+            throw new HttpError(404, "Organisasi tidak ditemukan, atau sudah tidak aktif.")
         }
         return db.orm.public.peserta
             .where({ organisasi_id: Number(findOrganisasiByKode.id) })
@@ -70,23 +71,41 @@ class PesertaService {
     }
 
     async createPeserta(input: CreatePesertaInput) {
+        const organization = await db.orm.public.organisasi
+            .where({ id: input.organisasi_id, isActive: true })
+            .select("id")
+            .first()
+        if (!organization) {
+            throw new HttpError(404, "Organisasi tidak ditemukan atau tidak aktif.")
+        }
+
+        if (
+            input.qr_token &&
+            (await db.orm.public.peserta.where({ qr_token: input.qr_token }).first())
+        ) {
+            throw new HttpError(409, "QR Code sudah digunakan.")
+        }
+
         let generateCode = input.kode ?? generateRandomCode(6, 8)
-        const findPesertaByKode = await db.orm.public.peserta.where({ kode: generateCode }).first()
+        const findPesertaByKode = await db.orm.public.peserta
+            .where({ kode: generateCode, organisasi_id: input.organisasi_id })
+            .first()
 
         if (findPesertaByKode) {
             if (input.kode) {
-                throw new Error("Kode peserta sudah digunakan, silakan gunakan kode lain.")
+                throw new HttpError(409, "Kode peserta sudah digunakan, silakan gunakan kode lain.")
             }
             // jika kode tidak diisi, maka system akan mencoba generate kode baru hingga 5 kali
             for (let i = 0; i < 5; i++) {
                 generateCode = generateRandomCode(6, 8)
                 const findPesertaByKode = await db.orm.public.peserta
-                    .where({ kode: generateCode })
+                    .where({ kode: generateCode, organisasi_id: input.organisasi_id })
                     .first()
                 if (!findPesertaByKode) {
                     break
                 } else if (i === 4) {
-                    throw new Error(
+                    throw new HttpError(
+                        503,
                         "Gagal membuat kode peserta unik setelah 5 percobaan, silakan coba lagi.",
                     )
                 }
@@ -110,7 +129,16 @@ class PesertaService {
         const findPesertaById = await db.orm.public.peserta.where({ id }).first()
 
         if (!findPesertaById) {
-            throw new Error("Peserta tidak ditemukan.")
+            throw new HttpError(404, "Peserta tidak ditemukan.")
+        }
+
+        if (input.qr_token && input.qr_token !== findPesertaById.qr_token) {
+            const existingQrCode = await db.orm.public.peserta
+                .where({ qr_token: input.qr_token })
+                .first()
+            if (existingQrCode) {
+                throw new HttpError(409, "QR Code sudah digunakan.")
+            }
         }
 
         return db.orm.public.peserta.where({ id }).update({
@@ -125,12 +153,17 @@ class PesertaService {
     }
 
     async generateQrCode(kodePeserta: string, kodeOrganisasi: string): Promise<string> {
+        const organization = await orgService.getByKode(kodeOrganisasi)
+        if (!organization) {
+            throw new HttpError(404, "Organisasi tidak ditemukan, atau sudah tidak aktif.")
+        }
+
         const findPeserta = await db.orm.public.peserta
-            .where({ kode: kodePeserta, organisasi_id: Number(kodeOrganisasi), isActive: true })
+            .where({ kode: kodePeserta, organisasi_id: Number(organization.id), isActive: true })
             .first()
 
         if (!findPeserta) {
-            throw new Error("Data Peserta tidak ditemukan.")
+            throw new HttpError(404, "Data Peserta tidak ditemukan.")
         }
 
         const qrCodeString = encryptQRCodeString(kodeOrganisasi, kodePeserta)
@@ -143,7 +176,8 @@ class PesertaService {
             fs.mkdirSync(targetDir, { recursive: true })
         }
 
-        const filePath = path.join(targetDir, `${qrCodeString}.png`)
+        const qrFileName = `${Buffer.from(qrCodeString).toString("base64url")}.png`
+        const filePath = path.join(targetDir, qrFileName)
 
         await QRCode.toFile(filePath, qrCodeString, {
             type: "png",
@@ -154,6 +188,7 @@ class PesertaService {
 
         await db.orm.public.peserta.where({ id: findPeserta.id }).update({
             qr_token: qrCodeString,
+            qr_path: path.basename(filePath),
         })
 
         return String(process.env.URL_PATH + filePath)
@@ -162,40 +197,67 @@ class PesertaService {
     async decryptQrCode(qrCodeString: string) {
         const decryptedData = await decryptQRCodeString(qrCodeString)
         if (!decryptedData) {
-            throw new Error("Gagal mendekripsi QR Code, silakan coba lagi.")
+            throw new HttpError(400, "String QR Code tidak valid.")
         }
-        // const select data from decryptedData
-        const [kodeOrganisasi, kodePeserta] = decryptedData.split("-")
+        const [kodeOrganisasi, kodePeserta] = decryptedData.split(":")
+        if (!kodeOrganisasi || !kodePeserta) {
+            throw new HttpError(400, "String QR Code tidak valid.")
+        }
         const findOrganisasiByKode = await orgService.getByKode(String(kodeOrganisasi))
         if (!findOrganisasiByKode) {
-            throw new Error("Organisasi tidak ditemukan, atau sudah tidak aktif.")
+            throw new HttpError(404, "Organisasi tidak ditemukan, atau sudah tidak aktif.")
         }
         const findPesertaByKode = await db.orm.public.peserta
             .where({ kode: String(kodePeserta), organisasi_id: Number(findOrganisasiByKode.id) })
             .first()
         if (!findPesertaByKode) {
-            throw new Error("Peserta tidak ditemukan, atau sudah tidak aktif.")
+            throw new HttpError(404, "Peserta tidak ditemukan, atau sudah tidak aktif.")
         }
         return findPesertaByKode
     }
 
-    revokeQRCode(id: number, organizationCode: string) {
-        return db.orm.public.peserta.where({ id, organisasi_id: Number(organizationCode) }).update({
-            qr_token: null,
-        })
+    async revokeQRCode(id: number, organizationCode: string) {
+        const organization = await orgService.getByKode(organizationCode)
+        if (!organization) {
+            throw new HttpError(404, "Organisasi tidak ditemukan, atau sudah tidak aktif.")
+        }
+
+        const peserta = await db.orm.public.peserta
+            .where({ id, organisasi_id: Number(organization.id) })
+            .update({ qr_token: null })
+        if (!peserta) {
+            throw new HttpError(404, "Peserta tidak ditemukan.")
+        }
+
+        return peserta
     }
 
     async downloadQrCode(qrUrl: string) {
-        // find qr
+        const qrFileName = qrUrl.split(/[\\/]/).at(-1)
         const findQrCode = await db.orm.public.peserta
-            .where({ qr_path: qrUrl.split("/")[-1] })
+            .where({ qr_path: qrFileName })
             .first()
-        if (!findQrCode) {
-            throw new Error("QR Code tidak ditemukan atau kadaluarsa, harap generate kembali.")
+        if (!findQrCode?.qr_path) {
+            throw new HttpError(404, "QR Code tidak ditemukan atau kadaluarsa, harap generate kembali.")
         }
 
-        // return as file
-        return fs.readFileSync(qrUrl)
+        const targetDir = path.join(__dirname, "uploads", "qrcodes")
+        const filePath = path.join(targetDir, path.basename(findQrCode.qr_path))
+        try {
+            return fs.readFileSync(filePath)
+        } catch (error) {
+            if (
+                error instanceof Error &&
+                "code" in error &&
+                error.code === "ENOENT"
+            ) {
+                throw new HttpError(
+                    404,
+                    "QR Code tidak ditemukan atau kadaluarsa, harap generate kembali.",
+                )
+            }
+            throw error
+        }
     }
 }
 

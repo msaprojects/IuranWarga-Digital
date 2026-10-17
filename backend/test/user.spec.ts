@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals
 import { userService } from "../src/services/user.service";
 import request from "supertest";
 import app from "../src/app.ts";
+import { HttpError } from "../src/utils/http_error.ts";
 
 const user = {
     id: 1,
@@ -93,6 +94,40 @@ describe("User API", () => {
             name: "User Organisasi",
         }));
         expect(userService.createUser).toHaveBeenCalled();
+    });
+
+    it("seharusnya mengembalikan 404 jika organisasi untuk user tidak ditemukan", async () => {
+        jest.spyOn(userService, "createUser").mockRejectedValueOnce(
+            new HttpError(404, "Organisasi tidak ditemukan atau tidak aktif."),
+        );
+
+        const response = await request(app).post("/api/user").send({
+            username: "user02",
+            name: "User Organisasi",
+            password: "password123",
+            role: "USER",
+            organisasi_id: 999,
+        });
+
+        expect(response.status).toBe(404);
+        expect(response.body.message).toBe("Organisasi tidak ditemukan atau tidak aktif.");
+    });
+
+    it("seharusnya mengembalikan 409 jika username sudah digunakan", async () => {
+        jest.spyOn(userService, "createUser").mockRejectedValueOnce(
+            new HttpError(409, "Username sudah digunakan."),
+        );
+
+        const response = await request(app).post("/api/user").send({
+            username: "user01",
+            name: "User Organisasi",
+            password: "password123",
+            role: "USER",
+            organisasi_id: 1,
+        });
+
+        expect(response.status).toBe(409);
+        expect(response.body.message).toBe("Username sudah digunakan.");
     });
 
     it("seharusnya memperbarui user", async () => {

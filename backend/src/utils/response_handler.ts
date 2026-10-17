@@ -1,5 +1,6 @@
 import type { ErrorRequestHandler, Response } from "express";
 import { ZodError } from "zod";
+import { HttpError } from "./http_error.ts";
 
 type SuccessResponse<TData> = {
     status: "success";
@@ -44,6 +45,11 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
                 message: issue.message,
             })),
         );
+        return;
+    }
+
+    if (error instanceof HttpError) {
+        resHandler.error(res, error.statusCode, error.message);
         return;
     }
 
