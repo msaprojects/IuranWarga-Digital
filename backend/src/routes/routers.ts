@@ -13,6 +13,7 @@ import {
     getDetailUserByIdAndKodeOrganisasiSchema,
     getDetailUserByIdParamsSchema,
     updateUserSchema,
+    loginUserSchema,
 } from "./../../validator/user.validator"
 import { Router } from "express"
 import { orgController } from "../controllers/organisasi.controller.ts"
@@ -23,10 +24,23 @@ import {
     updateOrganisasiSchema,
 } from "../../validator/organisasi.validator.ts"
 import { userController } from "../controllers/user.controller.ts"
+import { authenticateJWT } from "../middlewares/authentication.ts"
 
 export const router = Router()
 
 router.post("/organisasi", validate(createOrganisasiWithUserSchema, "body"), orgController.create)
+router.post("/user/login", validate(loginUserSchema, "body"), userController.loginUser)
+
+/**
+ * !PENTING: Jika akan menambahkan route baru tanpa perlu proteksi authentication, letakan diatas router.use("/some-endpoint", authenticateJWT) atau diatas Peringatan ini
+ * !         agar tidak terkena proteksi Authentication Middleware. Namun jika route baru tersebut membutuhkan proteksi authentication,
+ * !         letakan di bawah router.use("/some-endpoint", authenticateJWT) agar route baru tersebut terkena proteksi Authentication Middleware.
+ */
+
+router.use("/organisasi/:kode", authenticateJWT)
+router.use("/users/:kode", authenticateJWT)
+router.use("/user", authenticateJWT)
+router.use("/peserta", authenticateJWT)
 
 router.get(
     "/organisasi/:kode",

@@ -87,9 +87,9 @@ const pesertaSchemas = {
         properties: {
             status: { type: "string", const: "success" },
             message: { type: "string" },
-            data: { type: "string", description: "String QR Code terenkripsi." },
+            data: { type: "string", description: "URL QR Code PNG yang telah dibuat." },
         },
     },
-} as const;
+} as const
 
-export default pesertaSchemas;
+export default pesertaSchemas

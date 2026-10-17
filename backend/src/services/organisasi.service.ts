@@ -1,7 +1,7 @@
 import { db } from "../prisma/db.ts";
 import type { CreateUserInput } from "./user.service.ts";
-import { hash } from "bcrypt-ts";
 import { HttpError } from "../utils/http_error.ts";
+import bcrypt from "bcryptjs";
 
 export type CreateOrganisasiInput = {
     kode: string;
@@ -70,11 +70,13 @@ class OrganisasiService {
         return db.transaction(async (tx) => {
             // create organisasi and user too!
             const createOrganisasi = await tx.orm.public.organisasi.create(input.organisasi);
+            const salt = await bcrypt.genSalt(12);
+            const hashedPassword = await bcrypt.hash(input.user.password, salt);
 
             await tx.orm.public.user.create({
                 username: input.user.username,
                 name: input.user.name,
-                password: await hash(input.user.password, 12),
+                password: hashedPassword,
                 organisasi_id: createOrganisasi.id,
                 role: "ADMIN",
                 isActive: true,

@@ -223,6 +223,11 @@ model tagihan_iuran {
   createdAt TimestamptzString @default(now())
   updatedAt TimestamptzString @default(now())
 
+  // misal: peserta pindah rumah, tagihan dibatalkan atau alasan lainnya.
+  deletedAt TimestamptzString?
+  deletedBy Int?
+  deletedDescription String?
+
   // Relations
   pembayaran pembayaran_iuran[]
 

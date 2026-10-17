@@ -16,6 +16,7 @@ const userPaths = {
             description: "Mengembalikan user yang terdaftar pada organisasi dengan kode tersebut.",
             operationId: "getUsersByOrganizationCode",
             responses: {
+                "401": { $ref: "#/components/responses/Unauthorized" },
                 "200": {
                     description:
                         "Daftar user berhasil diambil; data berupa array kosong jika organisasi tidak ditemukan.",
@@ -68,6 +69,7 @@ const userPaths = {
                 "Mencari user berdasarkan ID dan memastikan user terikat pada organisasi dengan kode yang diberikan.",
             operationId: "getUserByIdAndOrganizationCode",
             responses: {
+                "401": { $ref: "#/components/responses/Unauthorized" },
                 "200": {
                     description: "User ditemukan.",
                     content: {
@@ -102,6 +104,7 @@ const userPaths = {
     "/user": {
         post: {
             tags: ["User"],
+            security: [{ BearerAuth: [] }],
             summary: "Buat user",
             description:
                 "Membuat user pada organisasi yang ditentukan. Password wajib dikirim pada request dan tidak dicantumkan pada skema data user yang dibaca.",
@@ -115,6 +118,7 @@ const userPaths = {
                 },
             },
             responses: {
+                "401": { $ref: "#/components/responses/Unauthorized" },
                 "201": {
                     description: "User berhasil dibuat.",
                     content: {
@@ -178,6 +182,7 @@ const userPaths = {
                 },
             },
             responses: {
+                "401": { $ref: "#/components/responses/Unauthorized" },
                 "200": {
                     description: "User berhasil diperbarui.",
                     content: {
@@ -215,6 +220,59 @@ const userPaths = {
             },
         },
     },
-} as const;
+    "/user/login": {
+        post: {
+            tags: ["User"],
+            security: [],
+            summary: "Login user",
+            description:
+                "Memverifikasi username dan password. Jika berhasil, mengembalikan JWT yang berlaku selama satu jam.",
+            operationId: "loginUser",
+            requestBody: {
+                required: true,
+                content: {
+                    "application/json": {
+                        schema: { $ref: "#/components/schemas/LoginUserInput" },
+                        example: { username: "admin01", password: "password123" },
+                    },
+                },
+            },
+            responses: {
+                "200": {
+                    description: "Login berhasil.",
+                    content: {
+                        "application/json": {
+                            schema: { $ref: "#/components/schemas/LoginSuccess" },
+                        },
+                    },
+                },
+                "400": {
+                    description: "Body login tidak valid.",
+                    content: {
+                        "application/json": {
+                            schema: { $ref: "#/components/schemas/ValidationError" },
+                        },
+                    },
+                },
+                "401": {
+                    description: "Kredensial salah atau organisasi tidak aktif.",
+                    content: {
+                        "application/json": {
+                            schema: { $ref: "#/components/schemas/Error" },
+                        },
+                    },
+                },
+                "500": {
+                    description: "Kesalahan server.",
+                    content: {
+                        "application/json": {
+                            schema: { $ref: "#/components/schemas/Error" },
+                        },
+                    },
+                },
+            },
+        },
+    },
+} as const
 
-export default userPaths;
+export default userPaths

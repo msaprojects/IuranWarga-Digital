@@ -1,7 +1,7 @@
 import { encryptQRCodeString, generateRandomCode, decryptQRCodeString } from "./../utils/helper"
 import { db } from "../prisma/db.ts"
 import { orgService } from "./organisasi.service.ts"
-import QRCode from "qrcode"
+import { writeQrCodeWithLabel } from "../utils/qr_code.ts"
 import path from "path"
 import * as fs from "node:fs"
 import { HttpError } from "../utils/http_error.ts"
@@ -171,7 +171,7 @@ class PesertaService {
         if (!qrCodeString) {
             throw new Error("Gagal membuat QR Code, silakan coba lagi.")
         }
-        const targetDir = path.join(__dirname, "uploads", "qrcodes")
+        const targetDir = path.join(__dirname, "..", "..", "uploads", "qrcodes")
         if (!fs.existsSync(targetDir)) {
             fs.mkdirSync(targetDir, { recursive: true })
         }
@@ -179,12 +179,7 @@ class PesertaService {
         const qrFileName = `${Buffer.from(qrCodeString).toString("base64url")}.png`
         const filePath = path.join(targetDir, qrFileName)
 
-        await QRCode.toFile(filePath, qrCodeString, {
-            type: "png",
-            errorCorrectionLevel: "M",
-            margin: 2,
-            width: 300,
-        })
+        await writeQrCodeWithLabel(filePath, qrCodeString, findPeserta.kode)
 
         await db.orm.public.peserta.where({ id: findPeserta.id }).update({
             qr_token: qrCodeString,
@@ -221,10 +216,10 @@ class PesertaService {
         if (!organization) {
             throw new HttpError(404, "Organisasi tidak ditemukan, atau sudah tidak aktif.")
         }
-
+        
         const peserta = await db.orm.public.peserta
             .where({ id, organisasi_id: Number(organization.id) })
-            .update({ qr_token: null })
+            .update({ qr_token: null, qr_path: null })
         if (!peserta) {
             throw new HttpError(404, "Peserta tidak ditemukan.")
         }
@@ -234,11 +229,12 @@ class PesertaService {
 
     async downloadQrCode(qrUrl: string) {
         const qrFileName = qrUrl.split(/[\\/]/).at(-1)
-        const findQrCode = await db.orm.public.peserta
-            .where({ qr_path: qrFileName })
-            .first()
+        const findQrCode = await db.orm.public.peserta.where({ qr_path: qrFileName }).first()
         if (!findQrCode?.qr_path) {
-            throw new HttpError(404, "QR Code tidak ditemukan atau kadaluarsa, harap generate kembali.")
+            throw new HttpError(
+                404,
+                "QR Code tidak ditemukan atau kadaluarsa, harap generate kembali.",
+            )
         }
 
         const targetDir = path.join(__dirname, "uploads", "qrcodes")
@@ -246,11 +242,7 @@ class PesertaService {
         try {
             return fs.readFileSync(filePath)
         } catch (error) {
-            if (
-                error instanceof Error &&
-                "code" in error &&
-                error.code === "ENOENT"
-            ) {
+            if (error instanceof Error && "code" in error && error.code === "ENOENT") {
                 throw new HttpError(
                     404,
                     "QR Code tidak ditemukan atau kadaluarsa, harap generate kembali.",

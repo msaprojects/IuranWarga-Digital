@@ -3,6 +3,7 @@ import request from "supertest"
 import app from "../src/app.ts"
 import { pesertaService } from "../src/services/peserta.service"
 import { HttpError } from "../src/utils/http_error.ts"
+import { authorizationHeader } from "./auth.ts"
 
 const peserta = {
     id: 1,
@@ -34,7 +35,9 @@ describe("Peserta API", () => {
         jest.spyOn(pesertaService, "getPesertaByIdAndOrganizationCode").mockResolvedValue(peserta)
         jest.spyOn(pesertaService, "createPeserta").mockResolvedValue(peserta)
         jest.spyOn(pesertaService, "updatePeserta").mockResolvedValue(peserta)
-        jest.spyOn(pesertaService, "generateQrCode").mockResolvedValue("/uploads/qrcodes/ORG001-PST001.png")
+        jest.spyOn(pesertaService, "generateQrCode").mockResolvedValue(
+            "/uploads/qrcodes/ORG001-PST001.png",
+        )
         jest.spyOn(pesertaService, "decryptQrCode").mockResolvedValue(peserta)
         jest.spyOn(pesertaService, "revokeQRCode").mockResolvedValue(peserta)
         jest.spyOn(pesertaService, "downloadQrCode").mockResolvedValue(Buffer.from("fake-png"))
@@ -45,7 +48,9 @@ describe("Peserta API", () => {
     })
 
     it("mengambil daftar peserta berdasarkan kode organisasi", async () => {
-        const response = await request(app).get("/api/peserta/ORG001")
+        const response = await request(app)
+            .get("/api/peserta/ORG001")
+            .set("Authorization", authorizationHeader())
 
         expect(response.status).toBe(200)
         expect(response.body).toEqual({
@@ -57,7 +62,9 @@ describe("Peserta API", () => {
     })
 
     it("mengembalikan 400 untuk kode organisasi yang tidak valid", async () => {
-        const response = await request(app).get("/api/peserta/buruk")
+        const response = await request(app)
+            .get("/api/peserta/buruk")
+            .set("Authorization", authorizationHeader())
 
         expect(response.status).toBe(400)
         expect(response.body.message).toBe("Validation Error")
@@ -70,14 +77,18 @@ describe("Peserta API", () => {
             new Error("Organisasi tidak ditemukan"),
         )
 
-        const response = await request(app).get("/api/peserta/ORG001")
+        const response = await request(app)
+            .get("/api/peserta/ORG001")
+            .set("Authorization", authorizationHeader())
 
         expect(response.status).toBe(500)
         expect(response.body).toEqual({ status: "failed", message: "Internal Server Error" })
     })
 
     it("mengambil detail peserta menggunakan ID dan kode organisasi", async () => {
-        const response = await request(app).get("/api/peserta/1/ORG001")
+        const response = await request(app)
+            .get("/api/peserta/1/ORG001")
+            .set("Authorization", authorizationHeader())
 
         expect(response.status).toBe(200)
         expect(response.body.data).toEqual(expect.objectContaining({ id: 1, kode: "PST001" }))
@@ -87,7 +98,9 @@ describe("Peserta API", () => {
     it("mengembalikan 404 jika peserta tidak ditemukan", async () => {
         jest.spyOn(pesertaService, "getPesertaByIdAndOrganizationCode").mockResolvedValue(null)
 
-        const response = await request(app).get("/api/peserta/99/ORG001")
+        const response = await request(app)
+            .get("/api/peserta/99/ORG001")
+            .set("Authorization", authorizationHeader())
 
         expect(response.status).toBe(404)
         expect(response.body).toEqual({
@@ -97,14 +110,19 @@ describe("Peserta API", () => {
     })
 
     it("mengembalikan 400 jika ID detail bukan bilangan bulat positif", async () => {
-        const response = await request(app).get("/api/peserta/0/ORG001")
+        const response = await request(app)
+            .get("/api/peserta/0/ORG001")
+            .set("Authorization", authorizationHeader())
 
         expect(response.status).toBe(400)
         expect(pesertaService.getPesertaByIdAndOrganizationCode).not.toHaveBeenCalled()
     })
 
     it("membuat peserta dengan input valid", async () => {
-        const response = await request(app).post("/api/peserta").send(createPayload)
+        const response = await request(app)
+            .post("/api/peserta")
+            .set("Authorization", authorizationHeader())
+            .send(createPayload)
 
         expect(response.status).toBe(201)
         expect(response.body).toEqual({
@@ -121,6 +139,7 @@ describe("Peserta API", () => {
     it("menerima kode peserta opsional saat pembuatan", async () => {
         const response = await request(app)
             .post("/api/peserta")
+            .set("Authorization", authorizationHeader())
             .send({ ...createPayload, kode: "PST002" })
 
         expect(response.status).toBe(201)
@@ -138,15 +157,19 @@ describe("Peserta API", () => {
 
         const response = await request(app)
             .post("/api/peserta")
+            .set("Authorization", authorizationHeader())
             .send({ ...createPayload, kode: "PST001" })
 
         expect(response.status).toBe(409)
-        expect(response.body.message).toBe("Kode peserta sudah digunakan, silakan gunakan kode lain.")
+        expect(response.body.message).toBe(
+            "Kode peserta sudah digunakan, silakan gunakan kode lain.",
+        )
     })
 
     it("menolak pembuatan peserta dengan body tidak valid", async () => {
         const response = await request(app)
             .post("/api/peserta")
+            .set("Authorization", authorizationHeader())
             .send({
                 ...createPayload,
                 nama: "x",
@@ -161,6 +184,7 @@ describe("Peserta API", () => {
     it("memperbarui peserta berdasarkan ID", async () => {
         const response = await request(app)
             .patch("/api/peserta/1")
+            .set("Authorization", authorizationHeader())
             .send({ nama: "Budi Santoso Baru", user_id: 2 })
 
         expect(response.status).toBe(200)
@@ -177,14 +201,19 @@ describe("Peserta API", () => {
     })
 
     it("menolak pembaruan peserta jika nama atau user_id tidak disertakan", async () => {
-        const response = await request(app).patch("/api/peserta/1").send({ alamat: "Alamat baru" })
+        const response = await request(app)
+            .patch("/api/peserta/1")
+            .set("Authorization", authorizationHeader())
+            .send({ alamat: "Alamat baru" })
 
         expect(response.status).toBe(400)
         expect(pesertaService.updatePeserta).not.toHaveBeenCalled()
     })
 
     it("membuat QR Code untuk peserta berdasarkan kode peserta dan kode organisasi", async () => {
-        const response = await request(app).get("/api/peserta/qr/generate/PST001/ORG001")
+        const response = await request(app)
+            .get("/api/peserta/qr/generate/PST001/ORG001")
+            .set("Authorization", authorizationHeader())
 
         expect(response.status).toBe(200)
         expect(response.body).toEqual({
@@ -196,7 +225,9 @@ describe("Peserta API", () => {
     })
 
     it("menolak permintaan generate QR Code dengan parameter tidak valid", async () => {
-        const response = await request(app).get("/api/peserta/qr/generate/ab/ORG001")
+        const response = await request(app)
+            .get("/api/peserta/qr/generate/ab/ORG001")
+            .set("Authorization", authorizationHeader())
 
         expect(response.status).toBe(400)
         expect(response.body.message).toBe("Validation Error")
@@ -209,14 +240,21 @@ describe("Peserta API", () => {
             new HttpError(404, "Data Peserta tidak ditemukan."),
         )
 
-        const response = await request(app).get("/api/peserta/qr/generate/PST001/ORG001")
+        const response = await request(app)
+            .get("/api/peserta/qr/generate/PST001/ORG001")
+            .set("Authorization", authorizationHeader())
 
         expect(response.status).toBe(404)
-        expect(response.body).toEqual({ status: "failed", message: "Data Peserta tidak ditemukan." })
+        expect(response.body).toEqual({
+            status: "failed",
+            message: "Data Peserta tidak ditemukan.",
+        })
     })
 
     it("mencabut QR Code peserta berdasarkan ID dan kode organisasi", async () => {
-        const response = await request(app).get("/api/peserta/qr/revoke/1/ORG001")
+        const response = await request(app)
+            .get("/api/peserta/qr/revoke/1/ORG001")
+            .set("Authorization", authorizationHeader())
 
         expect(response.status).toBe(200)
         expect(response.body).toEqual({
@@ -228,7 +266,9 @@ describe("Peserta API", () => {
     })
 
     it("mendekripsi QR Code dan mengembalikan data peserta", async () => {
-        const response = await request(app).get("/api/peserta/qr/decrypt/encrypted-qr-token")
+        const response = await request(app)
+            .get("/api/peserta/qr/decrypt/encrypted-qr-token")
+            .set("Authorization", authorizationHeader())
 
         expect(response.status).toBe(200)
         expect(response.body).toEqual({
@@ -240,7 +280,9 @@ describe("Peserta API", () => {
     })
 
     it("menolak string QR Code yang terlalu pendek", async () => {
-        const response = await request(app).get("/api/peserta/qr/decrypt/ab")
+        const response = await request(app)
+            .get("/api/peserta/qr/decrypt/ab")
+            .set("Authorization", authorizationHeader())
 
         expect(response.status).toBe(400)
         expect(pesertaService.decryptQrCode).not.toHaveBeenCalled()
@@ -248,9 +290,9 @@ describe("Peserta API", () => {
 
     it("mendownload file QR Code berdasarkan qrUrl", async () => {
         const qrUrl = "/uploads/qrcodes/ORG001-PST001.png"
-        const response = await request(app).get(
-            `/api/peserta/qr/download/${encodeURIComponent(qrUrl)}`,
-        )
+        const response = await request(app)
+            .get(`/api/peserta/qr/download/${encodeURIComponent(qrUrl)}`)
+            .set("Authorization", authorizationHeader())
 
         expect(response.status).toBe(200)
         expect(response.body.message).toBe("QR Code berhasil didownload")
@@ -258,7 +300,9 @@ describe("Peserta API", () => {
     })
 
     it("menolak download QR Code dengan qrUrl tidak valid", async () => {
-        const response = await request(app).get("/api/peserta/qr/download/ab")
+        const response = await request(app)
+            .get("/api/peserta/qr/download/ab")
+            .set("Authorization", authorizationHeader())
 
         expect(response.status).toBe(400)
         expect(response.body.message).toBe("Validation Error")
@@ -270,9 +314,9 @@ describe("Peserta API", () => {
             new HttpError(404, "QR Code tidak ditemukan atau kadaluarsa, harap generate kembali."),
         )
 
-        const response = await request(app).get(
-            `/api/peserta/qr/download/${encodeURIComponent("/uploads/qrcodes/tidak-ada.png")}`,
-        )
+        const response = await request(app)
+            .get(`/api/peserta/qr/download/${encodeURIComponent("/uploads/qrcodes/tidak-ada.png")}`)
+            .set("Authorization", authorizationHeader())
 
         expect(response.status).toBe(404)
         expect(response.body).toEqual({
