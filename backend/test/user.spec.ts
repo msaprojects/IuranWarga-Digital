@@ -1,8 +1,9 @@
-import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals";
-import { userService } from "../src/services/user.service";
-import request from "supertest";
-import app from "../src/app.ts";
-import { HttpError } from "../src/utils/http_error.ts";
+import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
+import request from "supertest"
+import app from "../src/app.ts"
+import { userService } from "../src/services/user.service"
+import { HttpError } from "../src/utils/http_error.ts"
+import { authorizationHeader } from "./auth.ts"
 
 const user = {
     id: 1,
@@ -14,7 +15,7 @@ const user = {
     isActive: true,
     email: null,
     contact: null,
-} satisfies NonNullable<Awaited<ReturnType<typeof userService.getUserByIdAndOrganizationCode>>>;
+} satisfies NonNullable<Awaited<ReturnType<typeof userService.getUserByIdAndOrganizationCode>>>
 
 const createUser = {
     id: 2,
@@ -29,42 +30,55 @@ const createUser = {
     isActive: true,
     email: null,
     contact: null,
-} satisfies Awaited<ReturnType<typeof userService.createUser>>;
+} satisfies Awaited<ReturnType<typeof userService.createUser>>
 
 beforeEach(() => {
     jest.spyOn(userService, "getUserByIdAndOrganizationCode").mockImplementation(
         async (id, kode) => (id === 1 && kode === "ORG001" ? user : null),
-    );
+    )
     jest.spyOn(userService, "getUsersByOrganizationCode").mockImplementation(async (kode) =>
         kode === "ORG001" ? [user] : [],
-    );
-    jest.spyOn(userService, "createUser").mockResolvedValue(createUser);
-    jest.spyOn(userService, "updateUser").mockResolvedValue(createUser);
-});
-
-afterEach(() => {
-    jest.resetAllMocks();
-});
-
-describe("User API", () => {
-    it("seharusnya mengembalikan daftar user berdasarkan kode organisasi", async () => {
-        const response = await request(app).get("/api/users/ORG001");
-
-        expect(response.status).toBe(200);
-        expect(response.body.data).toEqual([expect.objectContaining({
+    )
+    jest.spyOn(userService, "createUser").mockResolvedValue(createUser)
+    jest.spyOn(userService, "updateUser").mockResolvedValue(createUser)
+    jest.spyOn(userService, "loginUser").mockResolvedValue({
+        user: {
             id: 1,
             username: "admin01",
-            organisasi_id: 1,
-        })]);
-        expect(userService.getUsersByOrganizationCode).toHaveBeenCalledWith("ORG001");
-    });
+            name: "Admin Organisasi",
+            role: "ADMIN",
+            kode_organisasi: "ORG001",
+        },
+        token: authorizationHeader().slice("Bearer ".length),
+    })
+})
 
-    it("seharusnya mengembalikan data user berdasarkan id dan kode organisasi yang valid", async () => {
-        const response = await request(app).get("/api/user/1/ORG001");
+afterEach(() => {
+    jest.restoreAllMocks()
+})
 
-        expect(response.status).toBe(200);
-        expect(response.headers["content-type"]).toMatch(/json/);
+const authenticated = {
+    get: (url: string) => request(app).get(url).set("Authorization", authorizationHeader()),
+    post: (url: string) => request(app).post(url).set("Authorization", authorizationHeader()),
+    patch: (url: string) => request(app).patch(url).set("Authorization", authorizationHeader()),
+}
 
+describe("User API", () => {
+    it("mengambil daftar user berdasarkan kode organisasi", async () => {
+        const response = await authenticated.get("/api/users/ORG001")
+
+        expect(response.status).toBe(200)
+        expect(response.body.data).toEqual([
+            expect.objectContaining({ id: 1, username: "admin01", organisasi_id: 1 }),
+        ])
+        expect(userService.getUsersByOrganizationCode).toHaveBeenCalledWith("ORG001")
+    })
+
+    it("mengambil detail user berdasarkan ID dan kode organisasi", async () => {
+        const response = await authenticated.get("/api/user/1/ORG001")
+
+        expect(response.status).toBe(200)
+        expect(response.headers["content-type"]).toMatch(/json/)
         expect(response.body.data).toEqual(
             expect.objectContaining({
                 id: 1,
@@ -73,89 +87,119 @@ describe("User API", () => {
                 role: "ADMIN",
                 organisasi_id: 1,
             }),
-        );
-        expect(userService.getUserByIdAndOrganizationCode).toHaveBeenCalledWith(1, "ORG001");
-    });
+        )
+        expect(userService.getUserByIdAndOrganizationCode).toHaveBeenCalledWith(1, "ORG001")
+    })
 
-    it("seharusnya membuat user baru", async () => {
-        const response = await request(app).post("/api/user").send({
+    it("membuat user baru", async () => {
+        const response = await authenticated.post("/api/user").send({
             username: "user01",
             name: "User Organisasi",
             password: "password123",
             role: "USER",
             organisasi_id: 1,
             isActive: true,
-        });
-        
-        expect(response.status).toBe(201);
-        expect(response.body.data).toEqual(expect.objectContaining({
-            id: 2,
-            username: "user01",
-            name: "User Organisasi",
-        }));
-        expect(userService.createUser).toHaveBeenCalled();
-    });
+        })
 
-    it("seharusnya mengembalikan 404 jika organisasi untuk user tidak ditemukan", async () => {
+        expect(response.status).toBe(201)
+        expect(response.body.data).toEqual(
+            expect.objectContaining({ id: 2, username: "user01", name: "User Organisasi" }),
+        )
+        expect(userService.createUser).toHaveBeenCalled()
+    })
+
+    it("mengembalikan 404 jika organisasi untuk user tidak ditemukan", async () => {
         jest.spyOn(userService, "createUser").mockRejectedValueOnce(
             new HttpError(404, "Organisasi tidak ditemukan atau tidak aktif."),
-        );
+        )
 
-        const response = await request(app).post("/api/user").send({
+        const response = await authenticated.post("/api/user").send({
             username: "user02",
             name: "User Organisasi",
             password: "password123",
             role: "USER",
             organisasi_id: 999,
-        });
+        })
 
-        expect(response.status).toBe(404);
-        expect(response.body.message).toBe("Organisasi tidak ditemukan atau tidak aktif.");
-    });
+        expect(response.status).toBe(404)
+        expect(response.body.message).toBe("Organisasi tidak ditemukan atau tidak aktif.")
+    })
 
-    it("seharusnya mengembalikan 409 jika username sudah digunakan", async () => {
+    it("mengembalikan 409 jika username sudah digunakan", async () => {
         jest.spyOn(userService, "createUser").mockRejectedValueOnce(
             new HttpError(409, "Username sudah digunakan."),
-        );
+        )
 
-        const response = await request(app).post("/api/user").send({
+        const response = await authenticated.post("/api/user").send({
             username: "user01",
             name: "User Organisasi",
             password: "password123",
             role: "USER",
             organisasi_id: 1,
-        });
+        })
 
-        expect(response.status).toBe(409);
-        expect(response.body.message).toBe("Username sudah digunakan.");
-    });
+        expect(response.status).toBe(409)
+        expect(response.body.message).toBe("Username sudah digunakan.")
+    })
 
-    it("seharusnya memperbarui user", async () => {
-        const response = await request(app).patch("/api/user/2").send({
+    it("memperbarui user", async () => {
+        const response = await authenticated.patch("/api/user/2").send({
             name: "User Organisasi Diperbarui",
-        });
-        
-        expect(response.status).toBe(200);
-        expect(response.body.data).toEqual(expect.objectContaining({
-            id: 2,
-            username: "user01",
-        }));
-        expect(userService.updateUser).toHaveBeenCalled();
-    });
+        })
 
-    
-    it("seharusnya mengembalikan 404 jika user tidak ditemukan", async () => {
-        const response = await request(app).get("/api/user/2/ORG001");
+        expect(response.status).toBe(200)
+        expect(response.body.data).toEqual(expect.objectContaining({ id: 2, username: "user01" }))
+        expect(userService.updateUser).toHaveBeenCalled()
+    })
 
-        expect(response.status).toBe(404);
-        expect(userService.getUserByIdAndOrganizationCode).toHaveBeenCalledWith(2, "ORG001");
-    });
+    it("mengembalikan 404 jika user tidak ditemukan", async () => {
+        const response = await authenticated.get("/api/user/2/ORG001")
 
-    it("seharusnya mengembalikan 404 jika kode organisasi tidak cocok", async () => {
-        const response = await request(app).get("/api/user/1/ORG002");
+        expect(response.status).toBe(404)
+        expect(userService.getUserByIdAndOrganizationCode).toHaveBeenCalledWith(2, "ORG001")
+    })
 
-        expect(response.status).toBe(404);
-        expect(userService.getUserByIdAndOrganizationCode).toHaveBeenCalledWith(1, "ORG002");
-    });
-    
-});
+    it("mengembalikan 404 jika kode organisasi tidak cocok", async () => {
+        const response = await authenticated.get("/api/user/1/ORG002")
+
+        expect(response.status).toBe(404)
+        expect(userService.getUserByIdAndOrganizationCode).toHaveBeenCalledWith(1, "ORG002")
+    })
+
+    it("melakukan login dan mengembalikan access token", async () => {
+        const response = await request(app).post("/api/user/login").send({
+            username: "admin01",
+            password: "password123",
+        })
+
+        expect(response.status).toBe(200)
+        expect(response.body).toEqual({
+            status: "success",
+            message: "Login berhasil",
+            data: {
+                user: expect.objectContaining({ username: "admin01", kode_organisasi: "ORG001" }),
+                token: expect.any(String),
+            },
+        })
+        expect(userService.loginUser).toHaveBeenCalledWith("admin01", "password123")
+
+        const protectedResponse = await request(app)
+            .get("/api/users/ORG001")
+            .set("Authorization", `Bearer ${response.body.data.token}`)
+        expect(protectedResponse.status).toBe(200)
+    })
+
+    it("mengembalikan 401 jika kredensial login salah", async () => {
+        jest.spyOn(userService, "loginUser").mockRejectedValueOnce(
+            new HttpError(401, "Username atau password salah."),
+        )
+
+        const response = await request(app).post("/api/user/login").send({
+            username: "admin01",
+            password: "password123",
+        })
+
+        expect(response.status).toBe(401)
+        expect(response.body.message).toBe("Username atau password salah.")
+    })
+})

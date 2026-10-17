@@ -4,9 +4,9 @@ const apiInfo = {
         title: "Iuran Warga API",
         version: "1.0.0",
         description:
-            "API untuk mengelola organisasi, user, peserta, dan QR Code. Semua endpoint menggunakan JSON. Saat ini endpoint belum dilindungi autentikasi maupun otorisasi; batasi akses API pada lingkungan tepercaya.",
+            "API untuk mengelola organisasi, user, peserta, dan QR Code. Semua endpoint operasional memerlukan JWT Bearer token. Pengecualian: pendaftaran organisasi melalui POST /organisasi dan login melalui POST /user/login. Token memverifikasi identitas, sementara pembatasan akses berdasarkan role belum diterapkan.",
     },
-    servers: [{ url: "/api", description: "API server" }],
+    servers: [{ url: "http://localhost:9990/api", description: "API Local Development" }],
     tags: [
         {
             name: "Organisasi",
@@ -17,8 +17,11 @@ const apiInfo = {
             name: "Peserta",
             description: "Pengelolaan peserta dan data rumah berdasarkan organisasi.",
         },
-        { name: "QR Code", description: "Pembuatan, pencabutan, dan dekripsi QR Code peserta." },
+        {
+            name: "QR Code",
+            description: "Pengelolaan dan unduhan QR Code untuk peserta.",
+        },
     ],
-} as const;
+} as const
 
-export default apiInfo;
+export default apiInfo
