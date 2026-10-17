@@ -1258,6 +1258,13 @@
                   "kind": "scalar"
                 }
               },
+              "qr_path": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "qr_token": {
                 "nullable": true,
                 "type": {
@@ -1387,6 +1394,9 @@
                 },
                 "organisasi_id": {
                   "column": "organisasi_id"
+                },
+                "qr_path": {
+                  "column": "qr_path"
                 },
                 "qr_token": {
                   "column": "qr_token"
@@ -2910,6 +2920,11 @@
                   "dataType": "pg/int4",
                   "nullable": false
                 },
+                "qr_path": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
                 "qr_token": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -3604,7 +3619,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "8aa1b11e3b297a630bacd2522d075533b5155aad244b6da0df3c44f4b0e655e7"
+    "storageHash": "797d9ef55d08c27cfcabfd60e5326bb1097e60ad07909209b1f8d673d125ddb1"
   },
   "execution": {
     "executionHash": "5a97b77418540dec627a48c686dafc19ce7d676c6c9525a2b3210d0b9992b995",

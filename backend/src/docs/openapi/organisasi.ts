@@ -2,6 +2,7 @@ const organisasiPaths = {
     "/organisasi": {
         post: {
             tags: ["Organisasi"],
+            security: [],
             summary: "Buat organisasi",
             description:
                 "Membuat organisasi beserta user admin pertamanya. Role ADMIN dan organisasi_id ditentukan oleh server. Field opsional yang tidak dikirim akan menggunakan nilai default null (atau true untuk isActive).",
@@ -28,6 +29,14 @@ const organisasiPaths = {
                     content: {
                         "application/json": {
                             schema: { $ref: "#/components/schemas/ValidationError" },
+                        },
+                    },
+                },
+                "409": {
+                    description: "Kode organisasi atau username sudah digunakan",
+                    content: {
+                        "application/json": {
+                            schema: { $ref: "#/components/schemas/Error" },
                         },
                     },
                 },
@@ -58,6 +67,7 @@ const organisasiPaths = {
             summary: "Ambil organisasi berdasarkan kode",
             operationId: "getOrganisasiByKode",
             responses: {
+                "401": { $ref: "#/components/responses/Unauthorized" },
                 "200": {
                     description: "Organisasi ditemukan dan masih aktif",
                     content: {
@@ -108,6 +118,7 @@ const organisasiPaths = {
                 },
             },
             responses: {
+                "401": { $ref: "#/components/responses/Unauthorized" },
                 "200": {
                     description: "Organisasi berhasil diperbarui",
                     content: {
@@ -121,6 +132,14 @@ const organisasiPaths = {
                     content: {
                         "application/json": {
                             schema: { $ref: "#/components/schemas/ValidationError" },
+                        },
+                    },
+                },
+                "409": {
+                    description: "Kode organisasi sudah digunakan.",
+                    content: {
+                        "application/json": {
+                            schema: { $ref: "#/components/schemas/Error" },
                         },
                     },
                 },
@@ -149,6 +168,7 @@ const organisasiPaths = {
                 "Soft delete: mengubah isActive menjadi false. Data tidak dihapus permanen.",
             operationId: "deactivateOrganisasi",
             responses: {
+                "401": { $ref: "#/components/responses/Unauthorized" },
                 "200": {
                     description: "Organisasi berhasil dinonaktifkan",
                     content: {
@@ -184,6 +204,6 @@ const organisasiPaths = {
             },
         },
     },
-} as const;
+} as const
 
-export default organisasiPaths;
+export default organisasiPaths

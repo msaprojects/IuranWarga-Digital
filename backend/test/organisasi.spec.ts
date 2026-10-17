@@ -1,7 +1,9 @@
-import request from "supertest";
-import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals";
-import app from "../src/app.ts";
-import { orgService } from "../src/services/organisasi.service.ts";
+import request from "supertest"
+import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
+import app from "../src/app.ts"
+import { orgService } from "../src/services/organisasi.service.ts"
+import { HttpError } from "../src/utils/http_error.ts"
+import { authorizationHeader } from "./auth.ts"
 
 const organisasi = {
     activeAt: null,
@@ -15,109 +17,126 @@ const organisasi = {
     nama: "Organisasi",
     updatedAt: "2025-01-01T00:00:00.000Z",
     website: null,
-} satisfies NonNullable<Awaited<ReturnType<typeof orgService.getByKode>>>;
+} satisfies NonNullable<Awaited<ReturnType<typeof orgService.getByKode>>>
 
 beforeEach(() => {
     jest.spyOn(orgService, "getByKode").mockImplementation(async (kode) =>
         kode === organisasi.kode ? organisasi : null,
-    );
-    jest.spyOn(orgService, "create").mockResolvedValue(undefined);
-    jest.spyOn(orgService, "updateByKode").mockResolvedValue(organisasi);
+    )
+    jest.spyOn(orgService, "create").mockResolvedValue(undefined)
+    jest.spyOn(orgService, "updateByKode").mockResolvedValue(organisasi)
     jest.spyOn(orgService, "deactivateByKode").mockResolvedValue({
         ...organisasi,
         isActive: false,
-    });
-});
+    })
+})
 
 afterEach(() => {
-    jest.restoreAllMocks();
-});
+    jest.restoreAllMocks()
+})
 
 describe("Organisasi API", () => {
     it("seharusnya menyediakan OpenAPI spec, Swagger UI, dan Redoc", async () => {
-        const specResponse = await request(app).get("/api-docs.json");
-        const uiResponse = await request(app).get("/api-docs/");
-        const redocResponse = await request(app).get("/redoc");
+        const specResponse = await request(app).get("/api-docs.json")
+        const uiResponse = await request(app).get("/api-docs/")
+        const redocResponse = await request(app).get("/redoc")
 
-        expect(specResponse.status).toBe(200);
-        expect(specResponse.body.openapi).toBe("3.1.0");
+        expect(specResponse.status).toBe(200)
+        expect(specResponse.body.openapi).toBe("3.1.0")
+        expect(specResponse.body.components.securitySchemes.BearerAuth.scheme).toBe("bearer")
+        expect(specResponse.body.security).toEqual([{ BearerAuth: [] }])
+        expect(specResponse.body.paths["/organisasi"].post.security).toEqual([])
+        expect(specResponse.body.paths["/user/login"].post.security).toEqual([])
+        expect(specResponse.body.paths["/organisasi/{kode}"].get.responses["401"]).toBeDefined()
+        expect(specResponse.body.paths["/peserta"].post.responses["401"]).toBeDefined()
         expect(
             specResponse.body.paths["/organisasi"].post.requestBody.content["application/json"]
                 .schema.$ref,
-        ).toBe("#/components/schemas/CreateOrganisasiWithUserInput");
-        expect(specResponse.body.components.schemas.CreateOrganisasiWithUserInput.required).toEqual([
-            "organisasi",
-            "user",
-        ]);
-        expect(specResponse.body.paths["/organisasi/{kode}"].patch).toBeDefined();
-        expect(uiResponse.status).toBe(200);
-        expect(uiResponse.text).toContain("Swagger UI");
-        expect(redocResponse.status).toBe(200);
-        expect(redocResponse.text).toContain("/api-docs.json");
-        expect(redocResponse.text.toLowerCase()).toContain("redoc");
-    });
+        ).toBe("#/components/schemas/CreateOrganisasiWithUserInput")
+        expect(specResponse.body.components.schemas.CreateOrganisasiWithUserInput.required).toEqual(
+            ["organisasi", "user"],
+        )
+        expect(specResponse.body.paths["/organisasi/{kode}"].patch).toBeDefined()
+        expect(uiResponse.status).toBe(200)
+        expect(uiResponse.text).toContain("Swagger UI")
+        expect(redocResponse.status).toBe(200)
+        expect(redocResponse.text).toContain("/api-docs.json")
+        expect(redocResponse.text.toLowerCase()).toContain("redoc")
+    })
 
     it("seharusnya mengembalikan data organisasi dengan kode yang valid", async () => {
-        const kode = "ORG001";
-        const response = await request(app).get(`/api/organisasi/${kode}`);
+        const kode = "ORG001"
+        const response = await request(app)
+            .get(`/api/organisasi/${kode}`)
+            .set("Authorization", authorizationHeader())
 
-        expect(response.status).toBe(200);
-        expect(response.headers["content-type"]).toMatch(/application\/json/);
+        expect(response.status).toBe(200)
+        expect(response.headers["content-type"]).toMatch(/application\/json/)
 
-        const organisasi = response.body.data ?? response.body;
-        expect(organisasi).toEqual(expect.objectContaining({ kode }));
-    });
+        const organisasi = response.body.data ?? response.body
+        expect(organisasi).toEqual(expect.objectContaining({ kode }))
+    })
 
     it("seharusnya menggunakan kode yang sudah dinormalisasi validator", async () => {
-        const response = await request(app).get("/api/organisasi/%20ORG001%20");
+        const response = await request(app)
+            .get("/api/organisasi/%20ORG001%20")
+            .set("Authorization", authorizationHeader())
 
-        expect(response.status).toBe(200);
-        expect(orgService.getByKode).toHaveBeenCalledWith("ORG001");
-    });
+        expect(response.status).toBe(200)
+        expect(orgService.getByKode).toHaveBeenCalledWith("ORG001")
+    })
 
     it("seharusnya mengembalikan 404 untuk kode organisasi yang tidak ditemukan", async () => {
-        const response = await request(app).get("/api/organisasi/ORG999");
+        const response = await request(app)
+            .get("/api/organisasi/ORG999")
+            .set("Authorization", authorizationHeader())
 
-        expect(response.status).toBe(404);
-        expect(response.headers["content-type"]).toMatch(/application\/json/);
-    });
+        expect(response.status).toBe(404)
+        expect(response.headers["content-type"]).toMatch(/application\/json/)
+    })
 
     it("seharusnya menolak kode dengan format yang tidak valid", async () => {
-        const response = await request(app).get("/api/organisasi/!");
+        const response = await request(app)
+            .get("/api/organisasi/!")
+            .set("Authorization", authorizationHeader())
 
-        expect(response.status).toBe(400);
-        expect(response.headers["content-type"]).toMatch(/application\/json/);
-        expect(orgService.getByKode).not.toHaveBeenCalled();
-    });
+        expect(response.status).toBe(400)
+        expect(response.headers["content-type"]).toMatch(/application\/json/)
+        expect(orgService.getByKode).not.toHaveBeenCalled()
+    })
 
     it("seharusnya mengembalikan 404 jika parameter kode tidak diberikan", async () => {
-        const response = await request(app).get("/api/organisasi/");
+        const response = await request(app)
+            .get("/api/organisasi/")
+            .set("Authorization", authorizationHeader())
 
-        expect(response.status).toBe(404);
-    });
+        expect(response.status).toBe(404)
+    })
 
     it("seharusnya tidak membocorkan detail error internal", async () => {
         jest.spyOn(orgService, "getByKode").mockRejectedValue(
             new Error("database credentials must not be exposed"),
-        );
-        jest.spyOn(console, "error").mockImplementation(() => undefined);
+        )
+        jest.spyOn(console, "error").mockImplementation(() => undefined)
 
-        const response = await request(app).get("/api/organisasi/ORG001");
+        const response = await request(app)
+            .get("/api/organisasi/ORG001")
+            .set("Authorization", authorizationHeader())
 
-        expect(response.status).toBe(500);
+        expect(response.status).toBe(500)
         expect(response.body).toEqual({
             status: "failed",
             message: "Internal Server Error",
-        });
-        expect(JSON.stringify(response.body)).not.toContain("credentials");
-    });
+        })
+        expect(JSON.stringify(response.body)).not.toContain("credentials")
+    })
 
     it("seharusnya mengembalikan 404 untuk route yang tidak ditemukan", async () => {
-        const response = await request(app).get("/api/not-a-route");
+        const response = await request(app).get("/api/not-a-route")
 
-        expect(response.status).toBe(404);
-        expect(response.body.message).toBe("Route not found");
-    });
+        expect(response.status).toBe(404)
+        expect(response.body.message).toBe("Route not found")
+    })
 
     it("seharusnya membuat organisasi dengan nilai opsional default", async () => {
         const response = await request(app)
@@ -129,9 +148,9 @@ describe("Organisasi API", () => {
                     name: " Admin Organisasi ",
                     password: "password1",
                 },
-            });
+            })
 
-        expect(response.status).toBe(201);
+        expect(response.status).toBe(201)
         expect(orgService.create).toHaveBeenCalledWith({
             organisasi: {
                 kode: "ORG001",
@@ -150,49 +169,89 @@ describe("Organisasi API", () => {
                 email: null,
                 contact: null,
             },
-        });
-    });
+        })
+    })
+
+    it("seharusnya mengembalikan 409 saat kode organisasi sudah digunakan", async () => {
+        jest.spyOn(orgService, "create").mockRejectedValueOnce(
+            new HttpError(409, "Kode organisasi sudah ada."),
+        )
+
+        const response = await request(app)
+            .post("/api/organisasi")
+            .send({
+                organisasi: { kode: "ORG001", nama: "Warga01" },
+                user: { username: "admin01", name: "Admin Organisasi", password: "password1" },
+            })
+
+        expect(response.status).toBe(409)
+        expect(response.body).toEqual({
+            status: "failed",
+            message: "Kode organisasi sudah ada.",
+        })
+    })
 
     it("seharusnya menolak pembuatan organisasi dengan body tidak valid", async () => {
-        const response = await request(app).post("/api/organisasi").send({ kode: "ORG001" });
+        const response = await request(app).post("/api/organisasi").send({ kode: "ORG001" })
 
-        expect(response.status).toBe(400);
-        expect(orgService.create).not.toHaveBeenCalled();
-    });
+        expect(response.status).toBe(400)
+        expect(orgService.create).not.toHaveBeenCalled()
+    })
 
     it("seharusnya memperbarui organisasi berdasarkan kode", async () => {
         const response = await request(app)
             .patch("/api/organisasi/ORG001")
-            .send({ nama: "Nama Baru" });
+            .set("Authorization", authorizationHeader())
+            .send({ nama: "Nama Baru" })
 
-        expect(response.status).toBe(200);
+        expect(response.status).toBe(200)
         expect(orgService.updateByKode).toHaveBeenCalledWith("ORG001", {
             nama: "Nama Baru",
-        });
-    });
+        })
+    })
+
+    it("seharusnya mengembalikan 409 saat kode organisasi tujuan sudah digunakan", async () => {
+        jest.spyOn(orgService, "updateByKode").mockRejectedValueOnce(
+            new HttpError(409, "Kode organisasi sudah ada."),
+        )
+
+        const response = await request(app)
+            .patch("/api/organisasi/ORG001")
+            .set("Authorization", authorizationHeader())
+            .send({ kode: "ORG002" })
+
+        expect(response.status).toBe(409)
+        expect(response.body.message).toBe("Kode organisasi sudah ada.")
+    })
 
     it("seharusnya menolak update kosong", async () => {
-        const response = await request(app).patch("/api/organisasi/ORG001").send({});
+        const response = await request(app)
+            .patch("/api/organisasi/ORG001")
+            .set("Authorization", authorizationHeader())
+            .send({})
 
-        expect(response.status).toBe(400);
-        expect(orgService.updateByKode).not.toHaveBeenCalled();
-    });
+        expect(response.status).toBe(400)
+        expect(orgService.updateByKode).not.toHaveBeenCalled()
+    })
 
     it("seharusnya mengembalikan 404 saat organisasi tidak ditemukan untuk update", async () => {
-        jest.spyOn(orgService, "updateByKode").mockResolvedValueOnce(null);
+        jest.spyOn(orgService, "updateByKode").mockResolvedValueOnce(null)
 
         const response = await request(app)
             .patch("/api/organisasi/ORG999")
-            .send({ nama: "Nama Baru" });
+            .set("Authorization", authorizationHeader())
+            .send({ nama: "Nama Baru" })
 
-        expect(response.status).toBe(404);
-    });
+        expect(response.status).toBe(404)
+    })
 
     it("seharusnya menonaktifkan organisasi melalui DELETE", async () => {
-        const response = await request(app).delete("/api/organisasi/ORG001");
+        const response = await request(app)
+            .delete("/api/organisasi/ORG001")
+            .set("Authorization", authorizationHeader())
 
-        expect(response.status).toBe(200);
-        expect(response.body.data.isActive).toBe(false);
-        expect(orgService.deactivateByKode).toHaveBeenCalledWith("ORG001");
-    });
-});
+        expect(response.status).toBe(200)
+        expect(response.body.data.isActive).toBe(false)
+        expect(orgService.deactivateByKode).toHaveBeenCalledWith("ORG001")
+    })
+})

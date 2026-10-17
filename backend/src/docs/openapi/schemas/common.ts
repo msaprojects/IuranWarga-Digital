@@ -27,6 +27,16 @@ const commonSchemas = {
             },
         },
     },
-} as const;
+    AuthenticationError: {
+        type: "object",
+        required: ["message"],
+        properties: {
+            message: {
+                type: "string",
+                enum: ["Unauthorized", "Token expired", "Invalid token"],
+            },
+        },
+    },
+} as const
 
-export default commonSchemas;
+export default commonSchemas

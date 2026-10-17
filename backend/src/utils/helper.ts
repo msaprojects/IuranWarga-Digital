@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { HttpError } from "./http_error.ts";
 
 const ENCRYPTION_KEY = crypto.scryptSync(String(process.env.ENCRYPTED_KEY), "salt", 32);
 const ALGORITHM = "aes-256-gcm";
@@ -27,19 +28,26 @@ export function decryptQRCodeString(encryptedString: string): string {
     const [ivString, authTagString, encryptedData] = encryptedString.split(":");
 
     if (!ivString || !authTagString || !encryptedData) {
-        throw new Error("Format string terenkripsi tidak valid.");
+        throw new HttpError(400, "String QR Code tidak valid.");
     }
 
     const iv = Buffer.from(ivString, "base64");
     const authTag = Buffer.from(authTagString, "base64");
+    if (iv.length !== 12 || authTag.length !== 16) {
+        throw new HttpError(400, "String QR Code tidak valid.");
+    }
 
-    const decipher = crypto.createDecipheriv(ALGORITHM, ENCRYPTION_KEY, iv);
-    decipher.setAuthTag(authTag);
+    try {
+        const decipher = crypto.createDecipheriv(ALGORITHM, ENCRYPTION_KEY, iv);
+        decipher.setAuthTag(authTag);
 
-    let decrypted = decipher.update(encryptedData, "base64", "utf8");
-    decrypted += decipher.final("utf8");
+        let decrypted = decipher.update(encryptedData, "base64", "utf8");
+        decrypted += decipher.final("utf8");
 
-    return decrypted;
+        return decrypted;
+    } catch {
+        throw new HttpError(400, "String QR Code tidak valid.");
+    }
 };
 
 export function generateRandomCode(minLength: number, maxLength: number): string {

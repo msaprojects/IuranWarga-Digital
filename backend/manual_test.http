@@ -1,0 +1,26 @@
+### VARIABEL VALUE
+@URL_PATH = http://localhost:3000/api/v1/
+
+#ORGANISASI
+
+### POST CREATE ORGANISASI + USER
+POST {{URL_PATH}}organisasi
+Content-Type: application/json
+
+{
+    "organisasi": {
+        "kode": "ORG001",
+        "nama": "Warga01",
+        "alamat": "Jl. Melati No. 10",
+        "website": "https://wargaharmoni.example",
+        "email": "wargaharmoni@example.com",
+        "contact": "+6281234567890"
+    },
+    "user": {
+        "username": "admin01",
+        "name": "Admin Organisasi",
+        "password": "password1",
+        "email": "admin01@example.com",
+        "contact": "+6281234567890"
+    }
+}

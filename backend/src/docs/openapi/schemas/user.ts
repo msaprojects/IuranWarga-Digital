@@ -29,13 +29,28 @@ const userSchemas = {
             contact: { type: ["string", "null"] },
         },
     },
+    LoginUserInput: {
+        type: "object",
+        additionalProperties: false,
+        required: ["username", "password"],
+        properties: {
+            username: { type: "string", minLength: 6, maxLength: 12 },
+            password: {
+                type: "string",
+                minLength: 8,
+                maxLength: 12,
+                writeOnly: true,
+            },
+        },
+        example: { username: "admin01", password: "password123" },
+    },
     User: {
         type: "object",
         properties: {
             id: { type: "integer", example: 1 },
             username: { type: "string", example: "johndoe" },
             name: { type: ["string", "null"], example: "John Doe" },
-            role: { type: "string", enum: ["ADMIN", "USER"] },
+            role: { type: "string", enum: ["ADMIN", "USER", "SUPER_ADMIN"] },
             organisasi_id: { type: ["integer", "null"], example: 1 },
             email: { type: ["string", "null"], format: "email" },
             contact: { type: ["string", "null"] },
@@ -63,6 +78,35 @@ const userSchemas = {
             data: { type: "array", items: { $ref: "#/components/schemas/User" } },
         },
     },
-} as const;
+    LoginSuccess: {
+        type: "object",
+        required: ["status", "message", "data"],
+        properties: {
+            status: { type: "string", const: "success" },
+            message: { type: "string", example: "Login berhasil" },
+            data: {
+                type: "object",
+                required: ["user", "token"],
+                properties: {
+                    user: {
+                        type: "object",
+                        required: ["id", "username", "role", "kode_organisasi"],
+                        properties: {
+                            id: { type: "integer" },
+                            username: { type: "string" },
+                            name: { type: ["string", "null"] },
+                            role: { type: "string", enum: ["ADMIN", "USER", "SUPER_ADMIN"] },
+                            kode_organisasi: { type: "string" },
+                        },
+                    },
+                    token: {
+                        type: "string",
+                        description: "JWT Bearer token, berlaku satu jam.",
+                    },
+                },
+            },
+        },
+    },
+} as const
 
-export default userSchemas;
+export default userSchemas
