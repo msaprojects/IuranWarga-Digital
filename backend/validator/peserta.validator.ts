@@ -36,6 +36,15 @@ export const updatePesertaSchema = z.strictObject({
     user_id: z.number().int().positive(),
 });
 
+export const downloadQrCodePesertaSchema = z.strictObject({
+    qrUrl: z.string().trim().min(3).max(256),
+})
+
+export const generateQrCodePesertaSchema = z.strictObject({
+    kodePeserta: z.string().trim().min(6).max(8),
+    kodeOrganisasi: z.string().trim().min(6).max(8),
+})
+
 export type GetDetailPesertaByIdAndKodeOrganisasiParams = z.output<
     typeof getDetailPesertaByIdAndKodeOrganisasiSchema
 >;
@@ -43,3 +52,5 @@ export type GetDetailPesertaByIdParams = z.output<typeof getDetailPesertaByIdPar
 export type CreatePesertaBody = z.output<typeof createPesertaSchema>;
 export type UpdatePesertaBody = z.output<typeof updatePesertaSchema>;
 export type DecryptQRCodeStringBody = z.output<typeof decryptQRCodeStringSchema>;
+export type DownloadQrCodePesertaBody = z.output<typeof downloadQrCodePesertaSchema>;
+export type GenerateQrCodePesertaBody = z.output<typeof generateQrCodePesertaSchema>;

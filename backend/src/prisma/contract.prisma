@@ -78,7 +78,7 @@ model peserta {
   // Unik hanya di dalam satu organisasi.
   kode String
 
-  nama    String?
+  nama        String?
   nomor_rumah String?
   alamat      String?
   deskripsi   String?
@@ -86,6 +86,7 @@ model peserta {
   // Token yang digunakan untuk QR Code.
   // Jangan simpan NIK/KK/nama langsung sebagai isi QR.
   qr_token String? @unique
+  qr_path  String?
 
   isActive Boolean @default(true)
 

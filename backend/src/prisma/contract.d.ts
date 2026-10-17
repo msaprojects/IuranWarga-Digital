@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'8aa1b11e3b297a630bacd2522d075533b5155aad244b6da0df3c44f4b0e655e7'>;
+  StorageHashBase<'797d9ef55d08c27cfcabfd60e5326bb1097e60ad07909209b1f8d673d125ddb1'>;
 export type ExecutionHash =
   ExecutionHashBase<'5a97b77418540dec627a48c686dafc19ce7d676c6c9525a2b3210d0b9992b995'>;
 export type ProfileHash =
@@ -314,6 +314,7 @@ export type FieldOutputTypes = {
       readonly nama: CodecTypes['pg/text@1']['output'] | null;
       readonly nomor_rumah: CodecTypes['pg/text@1']['output'] | null;
       readonly organisasi_id: CodecTypes['pg/int4@1']['output'];
+      readonly qr_path: CodecTypes['pg/text@1']['output'] | null;
       readonly qr_token: CodecTypes['pg/text@1']['output'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly user_id: CodecTypes['pg/int4@1']['output'] | null;
@@ -443,6 +444,7 @@ export type FieldInputTypes = {
       readonly nama: CodecTypes['pg/text@1']['input'] | null;
       readonly nomor_rumah: CodecTypes['pg/text@1']['input'] | null;
       readonly organisasi_id: CodecTypes['pg/int4@1']['input'];
+      readonly qr_path: CodecTypes['pg/text@1']['input'] | null;
       readonly qr_token: CodecTypes['pg/text@1']['input'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly user_id: CodecTypes['pg/int4@1']['input'] | null;
@@ -572,6 +574,7 @@ export type StorageColumnTypes = {
       readonly nama: CodecTypes['pg/text@1']['output'] | null;
       readonly nomor_rumah: CodecTypes['pg/text@1']['output'] | null;
       readonly organisasi_id: CodecTypes['pg/int4@1']['output'];
+      readonly qr_path: CodecTypes['pg/text@1']['output'] | null;
       readonly qr_token: CodecTypes['pg/text@1']['output'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly user_id: CodecTypes['pg/int4@1']['output'] | null;
@@ -701,6 +704,7 @@ export type StorageColumnInputTypes = {
       readonly nama: CodecTypes['pg/text@1']['input'] | null;
       readonly nomor_rumah: CodecTypes['pg/text@1']['input'] | null;
       readonly organisasi_id: CodecTypes['pg/int4@1']['input'];
+      readonly qr_path: CodecTypes['pg/text@1']['input'] | null;
       readonly qr_token: CodecTypes['pg/text@1']['input'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly user_id: CodecTypes['pg/int4@1']['input'] | null;
@@ -865,6 +869,7 @@ export namespace Models {
     nama: CodecTypes['pg/text@1']['output'] | null;
     nomor_rumah: CodecTypes['pg/text@1']['output'] | null;
     organisasi_id: CodecTypes['pg/int4@1']['output'];
+    qr_path: CodecTypes['pg/text@1']['output'] | null;
     qr_token: CodecTypes['pg/text@1']['output'] | null;
     updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     user_id: CodecTypes['pg/int4@1']['output'] | null;
@@ -1729,6 +1734,12 @@ type ContractBase = Omit<
                   readonly dataType: 'pg/int4';
                   readonly codecId: 'pg/int4@1';
                   readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly qr_path: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly qr_token: {
@@ -3000,6 +3011,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly qr_path: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly qr_token: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -3085,6 +3100,7 @@ type ContractBase = Omit<
                 readonly nama: { readonly column: 'nama' };
                 readonly nomor_rumah: { readonly column: 'nomor_rumah' };
                 readonly organisasi_id: { readonly column: 'organisasi_id' };
+                readonly qr_path: { readonly column: 'qr_path' };
                 readonly qr_token: { readonly column: 'qr_token' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
                 readonly user_id: { readonly column: 'user_id' };
