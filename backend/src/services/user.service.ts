@@ -180,17 +180,22 @@ class UserService {
 
         // generate JWT token
         const token = generateJWT(user.id, organization.kode, organization.id, user.username)
-        
-        // update latest login timestamp
-        await db.orm.public.user.where({ id: user.id }).update({ latestLogin: new Date().toISOString() })
 
-        return { user:{
-            id: user.id,
-            username: user.username,
-            name: user.name,
-            role: user.role,
-            kode_organisasi: organization.kode,
-        }, token }
+        // update latest login timestamp
+        await db.orm.public.user
+            .where({ id: user.id })
+            .update({ latestLogin: new Date().toISOString() })
+
+        return {
+            user: {
+                id: user.id,
+                username: user.username,
+                name: user.name,
+                role: user.role,
+                kode_organisasi: organization.kode,
+            },
+            token,
+        }
     }
 }
 

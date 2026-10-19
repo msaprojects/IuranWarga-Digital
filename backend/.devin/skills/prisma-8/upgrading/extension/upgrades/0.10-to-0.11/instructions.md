@@ -66,18 +66,18 @@ type ContractUnderTest = Contract<
     SqlStorage<string> & {
         readonly namespaces: {
             readonly __unbound__: {
-                readonly id: "__unbound__";
+                readonly id: "__unbound__"
                 readonly tables: {
                     readonly user: {
                         // ... columns, primaryKey, etc.
-                    };
-                };
-            };
-        };
-        readonly storageHash: StorageHash;
+                    }
+                }
+            }
+        }
+        readonly storageHash: StorageHash
     }
     // ...
->;
+>
 ```
 
 ### Starting at 0.11
@@ -87,19 +87,19 @@ type ContractUnderTest = Contract<
     SqlStorage<string> & {
         readonly namespaces: {
             readonly __unbound__: {
-                readonly id: "__unbound__";
-                readonly kind: "sql-namespace"; // ← new: required
+                readonly id: "__unbound__"
+                readonly kind: "sql-namespace" // ← new: required
                 readonly tables: {
                     readonly user: {
                         // ... columns, primaryKey, etc.
-                    };
-                };
-            };
-        };
-        readonly storageHash: StorageHash;
+                    }
+                }
+            }
+        }
+        readonly storageHash: StorageHash
     }
     // ...
->;
+>
 ```
 
 ### Mapping table
@@ -139,8 +139,8 @@ Starting at the 0.11 release the three official facades (`postgres()`, `sqlite()
 ```typescript
 interface ClientFacade {
     // ...existing surface...
-    close(): Promise<void>;
-    [Symbol.asyncDispose](): Promise<void>;
+    close(): Promise<void>
+    [Symbol.asyncDispose](): Promise<void>
 }
 ```
 
@@ -207,17 +207,17 @@ Starting at the 0.11 release, the `.insert()` method on the SQL builder accepts 
 Before 0.11:
 
 ```ts
-const ast = InsertAst.into(TableSource.named(tableName)).insert({ field: value });
+const ast = InsertAst.into(TableSource.named(tableName)).insert({ field: value })
 // or via the query builder:
-db.sql.table.insert({ field: value }).build();
+db.sql.table.insert({ field: value }).build()
 ```
 
 Starting at 0.11:
 
 ```ts
-const ast = InsertAst.into(TableSource.named(tableName)).insert([{ field: value }]);
+const ast = InsertAst.into(TableSource.named(tableName)).insert([{ field: value }])
 // or via the query builder:
-db.sql.table.insert([{ field: value }]).build();
+db.sql.table.insert([{ field: value }]).build()
 ```
 
 Walk every `.ts` / `.tsx` file matched by the `detection.glob` above. For each call site that passes a plain object directly to `.insert(...)`, wrap the argument in an array:
@@ -229,9 +229,9 @@ Variable references to a row object are safe to wrap directly:
 
 ```ts
 // Before
-await runtime.execute(db.sql.table.insert(row).build());
+await runtime.execute(db.sql.table.insert(row).build())
 // After
-await runtime.execute(db.sql.table.insert([row]).build());
+await runtime.execute(db.sql.table.insert([row]).build())
 ```
 
 If a call site already passes an array (`.insert([row1, row2])`), it is already correct — leave it unchanged.
@@ -247,7 +247,7 @@ Before 0.11:
 ```ts
 const ast = InsertAst.into(TableSource.named(tableName))
     .withValues(createAssignments.assignments)
-    .withOnConflict(onConflict);
+    .withOnConflict(onConflict)
 ```
 
 Starting at 0.11:
@@ -255,7 +255,7 @@ Starting at 0.11:
 ```ts
 const ast = InsertAst.into(TableSource.named(tableName))
     .withRows([createAssignments.assignments])
-    .withOnConflict(onConflict);
+    .withOnConflict(onConflict)
 ```
 
 The change is:

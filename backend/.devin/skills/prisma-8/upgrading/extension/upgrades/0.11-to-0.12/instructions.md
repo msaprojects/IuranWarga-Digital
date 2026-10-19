@@ -111,7 +111,7 @@ expr.accept<AnyExpression>({
     operation: (e) => bindExpression(contract, e),
     aggregate: (e) => bindExpression(contract, e),
     // … other methods …
-});
+})
 ```
 
 ### Starting at 0.12
@@ -125,7 +125,7 @@ expr.accept<AnyExpression>({
     aggregate: (e) => bindExpression(contract, e),
     windowFunc: (e) => bindExpression(contract, e), // ← new: required
     // … other methods …
-});
+})
 ```
 
 ### Or, for a context that rejects unsupported kinds
@@ -136,7 +136,7 @@ expr.accept<AnyExpression>({
     aggregate: rejectInThisContext,
     windowFunc: rejectInThisContext, // ← new: required
     // …
-});
+})
 ```
 
 TypeScript will report missing-property errors on every visitor literal after the bump; that's a reliable compile-time signal for every affected site. No automated codemod — the right body depends on what your visitor does, so author each one by hand.
@@ -153,15 +153,15 @@ The most common case is in SQL renderers — Postgres and SQLite both render `Wi
 function renderExpr(expr: AnyExpression): string {
     switch (expr.kind) {
         case "column-ref":
-            return renderColumn(expr);
+            return renderColumn(expr)
         case "aggregate":
-            return renderAggregate(expr);
+            return renderAggregate(expr)
         // … other cases …
         // v8 ignore next 4
         default:
             throw new Error(
                 `Unsupported expression node kind: ${(expr satisfies never as { kind: string }).kind}`,
-            );
+            )
     }
 }
 ```
@@ -172,32 +172,32 @@ function renderExpr(expr: AnyExpression): string {
 function renderExpr(expr: AnyExpression): string {
     switch (expr.kind) {
         case "column-ref":
-            return renderColumn(expr);
+            return renderColumn(expr)
         case "aggregate":
-            return renderAggregate(expr);
+            return renderAggregate(expr)
         case "window-func":
-            return renderWindowFunc(expr); // ← new: required
+            return renderWindowFunc(expr) // ← new: required
         // … other cases …
         default:
             throw new Error(
                 `Unsupported expression node kind: ${(expr satisfies never as { kind: string }).kind}`,
-            );
+            )
     }
 }
 
 function renderWindowFunc(expr: WindowFuncExpr): string {
-    const fn = expr.fn.toUpperCase();
-    const args = expr.args.map(renderExpr).join(", ");
+    const fn = expr.fn.toUpperCase()
+    const args = expr.args.map(renderExpr).join(", ")
     const partition =
         expr.partitionBy && expr.partitionBy.length > 0
             ? `PARTITION BY ${expr.partitionBy.map(renderExpr).join(", ")}`
-            : "";
+            : ""
     const order =
         expr.orderBy && expr.orderBy.length > 0
             ? `ORDER BY ${expr.orderBy.map((o) => `${renderExpr(o.expr)} ${o.dir.toUpperCase()}`).join(", ")}`
-            : "";
-    const over = [partition, order].filter((s) => s.length > 0).join(" ");
-    return `${fn}(${args}) OVER (${over})`;
+            : ""
+    const over = [partition, order].filter((s) => s.length > 0).join(" ")
+    return `${fn}(${args}) OVER (${over})`
 }
 ```
 
@@ -217,7 +217,7 @@ Prior to 0.12, `.distinct(cols)` did not actually collapse rows on the specified
 // Both 0.11 and 0.12 — same call site, different runtime behaviour:
 const posts = await db.Post.orderBy([(p) => p.title.asc(), (p) => p.id.asc()])
     .distinct("title")
-    .all();
+    .all()
 
 // 0.11: returns every post (if seed has 3 posts including two sharing title='A',
 // you get 3 back).
@@ -266,12 +266,12 @@ import type {
     SqlExecutionStackWithDriver,
     SqlMiddleware,
     SqlRuntimeExtensionDescriptor,
-} from "@internal/sql-runtime";
+} from "@internal/sql-runtime"
 
 export interface MyTargetOptionsBase {
-    readonly extensions?: readonly SqlRuntimeExtensionDescriptor<MyTargetId>[];
-    readonly middleware?: readonly SqlMiddleware[];
-    readonly verify?: RuntimeVerifyOptions;
+    readonly extensions?: readonly SqlRuntimeExtensionDescriptor<MyTargetId>[]
+    readonly middleware?: readonly SqlMiddleware[]
+    readonly verify?: RuntimeVerifyOptions
 }
 ```
 
@@ -285,13 +285,13 @@ import type {
     SqlMiddleware,
     SqlRuntimeExtensionDescriptor,
     VerifyMarkerOption,
-} from "@internal/sql-runtime";
-import { ifDefined } from "@internal/utils/defined";
+} from "@internal/sql-runtime"
+import { ifDefined } from "@internal/utils/defined"
 
 export interface MyTargetOptionsBase {
-    readonly extensions?: readonly SqlRuntimeExtensionDescriptor<MyTargetId>[];
-    readonly middleware?: readonly SqlMiddleware[];
-    readonly verifyMarker?: VerifyMarkerOption;
+    readonly extensions?: readonly SqlRuntimeExtensionDescriptor<MyTargetId>[]
+    readonly middleware?: readonly SqlMiddleware[]
+    readonly verifyMarker?: VerifyMarkerOption
 }
 ```
 
@@ -306,7 +306,7 @@ const runtime = createRuntime({
     driver,
     verify: options.verify ?? { mode: "onFirstUse", requireMarker: false },
     ...ifDefined("middleware", options.middleware),
-});
+})
 ```
 
 The hard-coded `{ mode: 'onFirstUse', requireMarker: false }` default duplicated what the runtime already applied when `verify` was omitted. From 0.12 the wrapper should not inject a default — let the runtime's `'onFirstUse'` default stand.
@@ -320,7 +320,7 @@ const runtime = createRuntime({
     driver,
     ...ifDefined("verifyMarker", options.verifyMarker),
     ...ifDefined("middleware", options.middleware),
-});
+})
 ```
 
 When the caller omits `verifyMarker`, the spread adds nothing and the runtime default (`'onFirstUse'`) applies. When the caller passes `verifyMarker: false`, verification is skipped entirely.
@@ -344,36 +344,36 @@ Extension wrapper tests that exercised the old surface need two kinds of updates
 ```ts
 // Before 0.12
 it("forwards verify option to createRuntime", async () => {
-    const verify = { mode: "always", requireMarker: true } as const;
-    const db = myTarget({ contract, verify });
-    await db.connect(/* … */);
-    expect(mocks.createRuntime).toHaveBeenCalledWith(expect.objectContaining({ verify }));
-});
+    const verify = { mode: "always", requireMarker: true } as const
+    const db = myTarget({ contract, verify })
+    await db.connect(/* … */)
+    expect(mocks.createRuntime).toHaveBeenCalledWith(expect.objectContaining({ verify }))
+})
 
 it("defaults verify to onFirstUse without requireMarker", async () => {
-    const db = myTarget({ contract });
-    await db.connect(/* … */);
+    const db = myTarget({ contract })
+    await db.connect(/* … */)
     expect(mocks.createRuntime).toHaveBeenCalledWith(
         expect.objectContaining({ verify: { mode: "onFirstUse", requireMarker: false } }),
-    );
-});
+    )
+})
 
 // Starting at 0.12
 it("forwards verifyMarker option to createRuntime", async () => {
-    const db = myTarget({ contract, verifyMarker: false });
-    await db.connect(/* … */);
+    const db = myTarget({ contract, verifyMarker: false })
+    await db.connect(/* … */)
     expect(mocks.createRuntime).toHaveBeenCalledWith(
         expect.objectContaining({ verifyMarker: false }),
-    );
-});
+    )
+})
 
 it("omits verifyMarker from createRuntime when not provided (runtime default applies)", async () => {
-    const db = myTarget({ contract });
-    await db.connect(/* … */);
-    expect(mocks.createRuntime).toHaveBeenCalledTimes(1);
-    const callArg = mocks.createRuntime.mock.calls[0]?.[0] as Record<string, unknown>;
-    expect(callArg).not.toHaveProperty("verifyMarker");
-});
+    const db = myTarget({ contract })
+    await db.connect(/* … */)
+    expect(mocks.createRuntime).toHaveBeenCalledTimes(1)
+    const callArg = mocks.createRuntime.mock.calls[0]?.[0] as Record<string, unknown>
+    expect(callArg).not.toHaveProperty("verifyMarker")
+})
 ```
 
 **Drift / missing-marker integration tests** — grep for `rejects.toMatchObject({ code: 'CONTRACT.MARKER_MISSING' })` or `rejects.toMatchObject({ code: 'CONTRACT.MARKER_MISMATCH' })`. These patterns no longer apply: the runtime logs instead of throwing. Retarget to assert on the `Log.warn` sink:
@@ -382,15 +382,15 @@ it("omits verifyMarker from createRuntime when not provided (runtime default app
 // Before 0.12
 await expect(runtime.execute(plan).toArray()).rejects.toMatchObject({
     code: "CONTRACT.MARKER_MISSING",
-});
+})
 
 // Starting at 0.12
-const log = { info: vi.fn(), warn: vi.fn(), error: vi.fn() } satisfies Log;
-const runtime = createRuntime({ stackInstance, context, driver, log });
+const log = { info: vi.fn(), warn: vi.fn(), error: vi.fn() } satisfies Log
+const runtime = createRuntime({ stackInstance, context, driver, log })
 
-const rows = await runtime.execute(plan).toArray();
-expect(rows).toEqual(/* expected rows — query proceeds */);
-expect(log.warn).toHaveBeenCalledOnce();
+const rows = await runtime.execute(plan).toArray()
+expect(rows).toEqual(/* expected rows — query proceeds */)
+expect(log.warn).toHaveBeenCalledOnce()
 expect(log.warn).toHaveBeenCalledWith({
     code: "CONTRACT.MARKER_MISSING",
     scope: "marker-verification",
@@ -400,7 +400,7 @@ expect(log.warn).toHaveBeenCalledWith({
     },
     actual: null,
     message: "Contract marker not found in database",
-});
+})
 ```
 
 Pass a `log` object into `createRuntime(...)` (or through your wrapper if you expose a `log` option) so tests can spy on `warn` without touching stdout.
@@ -425,8 +425,8 @@ If your extension ships a `defineContract` that wraps `baseDefineContract` with 
 #### Before 0.12
 
 ```ts
-import { defineContract as baseDefineContract } from "@internal/contract";
-import type { ContractInput, ExtensionPackRef } from "@internal/contract";
+import { defineContract as baseDefineContract } from "@internal/contract"
+import type { ContractInput, ExtensionPackRef } from "@internal/contract"
 
 type MyTargetResult<
     Types extends TypesConstraint,
@@ -446,9 +446,9 @@ type MyTargetResult<
     >,
     "target" | "targetFamily"
 > & {
-    readonly target: MyTargetPack["targetId"];
-    readonly targetFamily: MyFamily["familyId"];
-};
+    readonly target: MyTargetPack["targetId"]
+    readonly targetFamily: MyFamily["familyId"]
+}
 
 type MyTargetBaseScaffold<
     ExtensionPacks extends Record<string, ExtensionPackRef<"sql", string>> | undefined,
@@ -463,7 +463,7 @@ type MyTargetBaseScaffold<
         Capabilities
     >,
     "family" | "target" | "types" | "models"
->;
+>
 
 export function defineContract<
     const Types extends TypesConstraint = Record<never, never>,
@@ -473,14 +473,14 @@ export function defineContract<
     const Capabilities extends Record<string, Record<string, boolean>> | undefined = undefined,
 >(
     definition: MyTargetDefinition<Types, Models, ExtensionPacks, Capabilities>,
-): MyTargetResult<Types, Models, ExtensionPacks, Capabilities>;
+): MyTargetResult<Types, Models, ExtensionPacks, Capabilities>
 ```
 
 #### Starting at 0.12
 
 ```ts
-import { defineContract as baseDefineContract } from "@internal/contract";
-import type { ContractInput, ExtensionPackRef } from "@internal/contract";
+import { defineContract as baseDefineContract } from "@internal/contract"
+import type { ContractInput, ExtensionPackRef } from "@internal/contract"
 
 type MyTargetResult<
     Types extends TypesConstraint,
@@ -490,9 +490,9 @@ type MyTargetResult<
     ReturnType<typeof baseDefineContract<MyFamily, MyTargetPack, Types, Models, ExtensionPacks>>,
     "target" | "targetFamily"
 > & {
-    readonly target: MyTargetPack["targetId"];
-    readonly targetFamily: MyFamily["familyId"];
-};
+    readonly target: MyTargetPack["targetId"]
+    readonly targetFamily: MyFamily["familyId"]
+}
 
 type MyTargetBaseScaffold<
     ExtensionPacks extends Record<string, ExtensionPackRef<"sql", string>> | undefined,
@@ -505,7 +505,7 @@ type MyTargetBaseScaffold<
         ExtensionPacks
     >,
     "family" | "target" | "types" | "models"
->;
+>
 
 export function defineContract<
     const Types extends TypesConstraint = Record<never, never>,
@@ -514,7 +514,7 @@ export function defineContract<
         undefined,
 >(
     definition: MyTargetDefinition<Types, Models, ExtensionPacks>,
-): MyTargetResult<Types, Models, ExtensionPacks>;
+): MyTargetResult<Types, Models, ExtensionPacks>
 ```
 
 Drop the same parameter from every other overload signature (the factory-form overload, any convenience overload). Drop the matching entry from the type alias for `*Definition` and `*Scaffold` shapes. Drop the `Capabilities` argument from every internal `baseDefineContract<…, Capabilities>` instantiation and every internal `ContractInput<…, Capabilities>` instantiation. TypeScript will flag any remaining occurrence after the bump.
@@ -526,7 +526,7 @@ If your facade ships a `define-contract.test-d.ts` (or similar) that asserts a `
 ```ts
 // Starting at 0.12
 // @ts-expect-error — capabilities are contributed by components, not authoring input
-defineContract({ capabilities: { sql: { lateral: true } } });
+defineContract({ capabilities: { sql: { lateral: true } } })
 ```
 
 ### Extensions that only emit fixtures — re-emit
@@ -704,10 +704,10 @@ Storage namespace envelopes in SQL-family contracts must carry a `qualifyTable(t
 Do not `structuredClone` hydrated contracts — it strips functions such as `qualifyTable`. Round-trip through the target serializer instead:
 
 ```ts
-import { PostgresContractSerializer } from "@internal/target-postgres/runtime";
+import { PostgresContractSerializer } from "@internal/target-postgres/runtime"
 
-const serializer = new PostgresContractSerializer();
-const hydrated = serializer.deserializeContract(serializer.serializeContract(rawContract));
+const serializer = new PostgresContractSerializer()
+const hydrated = serializer.deserializeContract(serializer.serializeContract(rawContract))
 ```
 
 ### Namespace-qualified runtime SQL

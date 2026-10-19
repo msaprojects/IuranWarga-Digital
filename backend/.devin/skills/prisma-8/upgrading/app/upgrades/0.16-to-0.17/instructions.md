@@ -706,7 +706,7 @@ this.createRlsPolicy({
         prefix: "post_owner",
         // …
     },
-});
+})
 
 // 0.17
 this.createRlsPolicy({
@@ -716,7 +716,7 @@ this.createRlsPolicy({
         naming: { kind: "wire", prefix: "post_owner", hash: "a1b2c3d4" },
         // …
     },
-});
+})
 ```
 
 A policy whose name the author owns (adopted through `@@map`) carries `naming: { kind: "exact", name: "Tenant members can read" }` instead. Every other key of the literal is unchanged.
@@ -761,11 +761,11 @@ An interval is not a duration. PostgreSQL stores three independent fields — mo
 
 ```ts
 // before
-const gap: string = row.gap; // "{\"days\":1}"
+const gap: string = row.gap // "{\"days\":1}"
 
 // after
-const gap = row.gap; // { months: 0, days: 1, micros: 0n }
-const totalDays = gap.days + gap.months * 30; // your calendar rule, not ours
+const gap = row.gap // { months: 0, days: 1, micros: 0n }
+const totalDays = gap.days + gap.months * 30 // your calendar rule, not ours
 ```
 
 The representation is separate from the value, as it is for `pg/bytea@1` (a `Uint8Array` carried as base64) and `pg/int8@1` (a `bigint` carried as decimal text). A contract holds the ISO-8601 duration string, so re-emit to pick up the spelling — `P1M`, `P1Y2M3DT4H5M6S`, `PT0S` for zero, each component carrying its own sign.

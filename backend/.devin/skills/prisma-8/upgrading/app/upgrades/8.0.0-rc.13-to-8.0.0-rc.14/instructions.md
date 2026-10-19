@@ -177,25 +177,25 @@ Before:
 
 ```ts
 // src/prisma/db.ts
-export const db = postgresServerless<Contract>({ contractJson });
+export const db = postgresServerless<Contract>({ contractJson })
 
 // src/orm-client/client.ts
-import type { Runtime } from "@prisma/orm-postgres/family-runtime";
-import type { ExecutionContext } from "@prisma/orm-postgres/relational-core/query-lane-context";
-import { db } from "../prisma/db";
+import type { Runtime } from "@prisma/orm-postgres/family-runtime"
+import type { ExecutionContext } from "@prisma/orm-postgres/relational-core/query-lane-context"
+import { db } from "../prisma/db"
 
-const context = db.context as ExecutionContext<Contract>;
+const context = db.context as ExecutionContext<Contract>
 
 export function createOrmClient(runtime: Runtime) {
-    return orm({ runtime, context, collections: { User: UserCollection } }).public;
+    return orm({ runtime, context, collections: { User: UserCollection } }).public
 }
 
 // src/worker.ts
-import { db } from "./prisma/db";
+import { db } from "./prisma/db"
 
-await using runtime = await db.connect({ url: env.HYPERDRIVE.connectionString });
-const rows = await runtime.query(db.sql.public.user.select("id").build());
-const users = await createOrmClient(runtime).User.newestFirst().all();
+await using runtime = await db.connect({ url: env.HYPERDRIVE.connectionString })
+const rows = await runtime.query(db.sql.public.user.select("id").build())
+const users = await createOrmClient(runtime).User.newestFirst().all()
 ```
 
 After:
@@ -206,13 +206,13 @@ After:
  * Serverless client, built once per isolate. It holds no database connection. Each request opens
  * its own connection with `postgres.connect({ url })`.
  */
-export const postgres = postgresServerless<Contract>({ contractJson });
+export const postgres = postgresServerless<Contract>({ contractJson })
 
 // src/orm-client/client.ts
-import { orm } from "@prisma/orm-postgres/orm-client";
-import type { PostgresServerlessConnection } from "@prisma/orm-postgres/serverless";
-import type { Contract } from "../prisma/contract.d";
-import { UserCollection } from "./collections";
+import { orm } from "@prisma/orm-postgres/orm-client"
+import type { PostgresServerlessConnection } from "@prisma/orm-postgres/serverless"
+import type { Contract } from "../prisma/contract.d"
+import { UserCollection } from "./collections"
 
 export function createOrmClient(
     db: Pick<PostgresServerlessConnection<Contract>, "runtime" | "context">,
@@ -221,15 +221,15 @@ export function createOrmClient(
         runtime: db.runtime(),
         context: db.context,
         collections: { User: UserCollection },
-    }).public;
+    }).public
 }
 
 // src/worker.ts
-import { postgres } from "./prisma/db";
+import { postgres } from "./prisma/db"
 
-await using db = await postgres.connect({ url: env.HYPERDRIVE.connectionString });
-const rows = await db.runtime().query(db.sql.public.user.select("id").build());
-const users = await createOrmClient(db).User.newestFirst().all();
+await using db = await postgres.connect({ url: env.HYPERDRIVE.connectionString })
+const rows = await db.runtime().query(db.sql.public.user.select("id").build())
+const users = await createOrmClient(db).User.newestFirst().all()
 ```
 
 The same applies to scripts that connect through the serverless client, for example a seed script: `await using db = await postgres.connect({ url })`, then `db.runtime().execute(...)`.
@@ -245,33 +245,33 @@ This change is optional. The connection builds an ORM client and runs transactio
 Before:
 
 ```ts
-import { withTransaction } from "@prisma/orm-postgres/family-runtime";
+import { withTransaction } from "@prisma/orm-postgres/family-runtime"
 
-await using runtime = await db.connect({ url });
-const posts = await orm({ runtime, context }).public.Post.where({ userId }).all();
+await using runtime = await db.connect({ url })
+const posts = await orm({ runtime, context }).public.Post.where({ userId }).all()
 await withTransaction(runtime, async (tx) => {
     await tx.execute(
         db.sql.public.user
             .update({ displayName })
             .where((f, fns) => fns.eq(f.id, userId))
             .build(),
-    );
-});
+    )
+})
 ```
 
 After:
 
 ```ts
-await using db = await postgres.connect({ url });
-const posts = await db.orm.public.Post.where({ userId }).all();
+await using db = await postgres.connect({ url })
+const posts = await db.orm.public.Post.where({ userId }).all()
 await db.transaction(async (tx) => {
     await tx.execute(
         db.sql.public.user
             .update({ displayName })
             .where((f, fns) => fns.eq(f.id, userId))
             .build(),
-    );
-});
+    )
+})
 ```
 
 ## `serverless-cursor-default-off`
@@ -287,17 +287,17 @@ A streaming path, before:
 
 ```ts
 // src/prisma/db.ts
-export const postgres = postgresServerless<Contract>({ contractJson });
+export const postgres = postgresServerless<Contract>({ contractJson })
 
 // src/worker.ts, in fetch; the /cursor/large path streams with `for await` and breaks early
-await using db = await postgres.connect({ url: env.HYPERDRIVE.connectionString });
+await using db = await postgres.connect({ url: env.HYPERDRIVE.connectionString })
 ```
 
 After:
 
 ```ts
 // src/prisma/db.ts
-export const postgres = postgresServerless<Contract>({ contractJson });
+export const postgres = postgresServerless<Contract>({ contractJson })
 
 /**
  * Serverless client with cursors on, used only by the `/cursor/large` route to stream a large
@@ -306,14 +306,14 @@ export const postgres = postgresServerless<Contract>({ contractJson });
 export const streamingPostgres = postgresServerless<Contract>({
     contractJson,
     cursor: { batchSize: 100 },
-});
+})
 
 // src/worker.ts
-import { postgres, streamingPostgres } from "./prisma/db";
+import { postgres, streamingPostgres } from "./prisma/db"
 
 // in fetch
-const routePostgres = url.pathname === "/cursor/large" ? streamingPostgres : postgres;
-await using db = await routePostgres.connect({ url: env.HYPERDRIVE.connectionString });
+const routePostgres = url.pathname === "/cursor/large" ? streamingPostgres : postgres
+await using db = await routePostgres.connect({ url: env.HYPERDRIVE.connectionString })
 ```
 
 `cursor: { disabled: true }` and the old type, before:
@@ -321,19 +321,19 @@ await using db = await routePostgres.connect({ url: env.HYPERDRIVE.connectionStr
 ```ts
 import postgresServerless, {
     type PostgresServerlessCursorOptions,
-} from "@prisma/orm-postgres/serverless";
+} from "@prisma/orm-postgres/serverless"
 
-const cursor: PostgresServerlessCursorOptions = { disabled: true };
+const cursor: PostgresServerlessCursorOptions = { disabled: true }
 
-export const postgres = postgresServerless<Contract>({ contractJson, cursor });
+export const postgres = postgresServerless<Contract>({ contractJson, cursor })
 ```
 
 After:
 
 ```ts
-import postgresServerless from "@prisma/orm-postgres/serverless";
+import postgresServerless from "@prisma/orm-postgres/serverless"
 
-export const postgres = postgresServerless<Contract>({ contractJson });
+export const postgres = postgresServerless<Contract>({ contractJson })
 ```
 
 `disabled: false` next to a batch size, before:
@@ -342,7 +342,7 @@ export const postgres = postgresServerless<Contract>({ contractJson });
 export const streamingPostgres = postgresServerless<Contract>({
     contractJson,
     cursor: { disabled: false, batchSize: 50 },
-});
+})
 ```
 
 After:
@@ -351,7 +351,7 @@ After:
 export const streamingPostgres = postgresServerless<Contract>({
     contractJson,
     cursor: { batchSize: 50 },
-});
+})
 ```
 
 A batch size alone, before and after (unchanged):
@@ -360,7 +360,7 @@ A batch size alone, before and after (unchanged):
 export const streamingPostgres = postgresServerless<Contract>({
     contractJson,
     cursor: { batchSize: 100 },
-});
+})
 ```
 
 ## `date-time-default-stored-in-canonical-form`

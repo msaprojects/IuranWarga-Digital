@@ -100,6 +100,6 @@ const organisasiSchemas = {
             data: { $ref: "#/components/schemas/Organisasi" },
         },
     },
-} as const;
+} as const
 
-export default organisasiSchemas;
+export default organisasiSchemas

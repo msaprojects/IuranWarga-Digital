@@ -120,11 +120,11 @@ The column builder helpers `col()`, `lit()`, `fn()`, `primaryKey()`, `foreignKey
 ### Before 0.13
 
 ```ts
-import { Migration, MigrationCLI, createTable, col, primaryKey } from "@internal/sqlite/migration";
+import { Migration, MigrationCLI, createTable, col, primaryKey } from "@internal/sqlite/migration"
 
 export default class M extends Migration {
     override describe() {
-        return { from: null, to: "..." };
+        return { from: null, to: "..." }
     }
 
     override get operations() {
@@ -133,21 +133,21 @@ export default class M extends Migration {
                 col("id", "INTEGER", { primaryKey: true }),
                 col("email", "TEXT", { notNull: true }),
             ]),
-        ];
+        ]
     }
 }
 
-MigrationCLI.run(import.meta.url, M);
+MigrationCLI.run(import.meta.url, M)
 ```
 
 ### Starting at 0.13
 
 ```ts
-import { Migration, MigrationCLI, col, primaryKey } from "@internal/sqlite/migration";
+import { Migration, MigrationCLI, col, primaryKey } from "@internal/sqlite/migration"
 
 export default class M extends Migration {
     override describe() {
-        return { from: null, to: "..." };
+        return { from: null, to: "..." }
     }
 
     override get operations() {
@@ -159,11 +159,11 @@ export default class M extends Migration {
                     col("email", "TEXT", { notNull: true }),
                 ],
             }),
-        ];
+        ]
     }
 }
 
-MigrationCLI.run(import.meta.url, M);
+MigrationCLI.run(import.meta.url, M)
 ```
 
 ### Migration steps

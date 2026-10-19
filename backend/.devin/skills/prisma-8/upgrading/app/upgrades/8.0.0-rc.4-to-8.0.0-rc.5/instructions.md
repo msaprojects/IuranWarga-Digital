@@ -32,9 +32,9 @@ changes:
 Walk every file matched by `detection.glob`. For each `pg.Client` or `pg.Pool` your code constructs and uses directly (not one handed to `postgres({ pg: ... })` / `supabase({ pg: ... })` — the runtime covers those since rc.5), attach an `'error'` listener right after construction, before `connect()`:
 
 ```ts
-const client = new pg.Client({ connectionString });
-client.on("error", () => {});
-await client.connect();
+const client = new pg.Client({ connectionString })
+client.on("error", () => {})
+await client.connect()
 ```
 
 A no-op listener is enough: connect and query failures still reject their own promises, so nothing real is masked — the listener only stops a dropped idle connection from becoming an uncaught exception. If the handle is long-lived and you have a logging channel, log the error instead of discarding it.

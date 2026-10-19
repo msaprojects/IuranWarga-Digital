@@ -474,13 +474,13 @@ For Temporal-backed creation presets, provide a global `Temporal` implementation
 The built-in Postgres query operations (`ilike`, and the new `fullTextMatches`, `fullTextRank` and `fullTextHeadline`) are contributed by the Postgres target rather than the Postgres adapter. Emitted contract types follow: the generated line
 
 ```ts
-import type { QueryOperationTypes as PgAdapterQueryOps } from "@prisma/orm-postgres/adapter/operation-types";
+import type { QueryOperationTypes as PgAdapterQueryOps } from "@prisma/orm-postgres/adapter/operation-types"
 ```
 
 becomes
 
 ```ts
-import type { QueryOperationTypes as PgTargetQueryOps } from "@prisma/orm-postgres/target/operation-types";
+import type { QueryOperationTypes as PgTargetQueryOps } from "@prisma/orm-postgres/target/operation-types"
 ```
 
 Run `prisma contract emit` and commit the regenerated `contract.d.ts`. Nothing else in the file changes, `contract.json` does not change, and no contract hash moves. Do not hand-edit the generated file.
@@ -501,7 +501,7 @@ model Message {
 In a TypeScript contract, use the matching helper inside the model's `sql({ indexes: [...] })`:
 
 ```ts
-import { fullTextIndex } from "@prisma/orm-postgres/contract-builder";
+import { fullTextIndex } from "@prisma/orm-postgres/contract-builder"
 
 model("Message", { fields: { id, text } }).sql(({ cols }) => ({
     indexes: [
@@ -511,7 +511,7 @@ model("Message", { fields: { id, text } }).sql(({ cols }) => ({
             name: "message_text_search_live",
         }),
     ],
-}));
+}))
 ```
 
 The first argument of each operation is a `tsquery`, built with a helper from `@prisma/orm-postgres/target/full-text`. A bare string is a type error. Use `websearchToTsquery(query)` for search-box text; `plaintoTsquery` requires every word and `phrasetoTsquery` the words in order. In the SQL builder these four parsers are also `fns` members. For user input inside `tsquery` operator syntax, such as a typeahead prefix match, use the `tsquery` tag: `` tsquery`${term}:*` `` quotes each interpolated value as one term, so user input cannot add operators or break the syntax, and Postgres then lowercases and stems the words. A value with several words becomes a phrase: `` tsquery`${'new y'}:*` `` gives `'new':* <-> 'y':*`, so the words must be adjacent and in order, and `:*` applies to each word. Do not put quotes around the interpolation yourself: `` tsquery`'${term}':*` `` is a syntax error for every input. `toTsquery` takes operator syntax the application writes in full; never pass user input to it.
@@ -519,17 +519,17 @@ The first argument of each operation is a `tsquery`, built with a helper from `@
 The operations also take an options object as their second argument — `language` for all three, plus `normalization` and `coverDensity` on `fullTextRank` and the `ts_headline` options (`startSel`, `stopSel`, `maxWords`, `minWords`, `highlightAll`) on `fullTextHeadline`:
 
 ```ts
-import { tsquery, websearchToTsquery } from "@prisma/orm-postgres/target/full-text";
+import { tsquery, websearchToTsquery } from "@prisma/orm-postgres/target/full-text"
 
-const q = websearchToTsquery(query);
+const q = websearchToTsquery(query)
 await db.orm.public.Message.select("id", "text")
     .where((m) => m.text.fullTextMatches(q))
     .orderBy((m) => m.text.fullTextRank(q, { normalization: 32 }).desc())
-    .all();
+    .all()
 
 const suggestions = await db.orm.public.Message.select("id", "text")
     .where((m) => m.text.fullTextMatches(tsquery`${term}:*`))
-    .all();
+    .all()
 ```
 
 The operation's `language` configures only the searched column. The parser or tag takes its own `language` for the query; pass the same value to both.
@@ -544,9 +544,9 @@ Replace a pattern match on an enum with an equality check on its members:
 
 ```ts
 // before: failed at runtime
-db.orm.public.Ticket.where((t) => t.status.ilike("open%"));
+db.orm.public.Ticket.where((t) => t.status.ilike("open%"))
 // after
-db.orm.public.Ticket.where((t) => t.status.in(["open", "reopened"]));
+db.orm.public.Ticket.where((t) => t.status.in(["open", "reopened"]))
 ```
 
 Remove any `@@fullTextIndex` or `fullTextIndex` on a native enum column. If you really need a pattern search over the enum labels, write that query through the raw SQL lane (``db.raw.sql`…` ``) and cast the column to text there, for example `status::text ILIKE $1`.
@@ -558,11 +558,11 @@ Nothing else about native enum columns changes: `eq`, `in`, ordering, and `min`/
 `createAll` and `createAndCount` on the SQL ORM client take a new option in second position that asks the database to skip rows colliding with a unique constraint:
 
 ```ts
-const inserted = await db.orm.User.createAll(rows, { onConflict: "skip" });
+const inserted = await db.orm.User.createAll(rows, { onConflict: "skip" })
 const added = await db.orm.User.createAndCount(rows, {
     onConflict: "skip",
     conflictOn: ["email"],
-});
+})
 ```
 
 The option requires two capability keys that the Postgres and SQLite adapters now report: `sql.insertOnConflictSkip`, and `sql.insertOnConflictWithoutTarget` for the untargeted form. A `contract.json` emitted before this release carries neither, so the ORM refuses the option with `ORM.CAPABILITY_MISSING` before running any statement.
@@ -588,7 +588,7 @@ const query = await db.prepare({ id: "pg/int4@1" }, (sql, params) =>
         .select("id")
         .where((f, fns) => fns.eq(f.id, params.id))
         .build(),
-);
+)
 
 // After
 const query = await db.prepare({ id: "pg/int4@1" }, (params) =>
@@ -596,7 +596,7 @@ const query = await db.prepare({ id: "pg/int4@1" }, (params) =>
         .select("id")
         .where((f, fns) => fns.eq(f.id, params.id))
         .build(),
-);
+)
 ```
 
 Apply the same translation to SQLite's flat SQL facade (`sql.users` becomes `db.sql.users`), retaining its existing codec ids. Keep `.query(target, params, options?)` and SQL statistics `.execute(target, params, options?)` calls unchanged. Do not rewrite historical release notes, applied upgrade recipes, generated contracts or tests as part of this source translation.

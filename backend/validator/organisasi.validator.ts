@@ -1,10 +1,10 @@
-import { z } from "zod";
+import { z } from "zod"
 
-const kodeSchema = z.string({ error: "Harap masukkan kode organisasi anda." }).trim().min(6).max(8);
+const kodeSchema = z.string({ error: "Harap masukkan kode organisasi anda." }).trim().min(6).max(8)
 
 export const organisasiByKodeParamsSchema = z.strictObject({
     kode: kodeSchema,
-});
+})
 
 export const createOrganisasiSchema = z.strictObject({
     kode: kodeSchema,
@@ -15,7 +15,7 @@ export const createOrganisasiSchema = z.strictObject({
     activeAt: z.iso.datetime().nullable().default(null),
     email: z.string().email().trim().max(320).nullable().default(null),
     contact: z.string().trim().max(20).nullable().default(null),
-});
+})
 
 export const updateOrganisasiSchema = z
     .strictObject({
@@ -29,7 +29,7 @@ export const updateOrganisasiSchema = z
     })
     .refine((data) => Object.keys(data).length > 0, {
         message: "Harap berikan setidaknya satu field untuk diperbarui.",
-    });
+    })
 
 export const createOrganisasiWithUserSchema = z.strictObject({
     organisasi: createOrganisasiSchema,
@@ -40,9 +40,9 @@ export const createOrganisasiWithUserSchema = z.strictObject({
         email: z.string().email().trim().max(320).nullable().default(null),
         contact: z.string().trim().max(20).nullable().default(null),
     }),
-});
+})
 
-export type OrganisasiByKodeParams = z.output<typeof organisasiByKodeParamsSchema>;
-export type CreateOrganisasiBody = z.output<typeof createOrganisasiSchema>;
-export type UpdateOrganisasiBody = z.output<typeof updateOrganisasiSchema>;
-export type CreateOrganisasiWithUserBody = z.output<typeof createOrganisasiWithUserSchema>;
+export type OrganisasiByKodeParams = z.output<typeof organisasiByKodeParamsSchema>
+export type CreateOrganisasiBody = z.output<typeof createOrganisasiSchema>
+export type UpdateOrganisasiBody = z.output<typeof updateOrganisasiSchema>
+export type CreateOrganisasiWithUserBody = z.output<typeof createOrganisasiWithUserSchema>

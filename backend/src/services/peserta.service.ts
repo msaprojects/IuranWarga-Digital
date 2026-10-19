@@ -216,7 +216,7 @@ class PesertaService {
         if (!organization) {
             throw new HttpError(404, "Organisasi tidak ditemukan, atau sudah tidak aktif.")
         }
-        
+
         const peserta = await db.orm.public.peserta
             .where({ id, organisasi_id: Number(organization.id) })
             .update({ qr_token: null, qr_path: null })

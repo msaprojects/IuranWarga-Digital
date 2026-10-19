@@ -218,10 +218,10 @@ The mutation-default generator runtime now lives in the framework and serves eve
 
 ```ts
 // before
-import type { RuntimeMutationDefaultGenerator } from "@prisma/orm-family-sql/runtime";
+import type { RuntimeMutationDefaultGenerator } from "@prisma/orm-family-sql/runtime"
 
 // after
-import type { RuntimeMutationDefaultGenerator } from "@prisma/orm-framework/components/runtime";
+import type { RuntimeMutationDefaultGenerator } from "@prisma/orm-framework/components/runtime"
 ```
 
 Do the same for `GeneratorStability`. The shape is unchanged: `{ id, generate(params?), stability: 'field' | 'row' | 'query' }`.
@@ -237,8 +237,8 @@ const applied = context.applyMutationDefaults({
     table: tableName,
     namespace,
     values,
-});
-for (const def of applied) row[def.column] = def.value;
+})
+for (const def of applied) row[def.column] = def.value
 
 // after
 const applied = context.applyMutationDefaults({
@@ -246,8 +246,8 @@ const applied = context.applyMutationDefaults({
     entry: tableName,
     namespace,
     values,
-});
-for (const def of applied) row[def.field] = def.value;
+})
+for (const def of applied) row[def.field] = def.value
 ```
 
 1. In every `applyMutationDefaults({ ... })` call, rename the `table` key to `entry`. The value is the same table name.
@@ -267,15 +267,15 @@ import {
     temporalAuthoringPresets,
     temporalCodecPreset,
     timestampNowControlDescriptor,
-} from "@prisma/orm-family-sql/family/control";
+} from "@prisma/orm-family-sql/family/control"
 
 // after
 import {
     TIMESTAMP_NOW_GENERATOR_ID,
     temporalAuthoringPresets,
     temporalCodecPreset,
-} from "@prisma/orm-framework/components/authoring";
-import { timestampNowControlDescriptor } from "@prisma/orm-framework/components/control";
+} from "@prisma/orm-framework/components/authoring"
+import { timestampNowControlDescriptor } from "@prisma/orm-framework/components/control"
 ```
 
 The same applies to the `family/control` subpaths of `@prisma/orm-postgres` and `@prisma/orm-sqlite` (move to their `components/authoring` and `components/control` subpaths), and to `@internal/family-sql/control` (move to `@internal/framework-components/authoring` and `@internal/framework-components/control`, published as the `components/authoring` and `components/control` subpaths of `@prisma/orm-framework`). Keep importing `temporalCodecPresetWithPrecision` and `temporalStringAuthoringPresets` from `family/control`.
@@ -289,10 +289,10 @@ The builders now carry the codec's whole storage template through, so their type
 temporalAuthoringPresets<"pg/timestamptz@1", "timestamptz">({
     codecId: "pg/timestamptz@1",
     nativeType: "timestamptz",
-});
+})
 
 // after
-temporalAuthoringPresets({ codecId: "pg/timestamptz@1", nativeType: "timestamptz" });
+temporalAuthoringPresets({ codecId: "pg/timestamptz@1", nativeType: "timestamptz" })
 ```
 
 If you need to name them, the first type parameter is the storage template object type (`{ readonly codecId: ...; readonly nativeType: ... }`).
@@ -368,7 +368,7 @@ printPsl(ast, {
     pslBlockDescriptors,
     description:
         "Contract inferred from the live database schema. Edit as needed, then run `prisma contract emit`.",
-});
+})
 ```
 
 ## `family-sql-psl-build-export`
@@ -436,17 +436,17 @@ An extension outside this repository imports the published forms in the last two
 
 ```ts
 // before
-import { createMongoRunnerDeps, extractDb } from "@prisma/orm-mongo/adapter/control";
-import { MongoDriverImpl } from "@prisma/orm-mongo/driver";
+import { createMongoRunnerDeps, extractDb } from "@prisma/orm-mongo/adapter/control"
+import { MongoDriverImpl } from "@prisma/orm-mongo/driver"
 const deps = createMongoRunnerDeps(
     controlDriver,
     MongoDriverImpl.fromDb(extractDb(controlDriver)),
     family,
-);
+)
 
 // after
-import { MongoControlAdapterImpl } from "@prisma/orm-mongo/adapter/control";
-const deps = new MongoControlAdapterImpl().createRunnerDependencies(controlDriver);
+import { MongoControlAdapterImpl } from "@prisma/orm-mongo/adapter/control"
+const deps = new MongoControlAdapterImpl().createRunnerDependencies(controlDriver)
 ```
 
 Inside this repository the same imports are `@internal/adapter-mongo/control` and `@internal/driver-mongo`.
@@ -478,7 +478,7 @@ createMongoFamilyInstance(
         target: mongoTargetDescriptor,
         adapter: mongoAdapterDescriptor,
     }),
-);
+)
 ```
 
 ## `mongo-execution-context-applies-mutation-defaults`
@@ -489,10 +489,10 @@ Build contexts with `createMongoExecutionContext({ contract, stack })` and nothi
 
 ```ts
 // before
-const context: MongoExecutionContext = { contract, codecs, stack };
+const context: MongoExecutionContext = { contract, codecs, stack }
 
 // after
-const context: MongoExecutionContext = { contract, codecs, stack, applyMutationDefaults: () => [] };
+const context: MongoExecutionContext = { contract, codecs, stack, applyMutationDefaults: () => [] }
 ```
 
 ## `mongo-field-builder-execution-defaults-parameter`
@@ -503,8 +503,8 @@ Code that constrains on a bare `FieldBuilder` (for example `Fields extends Recor
 import type {
     ContractFieldType,
     ExecutionMutationDefaultPhases,
-} from "@prisma/orm-mongo/contract/types";
-import type { EnumTypeHandle, FieldBuilder } from "@prisma/orm-mongo/contract-builder";
+} from "@prisma/orm-mongo/contract/types"
+import type { EnumTypeHandle, FieldBuilder } from "@prisma/orm-mongo/contract-builder"
 
 type AnyField = FieldBuilder<
     ContractFieldType,
@@ -512,7 +512,7 @@ type AnyField = FieldBuilder<
     boolean,
     EnumTypeHandle | undefined,
     ExecutionMutationDefaultPhases | undefined
->;
+>
 ```
 
 There is no detection pattern: a bare `FieldBuilder` reference is too common to tell which uses need the wider type.

@@ -54,12 +54,12 @@ Nodes connect through **ports**: `deps` declares what a node requires,
 
 ```ts
 // module.ts
-import { module } from "@prisma/composer";
+import { module } from "@prisma/composer"
 
 export default module("store", ({ provision }) => {
-    const catalog = provision(catalogModule);
-    provision(storefrontService, { deps: { catalog: catalog.rpc } });
-});
+    const catalog = provision(catalogModule)
+    provision(storefrontService, { deps: { catalog: catalog.rpc } })
+})
 ```
 
 Because ports are typed, **the compiler verifies every wire**. A dependency
@@ -110,14 +110,14 @@ export default compute({
     deps: { db: rawPostgres() },
     build: node({ module: import.meta.url, entry: "../dist/server.mjs" }),
     expose: { rpc: authContract },
-});
+})
 
 // server.ts
-const { db } = service.load(); // { url }: you construct your own client
+const { db } = service.load() // { url }: you construct your own client
 const handler = serve(service, {
     rpc: { verify: async ({ token }) => ({ ok: token.length > 0 }) },
-});
-Bun.serve({ port: service.port(), hostname: "0.0.0.0", fetch: handler });
+})
+Bun.serve({ port: service.port(), hostname: "0.0.0.0", fetch: handler })
 ```
 
 The consumer declares `deps: { auth: rpc(authContract) }` and gets a typed
@@ -223,14 +223,14 @@ backend (`prismaState()`):
 
 ```ts
 // prisma.config.ts
-import { defineConfig as composer } from "@prisma/composer/config";
-import { nodeBuild } from "@prisma/composer/node/control";
-import { prismaCloud, prismaState } from "@prisma/composer-prisma-cloud/control";
-import { definePrismaConfig } from "prisma/config";
+import { defineConfig as composer } from "@prisma/composer/config"
+import { nodeBuild } from "@prisma/composer/node/control"
+import { prismaCloud, prismaState } from "@prisma/composer-prisma-cloud/control"
+import { definePrismaConfig } from "prisma/config"
 
 export default definePrismaConfig({
     composer: composer({ extensions: [prismaCloud(), nodeBuild()], state: prismaState() }),
-});
+})
 ```
 
 The commands find `prisma.config.ts` from the directory they run in, walking up
@@ -329,7 +329,7 @@ an invalid name is a hard error.
 `{ kind: 'stage', stage }` or `{ kind: 'production' }`, never a default:
 
 ```ts
-await destroy({ entry: "module.ts", target: { kind: "stage", stage: "pr-42" }, config });
+await destroy({ entry: "module.ts", target: { kind: "stage", stage: "pr-42" }, config })
 ```
 
 Destroying a stage
@@ -425,9 +425,9 @@ that surprise:
    stops anything:
 
     ```ts
-    const attached = await log({ entry: "module.ts", config, tail: 20, signal });
+    const attached = await log({ entry: "module.ts", config, tail: 20, signal })
     if (attached.ok)
-        for await (const { service, line } of attached.value.lines) console.log(service, line);
+        for await (const { service, line } of attached.value.lines) console.log(service, line)
     ```
 
 4. `dev` reads `prisma.config.ts` once, at start, and watches it: after an

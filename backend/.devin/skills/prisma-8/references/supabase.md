@@ -36,9 +36,9 @@ The concept: the pack registers the Supabase contract space so your contract can
 
 ```typescript
 // prisma.config.ts
-import { definePrismaConfig } from "@prisma/cli-engine";
-import supabasePack from "@internal/extension-supabase/pack";
-import { defineConfig as ormConfig } from "@internal/postgres/config";
+import { definePrismaConfig } from "@prisma/cli-engine"
+import supabasePack from "@internal/extension-supabase/pack"
+import { defineConfig as ormConfig } from "@internal/postgres/config"
 
 export default definePrismaConfig({
     orm: ormConfig({
@@ -46,7 +46,7 @@ export default definePrismaConfig({
         extensions: [supabasePack],
         migrations: { dir: "migrations" },
     }),
-});
+})
 ```
 
 ## Workflow — Contract: FK into `auth.users` + RLS policies
@@ -106,16 +106,16 @@ The concept: instead of the stock `postgres()` factory, a Supabase app builds it
 
 ```typescript
 // src/prisma/db.ts
-import { supabase } from "@internal/extension-supabase/runtime";
-import type { Contract } from "./contract.d";
-import contractJson from "./contract.json" with { type: "json" };
+import { supabase } from "@internal/extension-supabase/runtime"
+import type { Contract } from "./contract.d"
+import contractJson from "./contract.json" with { type: "json" }
 
 export const db = await supabase<Contract>({
     contractJson,
     url: process.env["DATABASE_URL"], // direct Postgres connection — see pitfalls
     jwksUrl: process.env["SUPABASE_JWKS_URL"], // https://<project-ref>.supabase.co/auth/v1/.well-known/jwks.json
     // Legacy HS256 projects use jwtSecret: process.env['SUPABASE_JWT_SECRET'] instead — exactly one of the two.
-});
+})
 ```
 
 Options beyond the basics: `middleware` (same composition as `postgres()` — see `references/runtime.md`; middleware never sees the role-binding `set_config` calls), `poolOptions`, `pg` (BYO `pg.Pool` / `pg.Client` instead of `url`). Teardown is `await db.close()` / `await using` exactly as in `references/runtime.md` — the same script-hang rules apply.
@@ -126,20 +126,20 @@ The concept: bind the role that should execute the request, then query through t
 
 ```typescript
 // A signed-in user: rows are RLS-scoped to the JWT's auth.uid().
-const userDb = await db.asUser(jwt); // async — rejects with code SUPABASE.JWT_INVALID on a bad/expired token
-const mine = await userDb.orm.public.Profile.select("id", "username").all();
+const userDb = await db.asUser(jwt) // async — rejects with code SUPABASE.JWT_INVALID on a bad/expired token
+const mine = await userDb.orm.public.Profile.select("id", "username").all()
 
 // The anon role: sees what anon policies permit.
-const listing = await db.asAnon().orm.public.Profile.select("id", "username").all();
+const listing = await db.asAnon().orm.public.Profile.select("id", "username").all()
 
 // service_role: BYPASSRLS — sees everything in YOUR contract.
-const all = await db.asServiceRole().orm.public.Profile.select("id", "username").all();
+const all = await db.asServiceRole().orm.public.Profile.select("id", "username").all()
 
 // Writes ride the same surfaces; RLS filters them too. An UPDATE against
 // another owner's row affects 0 rows; a withCheck violation raises an error.
 const updated = await userDb.orm.public.Profile.where({ userId: me }).updateAndCount({
     username: "new-name",
-});
+})
 ```
 
 Notes: `asAnon()` / `asServiceRole()` are sync; only `asUser` is async. Multi-namespace contracts address models by coordinate (`orm.public.Profile`, `sql.public.profile`) — see `references/queries.md` § _Namespace-aware accessors_. `RoleBoundDb.transaction(fn)` wraps work in a transaction on the role-bound session.
@@ -149,18 +149,18 @@ Notes: `asAnon()` / `asServiceRole()` are sync; only `asUser` is async. Multi-na
 The concept: Supabase-internal tables are not part of your contract, so they are not on your query surfaces. The `service_role` binding carries a **secondary root** — `db.asServiceRole().supabase` — which is the _pack's_ contract surface:
 
 ```typescript
-const admin = db.asServiceRole();
+const admin = db.asServiceRole()
 
 // SQL builder over the pack contract — rows come from `query`, not `execute`:
 const users = await admin.supabase.query(
     admin.supabase.sql.auth.users.select("id", "email").build(),
-);
+)
 
 // ORM over the pack contract:
-const sessions = await admin.supabase.orm.auth.AuthSession.select("id", "aal").all();
+const sessions = await admin.supabase.orm.auth.AuthSession.select("id", "aal").all()
 
 // Native enum values (e.g. auth.aal_level) come typed:
-type AalLevel = (typeof admin.supabase.nativeEnums.auth.AalLevel)["Value"];
+type AalLevel = (typeof admin.supabase.nativeEnums.auth.AalLevel)["Value"]
 ```
 
 **The admin root needs a one-time grant.** A real Supabase project gives `service_role` no table privileges on `auth.*` / `storage.*` — out of the box, the reads above fail with `permission denied for table users` (sqlState `42501`). Grant exactly what you read, narrowly:

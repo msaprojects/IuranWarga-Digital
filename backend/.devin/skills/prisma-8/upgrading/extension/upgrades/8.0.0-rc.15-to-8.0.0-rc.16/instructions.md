@@ -93,13 +93,13 @@ Engine 0.6.2 required ArkType `2.2.3` exactly, while the Prisma ORM packages acc
 `ControlDefaultRegistries` held the function registry and the stack's data type authoring entries. It now holds only `defaultFunctionRegistry`. The data types move to the attribute spec context, with their lookup:
 
 ```ts
-import type { DataTypeSupport } from "@internal/framework-components/authoring";
+import type { DataTypeSupport } from "@internal/framework-components/authoring"
 
 interface AttributeSpecContext {
-    readonly symbols: SymbolTable;
-    readonly model: ModelSymbol;
-    readonly controlMutationDefaults: ControlDefaultRegistries;
-    readonly dataTypes: DataTypeSupport; // { entries, lookup }
+    readonly symbols: SymbolTable
+    readonly model: ModelSymbol
+    readonly controlMutationDefaults: ControlDefaultRegistries
+    readonly dataTypes: DataTypeSupport // { entries, lookup }
 }
 ```
 

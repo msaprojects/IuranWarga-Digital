@@ -1,6 +1,6 @@
 #!/usr/bin/env -S node
-import type { Contract as End } from "../../snapshots/dd12f658e72e7c21ac0831949f212bd4c9c1de8479535c7a1b847fde0ee13f85/contract";
-import endContract from "../../snapshots/dd12f658e72e7c21ac0831949f212bd4c9c1de8479535c7a1b847fde0ee13f85/contract.json" with { type: "json" };
+import type { Contract as End } from "../../snapshots/dd12f658e72e7c21ac0831949f212bd4c9c1de8479535c7a1b847fde0ee13f85/contract"
+import endContract from "../../snapshots/dd12f658e72e7c21ac0831949f212bd4c9c1de8479535c7a1b847fde0ee13f85/contract.json" with { type: "json" }
 import {
     Migration,
     MigrationCLI,
@@ -9,10 +9,10 @@ import {
     fn,
     lit,
     primaryKey,
-} from "@prisma/orm-postgres/migration";
+} from "@prisma/orm-postgres/migration"
 
 export default class M extends Migration<never, End> {
-    override readonly endContractJson = endContract;
+    override readonly endContractJson = endContract
 
     override get operations() {
         return [
@@ -857,8 +857,8 @@ export default class M extends Migration<never, End> {
                     references: { schema: "public", table: "organisasi", columns: ["id"] },
                 },
             }),
-        ];
+        ]
     }
 }
 
-MigrationCLI.run(import.meta.url, M);
+MigrationCLI.run(import.meta.url, M)

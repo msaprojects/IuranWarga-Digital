@@ -95,7 +95,7 @@ const runtime = createRuntime({
     context,
     driver,
     verify: { mode: "onFirstUse", requireMarker: false },
-});
+})
 
 try {
     for await (const row of runtime.execute(plan)) {
@@ -104,9 +104,9 @@ try {
 } catch (err) {
     if (err.code === "CONTRACT.MARKER_MISMATCH") {
         // deploy-skew detected — crash and let the orchestrator restart us
-        process.exit(1);
+        process.exit(1)
     }
-    throw err;
+    throw err
 }
 ```
 
@@ -120,19 +120,19 @@ const runtime = createRuntime({
     log: {
         info: console.info,
         warn: (payload) => {
-            console.warn(payload);
+            console.warn(payload)
             if (
                 payload.code === "CONTRACT.MARKER_MISMATCH" ||
                 payload.code === "CONTRACT.MARKER_MISSING"
             ) {
                 // optional: forward to your observability surface
-                sendToTelemetry(payload);
+                sendToTelemetry(payload)
             }
         },
         error: console.error,
     },
     // verifyMarker omitted — 'onFirstUse' is the default
-});
+})
 
 for await (const row of runtime.execute(plan)) {
     // ...
@@ -166,8 +166,8 @@ Two consumer-visible consequences:
 ### Before 0.12
 
 ```ts
-import { defineContract } from "@internal/postgres/contract-builder";
-import { pgvector } from "@internal/pgvector";
+import { defineContract } from "@internal/postgres/contract-builder"
+import { pgvector } from "@internal/pgvector"
 
 export const contract = defineContract(
     {
@@ -184,14 +184,14 @@ export const contract = defineContract(
     ({ field, model }) => {
         // … model definitions …
     },
-);
+)
 ```
 
 ### Starting at 0.12
 
 ```ts
-import { defineContract } from "@internal/postgres/contract-builder";
-import { pgvector } from "@internal/pgvector";
+import { defineContract } from "@internal/postgres/contract-builder"
+import { pgvector } from "@internal/pgvector"
 
 export const contract = defineContract(
     {
@@ -200,7 +200,7 @@ export const contract = defineContract(
     ({ field, model }) => {
         // … model definitions …
     },
-);
+)
 ```
 
 If your first argument becomes `{}` after the deletion (the only field it carried was `capabilities`), simplify to `defineContract({}, ({ field, model }) => { … })`. TypeScript flags any remaining `capabilities:` key on a `defineContract` call as an excess-property error after the bump, so every affected site is pinpointed at compile time.
@@ -355,8 +355,8 @@ Starting at the 0.12 release, runtime SQL on Postgres qualifies table identifier
 No change is required for normal query code:
 
 ```ts
-await db.sql.user.findMany();
-await db.User.findMany();
+await db.sql.user.findMany()
+await db.User.findMany()
 ```
 
 Bare names still resolve default-namespace-first; only the emitted SQL changes.

@@ -315,14 +315,14 @@ and type the client from the emitted `Contract`. That gives you the whole aggreg
 **Alternative, where the contract is deliberately un-emitted:** cast the builder and dispatch by name.
 
 ```ts
-import type { AggregateSpec } from "@prisma/orm-postgres/orm-client";
+import type { AggregateSpec } from "@prisma/orm-postgres/orm-client"
 
-type DynamicAggregates = Record<string, (field?: string) => AggregateSpec[string]>;
+type DynamicAggregates = Record<string, (field?: string) => AggregateSpec[string]>
 
 const stats = await db.User.aggregate((aggregate) => {
-    const dynamic = aggregate as DynamicAggregates;
-    return { total: dynamic["sum"]!("views"), peak: dynamic["max"]!("views") };
-});
+    const dynamic = aggregate as DynamicAggregates
+    return { total: dynamic["sum"]!("views"), peak: dynamic["max"]!("views") }
+})
 ```
 
 If you previously widened the _argument_ instead — `aggregate.sum('views' as never)`, which compiled because the admitted field names were already `never` for such a contract — move the cast from the argument to the builder and pass the field name as a plain string.
@@ -330,10 +330,10 @@ If you previously widened the _argument_ instead — `aggregate.sum('views' as n
 ## `count-over-a-field-counts-that-field`
 
 ```ts
-await db.User.aggregate((aggregate) => ({ all: aggregate.count() }));
+await db.User.aggregate((aggregate) => ({ all: aggregate.count() }))
 // SELECT COUNT(*) …
 
-await db.User.aggregate((aggregate) => ({ withEmail: aggregate.count("email") }));
+await db.User.aggregate((aggregate) => ({ withEmail: aggregate.count("email") }))
 // SELECT COUNT("email") … — rows whose email is NULL are not counted
 ```
 
@@ -381,12 +381,12 @@ SQLite states the same policy in its own terms — `count`, integer `sum`, and `
 2. **Unwrap the bigint handling around bare aggregates.** Each of these is now noise or a type error:
 
     ```ts
-    const { total } = await db.User.aggregate((a) => ({ total: a.count() }));
+    const { total } = await db.User.aggregate((a) => ({ total: a.count() }))
 
-    total === 2n; // ← was needed; now `total === 2`
-    Number(total); // ← was needed; `total` is already a number
-    String(total); // ← was needed for JSON; JSON.stringify handles it now
-    JSON.stringify(rows, (_k, v) => (typeof v === "bigint" ? String(v) : v));
+    total === 2n // ← was needed; now `total === 2`
+    Number(total) // ← was needed; `total` is already a number
+    String(total) // ← was needed for JSON; JSON.stringify handles it now
+    JSON.stringify(rows, (_k, v) => (typeof v === "bigint" ? String(v) : v))
     //                        ↑ the replacer can go
     ```
 

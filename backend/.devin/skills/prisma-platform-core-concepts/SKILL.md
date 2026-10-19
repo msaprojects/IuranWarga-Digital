@@ -77,11 +77,11 @@ recognises exactly three: `orm`, `composer`, and `skills`. The composed
 shape:
 
 ```ts
-import { definePrismaConfig } from "prisma/config";
-import { defineConfig as composer } from "@prisma/composer/config";
-import { nodeBuild } from "@prisma/composer/node/control";
-import { prismaCloud, prismaState } from "@prisma/composer-prisma-cloud/control";
-import { defineConfig as orm } from "@prisma/orm-postgres/config";
+import { definePrismaConfig } from "prisma/config"
+import { defineConfig as composer } from "@prisma/composer/config"
+import { nodeBuild } from "@prisma/composer/node/control"
+import { prismaCloud, prismaState } from "@prisma/composer-prisma-cloud/control"
+import { defineConfig as orm } from "@prisma/orm-postgres/config"
 
 export default definePrismaConfig({
     composer: composer({
@@ -90,7 +90,7 @@ export default definePrismaConfig({
     }),
     orm: orm({ contract: "./src/prisma/contract.prisma" }),
     skills: { agents: ["claude"] },
-});
+})
 ```
 
 `dev` and `deploy` read the `composer` section and nothing else; what goes

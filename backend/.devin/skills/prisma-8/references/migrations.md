@@ -222,15 +222,15 @@ The scaffold the planner emits looks like:
 
 ```typescript
 // migrations/app/20260515T1200_add_user_name/migration.ts
-import { col, Migration, MigrationCLI, placeholder } from "@internal/postgres/migration";
-import type { Contract as End } from "../../snapshots/93f07d1b…c9e1e5a2/contract";
-import endContract from "../../snapshots/93f07d1b…c9e1e5a2/contract.json" with { type: "json" };
-import type { Contract as Start } from "../../snapshots/f62a4154…d07dddc/contract";
-import startContract from "../../snapshots/f62a4154…d07dddc/contract.json" with { type: "json" };
+import { col, Migration, MigrationCLI, placeholder } from "@internal/postgres/migration"
+import type { Contract as End } from "../../snapshots/93f07d1b…c9e1e5a2/contract"
+import endContract from "../../snapshots/93f07d1b…c9e1e5a2/contract.json" with { type: "json" }
+import type { Contract as Start } from "../../snapshots/f62a4154…d07dddc/contract"
+import startContract from "../../snapshots/f62a4154…d07dddc/contract.json" with { type: "json" }
 
 export default class M extends Migration<Start, End> {
-    override readonly startContractJson = startContract;
-    override readonly endContractJson = endContract;
+    override readonly startContractJson = startContract
+    override readonly endContractJson = endContract
 
     override get operations() {
         return [
@@ -244,11 +244,11 @@ export default class M extends Migration<Start, End> {
                 run: () => placeholder("backfill-user-name:run"),
             }),
             this.setNotNull({ schema: "public", table: "user", column: "name" }),
-        ];
+        ]
     }
 }
 
-MigrationCLI.run(import.meta.url, M);
+MigrationCLI.run(import.meta.url, M)
 ```
 
 (`examples/prisma-8-demo/migrations/app/20260810T1108_add_post_engagement_counters/migration.ts` is a committed rendered package to compare against.)
@@ -258,18 +258,18 @@ Replace both `placeholder(...)` calls with query-plan closures built from `endCo
 Build the query builder against `endContract` so the storage hashes line up — using a different contract reference raises `MIGRATION.DATA_TRANSFORM_CONTRACT_MISMATCH`. The cheapest way to get a typed SQL builder over the end contract is the façade itself: `postgres<End>({ contractJson: endContract })` connects lazily, so constructing it inside `migration.ts` opens no connection; its `sql` is the builder and its `contract` is the validated contract to hand to `this.dataTransform`. The filled-in shape is the rendered scaffold above with only the two `placeholder(...)` arrows replaced (the operation list, including the `this.setNotNull({...})` the planner rendered after the transform, stays as rendered):
 
 ```typescript
-import { col, Migration, MigrationCLI } from "@internal/postgres/migration";
-import postgres from "@internal/postgres/runtime";
-import type { Contract as End } from "../../snapshots/93f07d1b…c9e1e5a2/contract";
-import endContract from "../../snapshots/93f07d1b…c9e1e5a2/contract.json" with { type: "json" };
-import type { Contract as Start } from "../../snapshots/f62a4154…d07dddc/contract";
-import startContract from "../../snapshots/f62a4154…d07dddc/contract.json" with { type: "json" };
+import { col, Migration, MigrationCLI } from "@internal/postgres/migration"
+import postgres from "@internal/postgres/runtime"
+import type { Contract as End } from "../../snapshots/93f07d1b…c9e1e5a2/contract"
+import endContract from "../../snapshots/93f07d1b…c9e1e5a2/contract.json" with { type: "json" }
+import type { Contract as Start } from "../../snapshots/f62a4154…d07dddc/contract"
+import startContract from "../../snapshots/f62a4154…d07dddc/contract.json" with { type: "json" }
 
-const { sql: db, contract } = postgres<End>({ contractJson: endContract });
+const { sql: db, contract } = postgres<End>({ contractJson: endContract })
 
 export default class M extends Migration<Start, End> {
-    override readonly startContractJson = startContract;
-    override readonly endContractJson = endContract;
+    override readonly startContractJson = startContract
+    override readonly endContractJson = endContract
 
     override get operations() {
         return [
@@ -288,11 +288,11 @@ export default class M extends Migration<Start, End> {
                     db.public.user.update({ name: "" }).where((f, fns) => fns.eq(f.name, null)),
             }),
             this.setNotNull({ schema: "public", table: "user", column: "name" }),
-        ];
+        ]
     }
 }
 
-MigrationCLI.run(import.meta.url, M);
+MigrationCLI.run(import.meta.url, M)
 ```
 
 Self-emit:
@@ -313,12 +313,12 @@ import {
     dataTransform,
     Migration,
     MigrationCLI,
-} from "@prisma/orm-mongo/target/migration";
-import { RawAggregateCommand, RawUpdateManyCommand } from "@prisma/orm-mongo/query-ast/execution";
+} from "@prisma/orm-mongo/target/migration"
+import { RawAggregateCommand, RawUpdateManyCommand } from "@prisma/orm-mongo/query-ast/execution"
 
 class M extends Migration {
     override describe() {
-        return { from: "<hex>", to: "<hex>" };
+        return { from: "<hex>", to: "<hex>" }
     }
 
     override get operations() {
@@ -353,12 +353,12 @@ class M extends Migration {
                     },
                 }),
             }),
-        ];
+        ]
     }
 }
 
-export default M;
-MigrationCLI.run(import.meta.url, M);
+export default M
+MigrationCLI.run(import.meta.url, M)
 ```
 
 Self-emit the same way: `node migrations/app/<dir>/migration.ts`.

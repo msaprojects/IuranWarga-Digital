@@ -48,16 +48,16 @@ Both files are **emitted artefacts**. Edit the source; never the JSON or `.d.ts`
 
     ```typescript
     // prisma.config.ts — what `prisma orm init` scaffolds
-    import "dotenv/config";
-    import { definePrismaConfig } from "@prisma/cli-engine";
-    import { defineConfig as ormConfig } from "@internal/postgres/config";
+    import "dotenv/config"
+    import { definePrismaConfig } from "@prisma/cli-engine"
+    import { defineConfig as ormConfig } from "@internal/postgres/config"
 
     export default definePrismaConfig({
         orm: ormConfig({
             contract: "./src/prisma/contract.prisma",
             db: { connection: process.env["DATABASE_URL"]! },
         }),
-    });
+    })
     ```
 
     The fields `ormConfig` accepts: `contract` (path string — `.prisma` or `.ts`), `output` (optional override for where `contract.json` lands), `db` (`{ connection?: string }`), `extensions` (array of control descriptors), `migrations` (`{ dir?: string }`). Without `output`, the path for `contract.json` is derived from `contract` (e.g. `./src/prisma/contract.prisma` → `./src/prisma/contract.json`). Keep `import 'dotenv/config'` when the config reads `process.env`.
@@ -157,9 +157,9 @@ Note: scalar lists (e.g. `String[]`) are gated on the target's `sql.scalarList` 
 The concept: same model, different authoring surface. The façade re-exports `defineContract`, `field`, `model`, `rel`, plus the `family`/`target` packs as default exports of `@internal/postgres/family` and `@internal/postgres/target`. Use the callback overload (`defineContract({...}, ({ field, model, rel, type }) => ({...}))`) to get the higher-level helpers (`field.text()`, `field.id.uuidv7String()`, `field.temporal.createdAt()`, `type.sql.String(35)`).
 
 ```typescript
-import sqlFamily from "@internal/postgres/family";
-import { defineContract } from "@internal/postgres/contract-builder";
-import postgresPack from "@internal/postgres/target";
+import sqlFamily from "@internal/postgres/family"
+import { defineContract } from "@internal/postgres/contract-builder"
+import postgresPack from "@internal/postgres/target"
 
 export const contract = defineContract(
     {
@@ -177,7 +177,7 @@ export const contract = defineContract(
             }).sql({ table: "app_user" }),
         },
     }),
-);
+)
 ```
 
 Then `pnpm prisma contract emit`. On Postgres, the `field` that `@prisma/orm-postgres/contract-builder` exports has the same `field.<scalar>()` helpers as the callback's, without the helpers an extension adds (such as pgvector's); for those, use the callback's `field`. On other targets the `field.<scalar>()` helpers are only available inside the callback overload; outside the callback only `field.column(...)`, `field.generated(...)`, `field.namedType(...)` exist.
@@ -195,10 +195,10 @@ The concept: an extension contributes a namespace (`pgvector.*`) plus two descri
 `prisma.config.ts`:
 
 ```typescript
-import "dotenv/config";
-import { definePrismaConfig } from "@prisma/cli-engine";
-import pgvector from "@internal/extension-pgvector/control";
-import { defineConfig as ormConfig } from "@internal/postgres/config";
+import "dotenv/config"
+import { definePrismaConfig } from "@prisma/cli-engine"
+import pgvector from "@internal/extension-pgvector/control"
+import { defineConfig as ormConfig } from "@internal/postgres/config"
 
 export default definePrismaConfig({
     orm: ormConfig({
@@ -206,7 +206,7 @@ export default definePrismaConfig({
         extensions: [pgvector],
         db: { connection: process.env["DATABASE_URL"]! },
     }),
-});
+})
 ```
 
 `src/prisma/contract.prisma`:
@@ -391,9 +391,9 @@ The concept: the Supabase extension provides the `supabase` contract space (the 
 `prisma.config.ts` (mirrors `examples/supabase/prisma.config.ts`):
 
 ```typescript
-import { definePrismaConfig } from "@prisma/cli-engine";
-import supabasePack from "@internal/extension-supabase/pack";
-import { defineConfig as ormConfig } from "@internal/postgres/config";
+import { definePrismaConfig } from "@prisma/cli-engine"
+import supabasePack from "@internal/extension-supabase/pack"
+import { defineConfig as ormConfig } from "@internal/postgres/config"
 
 export default definePrismaConfig({
     orm: ormConfig({
@@ -401,7 +401,7 @@ export default definePrismaConfig({
         extensions: [supabasePack],
         migrations: { dir: "migrations" },
     }),
-});
+})
 ```
 
 `db.ts` does **not** use the stock `postgres()` factory — a Supabase app builds its client with the `supabase()` factory from `@internal/extension-supabase/runtime` (role-first: `asUser(jwt)` / `asAnon()` / `asServiceRole()`, JWT validation, RLS). That runtime — and RLS policy authoring (`policy_select` / `@@rls`) — is covered by **`references/supabase.md`**; load it for anything past the config wiring.

@@ -500,16 +500,16 @@ In `contract.ts` and every other file that builds a column descriptor by hand, d
 
 ```ts
 // before
-const pgText = { codecId: "pg/text@1", nativeType: "text" } as const;
+const pgText = { codecId: "pg/text@1", nativeType: "text" } as const
 const Priority = enumType(
     "Priority",
     { codecId: "pg/int4@1", nativeType: "int4" },
     member("Low", 0),
-);
+)
 
 // after
-const pgText = { codecId: "pg/text@1" } as const;
-const Priority = enumType("Priority", { codecId: "pg/int4@1" }, member("Low", 0));
+const pgText = { codecId: "pg/text@1" } as const
+const Priority = enumType("Priority", { codecId: "pg/int4@1" }, member("Low", 0))
 ```
 
 Code that reads a column of a stored contract (`contract.storage…tables[name].columns[name]`) reads `dataType`, the data type id such as `pg/text`, instead of `nativeType`, the database type name such as `text`:
@@ -555,12 +555,12 @@ Extension types keep their names (`$1::vector`, `$1::geometry`).
 A column's stored database type name is now written from the data type of the column's codec, so the contract build needs the pack that provides the codec. Add every extension whose codec the contract uses:
 
 ```ts
-import pgvector from "@prisma/orm-extension-pgvector/pack";
-import { defineContract } from "@prisma/orm-postgres/contract-builder";
+import pgvector from "@prisma/orm-extension-pgvector/pack"
+import { defineContract } from "@prisma/orm-postgres/contract-builder"
 
 export const contract = defineContract({ extensions: { pgvector } }, ({ field, model }) => ({
     // …
-}));
+}))
 ```
 
 A contract that already lists the extension changes nothing. `contract.json` does not change.
@@ -798,12 +798,12 @@ On PostgreSQL, `setDefault` takes the column and its default:
 
 ```typescript
 // before
-this.setDefault({ table: "user", column: "role", defaultSql: "DEFAULT 'member'" });
+this.setDefault({ table: "user", column: "role", defaultSql: "DEFAULT 'member'" })
 // after
 this.setDefault({
     table: "user",
     column: col("role", "text", { default: lit("member"), codecRef: { codecId: "pg/text@1" } }),
-});
+})
 ```
 
 On SQLite, a column in `addColumn` or `recreateTable` carries the default and its codec, and a `recreateTable` postcheck that checks a default names the column:
@@ -910,7 +910,7 @@ Prisma 6 stores a plain `Int` on MongoDB as a BSON long and presents it as a `nu
         db.Post.find({
             likes: { $type: "double" },
             $expr: { $ne: ["$likes", { $trunc: "$likes" }] },
-        });
+        })
         ```
 
         For a list or a composite value, this finds every document with a double in the field: `db.Post.find({ scores: { $type: 'double' } })` for an `Int[]` field, and `db.Post.find({ 'addresses.zip': { $type: 'double' } })` for `zip` in a composite type, whether `addresses` holds one value or a list.
@@ -920,7 +920,7 @@ Prisma 6 stores a plain `Int` on MongoDB as a BSON long and presents it as a `nu
         ```js
         db.Post.updateMany({ likes: { $type: "double" } }, [
             { $set: { likes: { $toLong: { $round: ["$likes", 0] } } } },
-        ]);
+        ])
         ```
 
     - For an `Int[]` field, convert each double in the list:
@@ -943,7 +943,7 @@ Prisma 6 stores a plain `Int` on MongoDB as a BSON long and presents it as a `nu
                     },
                 },
             },
-        ]);
+        ])
         ```
 
     - For a field of a composite type the model holds once (`address Address?`), write its dotted path (`'address.zip'` and `'$address.zip'`) in the filter and the update above.
@@ -974,7 +974,7 @@ Prisma 6 stores a plain `Int` on MongoDB as a BSON long and presents it as a `nu
                     },
                 },
             },
-        ]);
+        ])
         ```
 
     Here `Post`, `likes`, `scores`, `address`, `addresses` and `zip` stand for the collection and the field names in the database, after `@@map` and `@map`.
@@ -1005,8 +1005,8 @@ This entry and `cursor-and-distinct-on-check-the-receiver`, `apply-is-a-collecti
 A write needs a collection that is filtered on every code path. Code that filters only on some paths compiled before and no longer does:
 
 ```ts
-const posts = search ? db.Post.withTitle(search) : db.Post;
-await posts.deleteAll(); // error: The 'this' context of type 'PostCollection' is not assignable to method's 'this' of type 'HasWhere'
+const posts = search ? db.Post.withTitle(search) : db.Post
+await posts.deleteAll() // error: The 'this' context of type 'PostCollection' is not assignable to method's 'this' of type 'HasWhere'
 ```
 
 The same applies to an `if` with an early return, a `switch`, a loop, and a `let` reassigned in an `if`. Make the write only where the filter was applied, or filter on every path:
@@ -1046,7 +1046,7 @@ The exception is `update` with a relation callback, such as `posts: (posts) => p
 `cursor` and `distinctOn` need an order on the collection they are called on. The check is on the receiver, so a cast on the argument no longer bypasses it:
 
 ```ts
-await db.Post.cursor({ id } as never).all(); // error: The 'this' context of type 'PostCollection' is not assignable to method's 'this' of type 'HasOrderBy'
+await db.Post.cursor({ id } as never).all() // error: The 'this' context of type 'PostCollection' is not assignable to method's 'this' of type 'HasOrderBy'
 ```
 
 Add the order the query needs:
@@ -1059,10 +1059,10 @@ Add the order the query needs:
 Where the query is meant to run without an order, cast the collection instead of the argument:
 
 ```ts
-import type { Ordered } from "@prisma/orm-postgres/orm-client";
+import type { Ordered } from "@prisma/orm-postgres/orm-client"
 
-const unordered = db.Post as Ordered<typeof db.Post>;
-await unordered.cursor({ id }).all();
+const unordered = db.Post as Ordered<typeof db.Post>
+await unordered.cursor({ id }).all()
 ```
 
 ## `apply-is-a-collection-member`
@@ -1140,10 +1140,10 @@ import type {
     CollectionTypeStateOf,
     HasRow,
     HasTypeState,
-} from "@prisma/orm-postgres/orm-client";
+} from "@prisma/orm-postgres/orm-client"
 
-type RowOf<C extends HasRow> = CollectionRowOf<C>;
-type StateOf<C extends HasTypeState> = CollectionTypeStateOf<C>;
+type RowOf<C extends HasRow> = CollectionRowOf<C>
+type StateOf<C extends HasTypeState> = CollectionTypeStateOf<C>
 ```
 
 ## `return-type-of-a-chaining-method`
@@ -1195,12 +1195,12 @@ For every `.variant(...)` call matched by `detection`, replace the variant's mod
 
 ```ts
 // before
-db.orm.public.Task.variant("Bug");
-db.orm.events.variant("ViewProductEvent");
+db.orm.public.Task.variant("Bug")
+db.orm.events.variant("ViewProductEvent")
 
 // after, for @@base(Task, "bug") and a ViewProductEvent variant declaring "view-product"
-db.orm.public.Task.variant("bug");
-db.orm.events.variant("view-product");
+db.orm.public.Task.variant("bug")
+db.orm.events.variant("view-product")
 ```
 
 Custom collection methods that call `this.variant('<ModelName>')`, and helpers or closures that call `.variant()`, change the same way. When the argument is a variable or a forwarded parameter, follow it back to where the model name is written and replace it there, including in type annotations that list variant model names. Update code comments and READMEs that show `.variant('<ModelName>')` too.
@@ -1213,13 +1213,13 @@ A second `.variant()` call on a variant collection is rejected. It no longer rep
 
 ```ts
 // before
-const bugs = db.orm.public.Task.variant("Bug");
-const features = bugs.variant("Feature");
+const bugs = db.orm.public.Task.variant("Bug")
+const features = bugs.variant("Feature")
 
 // after
-const tasks = db.orm.public.Task;
-const bugs = tasks.variant("bug");
-const features = tasks.variant("feature");
+const tasks = db.orm.public.Task
+const bugs = tasks.variant("bug")
+const features = tasks.variant("feature")
 ```
 
 ## `imported-postgres-field-checks-defaults`
@@ -1244,8 +1244,8 @@ await db.transaction(async (tx) => {
             .limit(1)
             .forUpdate({ skipLocked: true })
             .build(),
-    );
-});
+    )
+})
 ```
 
 Each method and each option is gated on a capability key that the Postgres adapter now reports: `sql.forUpdate`, `sql.forShare`, `postgres.forNoKeyUpdate`, `postgres.forKeyShare`, and `sql.lockOf`, `sql.lockNowait`, `sql.lockSkipLocked` for the options. A `contract.json` emitted before this release carries none of them, so the methods do not exist on its builder.
@@ -1279,8 +1279,8 @@ export async function getUsersCached(limit = 10, ttlMs = 60_000) {
         .select("id", "email")
         .annotate(cacheAnnotation({ ttl: ttlMs }))
         .limit(limit)
-        .build();
-    return db.runtime().query(plan);
+        .build()
+    return db.runtime().query(plan)
 }
 ```
 
@@ -1292,8 +1292,8 @@ export async function getUsersCached(limit = 10) {
         .select("id", "email")
         .annotate(cacheAnnotation({}))
         .limit(limit)
-        .build();
-    return db.runtime().query(plan);
+        .build()
+    return db.runtime().query(plan)
 }
 ```
 
@@ -1329,13 +1329,13 @@ Before:
 ```ts
 const store: CacheStore = {
     async get(key) {
-        const raw = await redis.get(key);
-        return raw ? (JSON.parse(raw) as CachedEntry) : undefined;
+        const raw = await redis.get(key)
+        return raw ? (JSON.parse(raw) as CachedEntry) : undefined
     },
     async set(key, entry, ttlMs) {
-        await redis.set(key, JSON.stringify(entry), "PX", ttlMs);
+        await redis.set(key, JSON.stringify(entry), "PX", ttlMs)
     },
-};
+}
 ```
 
 After:
@@ -1344,26 +1344,26 @@ After:
 const SET_IF_VERSION = `
   if tonumber(redis.call('GET', KEYS[2]) or '0') ~= tonumber(ARGV[2]) then return 0 end
   redis.call('SET', KEYS[1], ARGV[1], 'PX', 60000)
-  return 1`;
+  return 1`
 
 const store: CacheStore<unknown, CachedRows> = {
     async get({ key, meta }) {
-        const [raw, version] = await redis.mget(`value:${key}`, `version:${key}`);
+        const [raw, version] = await redis.mget(`value:${key}`, `version:${key}`)
         return {
             key,
             meta,
             version: Number(version ?? 0),
             data: raw ? { empty: false, value: JSON.parse(raw) as CachedRows } : { empty: true },
-        };
+        }
     },
     async set(entry, value) {
-        const keys = [`value:${entry.key}`, `version:${entry.key}`];
-        const json = JSON.stringify(value);
-        return (await redis.eval(SET_IF_VERSION, 2, ...keys, json, entry.version)) === 1;
+        const keys = [`value:${entry.key}`, `version:${entry.key}`]
+        const json = JSON.stringify(value)
+        return (await redis.eval(SET_IF_VERSION, 2, ...keys, json, entry.version)) === 1
     },
     async unset({ keys, meta }) {
         if (meta !== undefined) {
-            throw new Error("This store does not index meta");
+            throw new Error("This store does not index meta")
         }
         for (const key of keys ?? []) {
             await redis
@@ -1371,10 +1371,10 @@ const store: CacheStore<unknown, CachedRows> = {
                 .del(`value:${key}`)
                 .incr(`version:${key}`)
                 .pexpire(`version:${key}`, 60_000)
-                .exec();
+                .exec()
         }
     },
-};
+}
 ```
 
 ## `contract-artifacts-restamp`

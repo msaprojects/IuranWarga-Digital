@@ -211,7 +211,7 @@ For each `.cursor(` call on a `db.orm` chain that also calls `.orderBy(`, look a
     const page = await db.orm.public.Post.orderBy((p) => p.embedding.cosineDistance(v).asc())
         .limit(20)
         .offset(pageIndex * 20)
-        .all();
+        .all()
     ```
 
 - Keep the cursor and order by plain columns only, for example `(p) => p.createdAt.desc()` and `(p) => p.id.desc()`.
@@ -238,17 +238,17 @@ Do not rely on `tsc` to find the `contract.d.ts` files. They are declaration fil
 
 ```ts
 // before
-import { createMongoRunnerDeps, extractDb } from "@prisma/orm-mongo/adapter/control";
-import { MongoDriverImpl } from "@prisma/orm-mongo/driver";
+import { createMongoRunnerDeps, extractDb } from "@prisma/orm-mongo/adapter/control"
+import { MongoDriverImpl } from "@prisma/orm-mongo/driver"
 const runner = new MongoMigrationRunner(
     createMongoRunnerDeps(controlDriver, MongoDriverImpl.fromDb(extractDb(controlDriver)), family),
-);
+)
 
 // after
-import { MongoControlAdapterImpl } from "@prisma/orm-mongo/adapter/control";
+import { MongoControlAdapterImpl } from "@prisma/orm-mongo/adapter/control"
 const runner = new MongoMigrationRunner(
     new MongoControlAdapterImpl().createRunnerDependencies(controlDriver),
-);
+)
 ```
 
 Drop imports that are now unused (`extractDb`, `MongoDriverImpl`, `createMongoFamilyInstance`) and any family instance built only to pass as the third argument.
@@ -262,10 +262,10 @@ Change the import of `MongoRunnerDependencies` or `MarkerOperations` to `@prisma
 Build the family instance from a control stack that includes the Mongo adapter:
 
 ```ts
-import mongoAdapter from "@prisma/orm-mongo/adapter/control";
-import { createMongoFamilyInstance, mongoFamilyDescriptor } from "@prisma/orm-mongo/family/control";
-import { createControlStack } from "@prisma/orm-mongo/components/control";
-import { mongoTargetDescriptor } from "@prisma/orm-mongo/target/control";
+import mongoAdapter from "@prisma/orm-mongo/adapter/control"
+import { createMongoFamilyInstance, mongoFamilyDescriptor } from "@prisma/orm-mongo/family/control"
+import { createControlStack } from "@prisma/orm-mongo/components/control"
+import { mongoTargetDescriptor } from "@prisma/orm-mongo/target/control"
 
 const family = createMongoFamilyInstance(
     createControlStack({
@@ -273,7 +273,7 @@ const family = createMongoFamilyInstance(
         target: mongoTargetDescriptor,
         adapter: mongoAdapter,
     }),
-);
+)
 ```
 
 Code that goes through the CLI or `defineConfig` already has the adapter on the stack and needs no change.

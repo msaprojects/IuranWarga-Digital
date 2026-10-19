@@ -86,7 +86,7 @@ There is no codemod for this — extensions construct `SqlStorage` via too many 
 - **Codec-triple literal passed to `new SqlStorage({...})` or a builder that flattens to it** (e.g. `types: { Embedding1536: { codecId: 'pg/vector@1', nativeType: 'vector', typeParams: { length: 1536 } } }`): wrap each value with `toStorageTypeInstance(...)`:
 
     ```ts
-    import { toStorageTypeInstance } from "@internal/sql-contract";
+    import { toStorageTypeInstance } from "@internal/sql-contract"
 
     const storage = new SqlStorage({
         types: {
@@ -97,7 +97,7 @@ There is no codemod for this — extensions construct `SqlStorage` via too many 
             }),
         },
         // …
-    });
+    })
     ```
 
     The helper is idempotent — input already carrying the `kind` field passes through unchanged.
@@ -105,7 +105,7 @@ There is no codemod for this — extensions construct `SqlStorage` via too many 
 - **Postgres-enum literal** (e.g. `types: { user_type: { codecId: 'pg/enum@1', nativeType: 'user_type', typeParams: { values: ['admin', 'user'] } } }`): the canonical fix is to replace with a `PostgresEnumType` class instance from `@internal/postgres`:
 
     ```ts
-    import { PostgresEnumType } from "@internal/postgres";
+    import { PostgresEnumType } from "@internal/postgres"
 
     const storage = new SqlStorage({
         types: {
@@ -116,7 +116,7 @@ There is no codemod for this — extensions construct `SqlStorage` via too many 
             }),
         },
         // …
-    });
+    })
     ```
 
     The class instance carries `kind: 'postgres-enum'` and the structural shape the family discriminates on. Plain object literals with `kind: 'postgres-enum'` are rejected — the constructor route is mandatory because hydration of raw JSON envelopes is the target-specific serializer's job (cross-domain layering: the SQL family doesn't know about Postgres-enum's concrete class).
@@ -134,7 +134,7 @@ There is no codemod for this — extensions construct `SqlStorage` via too many 
             },
         },
         // …
-    };
+    }
     ```
 
     The SQL family treats the entry as an opaque codec triple and round-trips it unchanged. Use this form only when you do not need `PostgresEnumType`'s enum-specific structural fields (`name`, `values` lifted out of `typeParams`) or its enum-planning behaviour — otherwise prefer the `PostgresEnumType` constructor above.

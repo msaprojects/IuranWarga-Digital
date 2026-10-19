@@ -51,7 +51,7 @@ See [`queries-postgres.md` § Namespace-aware accessors](./queries-postgres.md#n
 Critical to get right early — on **both Postgres and Mongo**, `.all()` returns an **`AsyncIterableResult<Row>`**, which is _both_ a `PromiseLike<Row[]>` and an `AsyncIterable<Row>`. That means three consumption forms all work, and the canonical one is the shortest:
 
 ```typescript
-const users = await db.orm.public.User.select("id", "email").all();
+const users = await db.orm.public.User.select("id", "email").all()
 //    ^? Row[]   ← the Thenable resolves to a real array. This is the default idiom.
 ```
 
@@ -66,21 +66,21 @@ You do **not** need a `collect()` / `toArray()` helper — `await` is enough. In
 // `Promise.race` combinators all accept the thenable directly — those are
 // NOT reasons to call `.toArray()`. Whenever you are just going to await it
 // here, use `await ...all()` and skip `.toArray()`.
-const rows: Promise<User[]> = db.orm.public.User.select("id", "email").all().toArray();
+const rows: Promise<User[]> = db.orm.public.User.select("id", "email").all().toArray()
 
 // Iterate — decode and handle rows one at a time. Whether the raw rows are
 // also fetched incrementally depends on the `cursor` option; see *Streaming* below.
 for await (const user of db.orm.public.User.select("id", "email").all()) {
-    process(user);
+    process(user)
 }
 ```
 
 Two single-row shortcuts also exist on the result, in addition to the collection-level `.first()` (which issues `LIMIT 1` on Postgres):
 
 ```typescript
-const user = await db.orm.public.User.where({ id }).all().first();
+const user = await db.orm.public.User.where({ id }).all().first()
 //    ^? Row | null   ← buffers, returns the first row or null. Issues no LIMIT.
-const required = await db.orm.public.User.where({ id }).all().firstOrThrow();
+const required = await db.orm.public.User.where({ id }).all().firstOrThrow()
 //    ^? Row          ← buffers; throws `RUNTIME.NO_ROWS` if empty.
 ```
 
@@ -90,14 +90,14 @@ For genuine single-row reads, prefer the _collection_-level `.first()` (which ad
 
 ```typescript
 // Bad — second await throws RUNTIME.ITERATOR_CONSUMED.
-const result = db.orm.public.User.select("id", "email").all();
-const a = await result;
-const b = await result;
+const result = db.orm.public.User.select("id", "email").all()
+const a = await result
+const b = await result
 
 // Good — buffer once, reuse the array.
-const users = await db.orm.public.User.select("id", "email").all();
-const a = users;
-const b = users;
+const users = await db.orm.public.User.select("id", "email").all()
+const a = users
+const b = users
 ```
 
 If you've seen `collect(...)` / `toArray(...)` helpers in a codebase wrapping `.all()`, they're vestigial — `await` does the same thing for free. Remove them when you touch the surrounding code.
@@ -108,11 +108,11 @@ When the user is running a one-off `tsx my-script.ts` (not a long-lived server),
 
 ```typescript
 // src/scripts/seed.ts
-import { db } from "../prisma/db";
+import { db } from "../prisma/db"
 
 // Postgres — PascalCase model root from contract
 for (const u of users) {
-    await db.orm.public.User.create(u);
+    await db.orm.public.User.create(u)
 }
 
 // Mongo — lowercased plural root from contract (e.g. users, not User)
@@ -120,8 +120,8 @@ for (const u of users) {
 //   await db.orm.users.create(u);
 // }
 
-console.log("Seeded.");
-await db.close();
+console.log("Seeded.")
+await db.close()
 ```
 
 ## Streaming
@@ -145,11 +145,11 @@ const ps = await db.prepare({ email: "pg/text@1" }, (sql, params) =>
         .where((f, fns) => fns.eq(f.email, params.email))
         .limit(1)
         .build(),
-);
+)
 
-const runtime = db.runtime();
+const runtime = db.runtime()
 for (const email of emails) {
-    const rows = await ps.query(runtime, { email });
+    const rows = await ps.query(runtime, { email })
 }
 ```
 
@@ -163,36 +163,36 @@ The model is the whole row plus its relations, and each related model carries it
 - `ResultType<typeof query>` — the row of any ORM collection value (plain, `.include()`, `.select()`, `.variant()`), and of SQL lane plans. Bind the query to a name first; `typeof` needs a value. `.variant()` takes the variant's discriminator value, not its model name: `db.orm.public.Task.variant('bug')` for `@@base(Task, "bug")`. Call it once, on the base collection; a second `.variant()` on a variant collection is refused.
 
 ```ts
-import type { models, Models } from "./prisma/contract";
-import type { Scalars, Shape } from "@prisma/orm-postgres/family-contract/types";
-import type { ResultType } from "@prisma/orm-postgres/components/runtime";
+import type { models, Models } from "./prisma/contract"
+import type { Scalars, Shape } from "@prisma/orm-postgres/family-contract/types"
+import type { ResultType } from "@prisma/orm-postgres/components/runtime"
 
-type User = typeof models.public.User; // same type as Models.public_User
-type UserRow = ResultType<typeof db.orm.public.User>; // Scalars<Models.public_User>
+type User = typeof models.public.User // same type as Models.public_User
+type UserRow = ResultType<typeof db.orm.public.User> // Scalars<Models.public_User>
 
-const usersWithTasks = () => db.orm.public.User.include("tasks");
-type UserWithTasks = ResultType<ReturnType<typeof usersWithTasks>>; // Shape<Models.public_User, { '+': 'tasks' }>
+const usersWithTasks = () => db.orm.public.User.include("tasks")
+type UserWithTasks = ResultType<ReturnType<typeof usersWithTasks>> // Shape<Models.public_User, { '+': 'tasks' }>
 
-const projected = db.orm.public.User.select("id");
-type UserId = ResultType<typeof projected>; // { id: number }
+const projected = db.orm.public.User.select("id")
+type UserId = ResultType<typeof projected> // { id: number }
 
 // An endpoint declares its response from the model; the query behind it is an implementation detail.
 type UserResponse = Shape<
     Models.public_User,
     { "-": "email"; posts: { "+": "id" | "title" | "tags" } }
->;
+>
 
 async function getUserWithPosts(userId: Models.public_User["id"]): Promise<UserResponse | null> {
     const user = await db.orm.public.User.where({ id: userId })
         .include("posts", (posts) => posts.include("tags"))
-        .first();
-    if (user === null) return null;
-    const { email: _email, ...rest } = user;
-    return { ...rest, posts: user.posts.map(({ id, title, tags }) => ({ id, title, tags })) };
+        .first()
+    if (user === null) return null
+    const { email: _email, ...rest } = user
+    return { ...rest, posts: user.posts.map(({ id, title, tags }) => ({ id, title, tags })) }
 }
 
 // @ts-expect-error 'nope' is not a relation of User
-type Bad = Shape<Models.public_User, { nope: {} }>;
+type Bad = Shape<Models.public_User, { nope: {} }>
 ```
 
 On Mongo the imports are `@prisma/orm-mongo/family-contract/types` and `@prisma/orm-mongo/components/runtime`; embedded documents are fields, so they stay in `Scalars`. To name a model plus some of its relations, write `Shape<Models.public_User, { '+': 'id' | 'posts' }>`, not `Pick<Models.public_User, 'id' | 'posts'>`: `Pick` demands fully loaded nested posts that no query returns. Input types (`CreateInput<Contract, 'User'>`, `MutationUpdateInput<Contract, 'User'>`, `ShorthandWhereFilter<Contract, 'public', 'User'>`) come from `@prisma/orm-postgres/orm-client`.

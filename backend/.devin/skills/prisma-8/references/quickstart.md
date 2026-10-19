@@ -79,16 +79,16 @@ Write the snippet in a fresh file directly under `src/` (e.g. `src/first-arc.ts`
 
 ```typescript
 // src/first-arc.ts
-import "dotenv/config";
-import { db } from "./prisma/db";
+import "dotenv/config"
+import { db } from "./prisma/db"
 
 // Write a row against the starter model. Adapt the field names to whatever
 // model your contract source actually declares — read it first.
-await db.orm.public.User.create({ email: "alice@example.com" });
+await db.orm.public.User.create({ email: "alice@example.com" })
 
 // Read it back.
-const users = await db.orm.public.User.select("id", "email").all();
-console.log(users);
+const users = await db.orm.public.User.select("id", "email").all()
+console.log(users)
 ```
 
 If that prints `[{ id: 1, email: 'alice@example.com' }]`, the project is wired end-to-end and the user has crossed from _"I have a project"_ to _"I'm building."_

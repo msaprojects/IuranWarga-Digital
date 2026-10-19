@@ -25,9 +25,9 @@ model User {
 Every model you define in your contract can be queried from your app. Your editor will autocomplete the query methods and show you what type each model field is:
 
 ```typescript
-import { db } from "./src/prisma/db";
+import { db } from "./src/prisma/db"
 
-const user = await db.orm.public.User.where({ email: "alice@example.com" }).first();
+const user = await db.orm.public.User.where({ email: "alice@example.com" }).first()
 
 // Your editor will show the type of user as
 // { id: number; email: string; username: string | null; name: string | null; createdAt: Date; posts: Post[] } | null
@@ -47,9 +47,9 @@ If you use a framework like Next.js or Vite, the Prisma ORM plugin will do this 
 [`prisma.config.ts`](prisma.config.ts) tells the CLI where your contract lives and how to connect to your database. It loads environment variables from `.env` automatically:
 
 ```typescript
-import "dotenv/config";
-import { definePrismaConfig } from "@prisma/cli-engine";
-import { defineConfig as ormConfig } from "@prisma/orm-postgres/config";
+import "dotenv/config"
+import { definePrismaConfig } from "@prisma/cli-engine"
+import { defineConfig as ormConfig } from "@prisma/orm-postgres/config"
 
 export default definePrismaConfig({
     orm: ormConfig({
@@ -58,7 +58,7 @@ export default definePrismaConfig({
             connection: process.env["DATABASE_URL"]!,
         },
     }),
-});
+})
 ```
 
 Notice the `DATABASE_URL` above? It's defined in your [`.env`](./.env) file:

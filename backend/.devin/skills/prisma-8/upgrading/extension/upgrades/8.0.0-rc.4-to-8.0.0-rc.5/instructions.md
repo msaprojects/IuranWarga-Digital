@@ -67,9 +67,9 @@ changes:
 Walk every file matched by `detection.glob`. For each pg `Pool` or `Client` the extension constructs, wrap the construction:
 
 ```ts
-import { suppressIdleConnectionErrors } from "@internal/driver-postgres/runtime";
+import { suppressIdleConnectionErrors } from "@internal/driver-postgres/runtime"
 
-const pool = suppressIdleConnectionErrors(new Pool({ connectionString: options.url }));
+const pool = suppressIdleConnectionErrors(new Pool({ connectionString: options.url }))
 ```
 
 This is the same translation applied to the in-repo `@internal/postgres` and `@internal/extension-supabase` runtimes in this transition. The helper only attaches a no-op `'error'` listener (connect/query failures still reject their own promises), so behavior is otherwise unchanged; without it, a dropped idle connection crashes the process that hosts the extension.

@@ -757,24 +757,24 @@ Declare each SQL data type the extension owns with `sqlDataType`, and list the t
 
 ```ts
 // before
-import { type DataType, dataType } from "@internal/framework-components/codec";
+import { type DataType, dataType } from "@internal/framework-components/codec"
 
 export const pgvectorVector: DataType = dataType("pgvector/vector", {
     listCast: {
         of: [pgInt2.id, pgInt4.id, pgInt8.id, pgNumeric.id],
         cast: (elements) => elements.map(elementNumber),
     },
-});
+})
 
 // after
-import type { DataType } from "@internal/framework-components/codec";
-import { sqlDataType } from "@internal/sql-contract/data-type";
-import { type as arktype } from "arktype";
-import { VECTOR_MAX_DIM } from "./constants";
+import type { DataType } from "@internal/framework-components/codec"
+import { sqlDataType } from "@internal/sql-contract/data-type"
+import { type as arktype } from "arktype"
+import { VECTOR_MAX_DIM } from "./constants"
 
 export const pgvectorVectorParams = arktype({
     length: `number.integer >= 1 & number.integer <= ${VECTOR_MAX_DIM}` as const,
-});
+})
 
 export const pgvectorVector = sqlDataType("pgvector/vector", {
     params: pgvectorVectorParams,
@@ -783,7 +783,7 @@ export const pgvectorVector = sqlDataType("pgvector/vector", {
         of: [pgInt2.id, pgInt4.id, pgInt8.id, pgNumeric.id],
         cast: (elements) => elements.map(elementNumber),
     },
-});
+})
 ```
 
 Declare `params` as a named export directly above the data type, so the codec can reference it. Each text is lower case with single spaces, and `{name}` stands for the parameter `name`. Mark the text a migration writes `written: true`, and the text the database catalog prints (`format_type` on PostgreSQL) `catalog: true`. Among texts with the same placeholders, at most one is written and one is catalog. Add `normalize` when two parameter sets name the same database type. Keep `casts` and `listCast` as they are. Drop the explicit `: DataType` annotation on the declaration so the parameter type is kept; the `dataTypes` list stays `readonly DataType[]`.
@@ -791,7 +791,7 @@ Declare `params` as a named export directly above the data type, so the codec ca
 A type written with and without parameters lists a text for each, and `display` gives the letter case the database writes. The PostGIS geometry type:
 
 ```ts
-export const postgisGeometryParams = arktype({ "srid?": "number.integer >= 1" });
+export const postgisGeometryParams = arktype({ "srid?": "number.integer >= 1" })
 
 export const postgisGeometry = sqlDataType("postgis/geometry", {
     params: postgisGeometryParams,
@@ -805,7 +805,7 @@ export const postgisGeometry = sqlDataType("postgis/geometry", {
         },
     ],
     casts: { [pgText.id]: (value) => value },
-});
+})
 ```
 
 The texts must reproduce what the removed hooks wrote: the written text for the column's parameters must equal the old `expandNativeType` result, or migration SQL changes. The bounds are the type's real ones: PostgreSQL refuses an SRID below 1 in a type modifier.
@@ -826,7 +826,7 @@ override readonly targetTypes = ['vector'] as const;
 Code that read `codecLookup.targetTypesFor(codecId)` or `registry.byTargetType(name)` reads the data type instead: `dataTypeLookup.get(codecLookup.descriptorFor(codecId).dataType)`. For a SQL type, call `sqlBaseName(type, dataTypeParams(type, typeParams))` or `renderSqlTypeName(...)` from `@internal/sql-contract/data-type`. For a Mongo codec, move the list to the data type the codec names and read it with `bsonTypesOfCodec(codecId, { codecLookup, dataTypeLookup })` from `@internal/mongo-contract/data-type`; the declared type keeps the list at `type.mongo.bsonTypes`:
 
 ```ts
-export const myDecimal = mongoDataType("my/decimal", { bsonTypes: ["decimal"] });
+export const myDecimal = mongoDataType("my/decimal", { bsonTypes: ["decimal"] })
 ```
 
 ## `native-type-rendering-hooks-removed`
@@ -835,11 +835,11 @@ Delete the `nativeType` override from each `PostgresCodecDescriptor` subclass, w
 
 ```ts
 // before
-const PG_VECTOR_NATIVE_TYPE = "vector";
+const PG_VECTOR_NATIVE_TYPE = "vector"
 
 export class PgVectorDescriptor extends PostgresCodecDescriptor<VectorParams> {
     protected override nativeType(): string {
-        return PG_VECTOR_NATIVE_TYPE;
+        return PG_VECTOR_NATIVE_TYPE
     }
     // …
 }
@@ -849,7 +849,7 @@ const vectorControlPlaneHooks: CodecControlHooks = {
         // …
     },
     resolveIdentityValue: ({ typeParams }) => buildVectorIdentityValue(typeParams),
-};
+}
 
 // after
 export class PgVectorDescriptor extends PostgresCodecDescriptor<VectorParams> {
@@ -858,7 +858,7 @@ export class PgVectorDescriptor extends PostgresCodecDescriptor<VectorParams> {
 
 const vectorControlPlaneHooks: CodecControlHooks = {
     resolveIdentityValue: ({ typeParams }) => buildVectorIdentityValue(typeParams),
-};
+}
 ```
 
 When a hooks object held only `expandNativeType`, delete the object and the `types` override that registered it:
@@ -867,7 +867,7 @@ When a hooks object held only `expandNativeType`, delete the object and the `typ
 // before
 const arktypeJsonControlPlaneHooks: CodecControlHooks = {
     expandNativeType: ({ nativeType }) => nativeType,
-};
+}
 
 export const arktypeJsonExtensionDescriptor: SqlControlExtensionDescriptor<"postgres"> = {
     ...arktypeJsonPackMeta,
@@ -881,13 +881,13 @@ export const arktypeJsonExtensionDescriptor: SqlControlExtensionDescriptor<"post
         },
     },
     create: () => ({/* … */}),
-};
+}
 
 // after
 export const arktypeJsonExtensionDescriptor: SqlControlExtensionDescriptor<"postgres"> = {
     ...arktypeJsonPackMeta,
     create: () => ({/* … */}),
-};
+}
 ```
 
 A caller of `descriptor.nativeTypeFor(ref)` uses `sqlBaseName` of the codec's data type. A custom control adapter drops `normalizeNativeType`.
@@ -949,13 +949,13 @@ const postgresSqlTextDescriptor = postgresCodec(sqlTextDescriptor, {
     dataType: pgText.id,
     nativeType: () => "text",
     jsonProjection: (expression) => expression,
-});
+})
 
 // after
 const postgresSqlTextDescriptor = postgresCodec(sqlTextDescriptor, {
     dataType: pgText,
     jsonProjection: (expression) => expression,
-});
+})
 ```
 
 Import the data type object if only its id was imported. `sqliteCodec` changes the same way, without a `nativeType` option to remove.
@@ -990,8 +990,8 @@ Delete the helper's own range check and the `@throws` tag that describes it, wit
 
 ```ts
 // before
-import { VECTOR_CODEC_ID, VECTOR_MAX_DIM } from "../core/constants";
-import { pgVectorError } from "../core/errors";
+import { VECTOR_CODEC_ID, VECTOR_MAX_DIM } from "../core/constants"
+import { pgVectorError } from "../core/errors"
 
 /**
  * …
@@ -1000,20 +1000,20 @@ import { pgVectorError } from "../core/errors";
  */
 export function vector<N extends number>(length: N) /* : … */ {
     if (!Number.isInteger(length) || length < 1 || length > VECTOR_MAX_DIM) {
-        throw pgVectorError("CONTRACT.ARGUMENT_INVALID" /* … */);
+        throw pgVectorError("CONTRACT.ARGUMENT_INVALID" /* … */)
     }
-    return {/* … */} as const;
+    return {/* … */} as const
 }
 
 // after
-import { VECTOR_CODEC_ID } from "../core/constants";
+import { VECTOR_CODEC_ID } from "../core/constants"
 
 /**
  * …
  * @returns A column type descriptor with `typeParams.length` set
  */
 export function vector<N extends number>(length: N) /* : … */ {
-    return {/* … */} as const;
+    return {/* … */} as const
 }
 ```
 
@@ -1066,7 +1066,7 @@ const pgvectorRuntimeDescriptor: SqlRuntimeExtensionDescriptor<"postgres"> = {
     version: pgvectorPackMeta.version,
     dataTypes: pgvectorPackMeta.dataTypes,
     // …
-};
+}
 ```
 
 Without it, building the runtime adapter fails with `CONTRACT.DATA_TYPE_UNREGISTERED`, because the runtime stack has no data type to write the extension codec's casts from. When building an adapter by hand, pass the same list: `createPostgresAdapter({ codecDescriptors, dataTypes: pgvectorDataTypes })`. An extension whose codecs represent only the target's data types, such as `arktype/json@1` over `pg/jsonb`, has no data types of its own and adds nothing.
@@ -1078,25 +1078,25 @@ Delete `nativeType` from every column type descriptor: column type helpers, hand
 ```ts
 // before
 export function vector<N extends number>(length: N) {
-    return { codecId: VECTOR_CODEC_ID, nativeType: "vector", typeParams: { length } } as const;
+    return { codecId: VECTOR_CODEC_ID, nativeType: "vector", typeParams: { length } } as const
 }
-const pgText = { codecId: "pg/text@1", nativeType: "text" } as const;
+const pgText = { codecId: "pg/text@1", nativeType: "text" } as const
 
 // after
 export function vector<N extends number>(length: N) {
-    return { codecId: VECTOR_CODEC_ID, typeParams: { length } } as const;
+    return { codecId: VECTOR_CODEC_ID, typeParams: { length } } as const
 }
-const pgText = { codecId: "pg/text@1" } as const;
+const pgText = { codecId: "pg/text@1" } as const
 ```
 
 Delete the fourth argument of `column()`, the type name:
 
 ```ts
 // before
-column(pgVectorDescriptor.factory({ length }), pgVectorDescriptor.codecId, { length }, "vector");
+column(pgVectorDescriptor.factory({ length }), pgVectorDescriptor.codecId, { length }, "vector")
 
 // after
-column(pgVectorDescriptor.factory({ length }), pgVectorDescriptor.codecId, { length });
+column(pgVectorDescriptor.factory({ length }), pgVectorDescriptor.codecId, { length })
 ```
 
 Delete the `storage` list from the pack metadata's `types`: nothing reads it, and `StorageTypeMetadata`, its type, is deleted from `@internal/sql-contract/pack-types`. Delete an import that only the list used, and the part of a doc comment that describes the list. Contracts no longer carry `extensions.<pack>.types.storage`; the script removes it from yours.
@@ -1130,10 +1130,10 @@ A `defineContract` facade that constrains the contract's `types` to what `type.*
 
 ```ts
 // before
-type TypesConstraint = Record<string, StorageTypeInstance>;
+type TypesConstraint = Record<string, StorageTypeInstance>
 
 // after
-type TypesConstraint = Record<string, AuthoredStorageTypeInstance>;
+type TypesConstraint = Record<string, AuthoredStorageTypeInstance>
 ```
 
 Code that builds a stored contract's column by hand, for example a test helper, writes the data type id instead of the type name: `{ dataType: 'pg/int4', codecId: 'pg/int4@1' }` instead of `{ nativeType: 'int4', codecId: 'pg/int4@1' }`, and a contract type written by hand declares `readonly dataType: 'pg/int4'` instead of `readonly nativeType: 'int4'`.
@@ -1157,15 +1157,15 @@ override readonly dataType = sqliteInteger.id;     // 'sqlite/integer'
 The canonical forms follow the stored type: `sqlite/integer` stores digit text and `sqlite/text` a string. A JSON codec on SQLite stores the JSON text of the document, and a date-time codec its text. `sqlite/text` declares no canonical form, so a codec whose values have several written forms declares one on its descriptor: `sqlite/datetime@1` does, with `toCanonicalForm` (the function that was `sqliteDatetime.toCanonicalForm`). A contract source, `db verify` and DDL use a codec's canonical form before its data type's.
 
 ```ts
-import type { ToCanonicalForm } from "@internal/framework-components/codec";
+import type { ToCanonicalForm } from "@internal/framework-components/codec"
 
 // your function: written text in, the one text the contract stores out; it throws
 // CONTRACT.CAST_REFUSED for text the codec does not hold
-declare const datetimeCanonicalForm: ToCanonicalForm;
+declare const datetimeCanonicalForm: ToCanonicalForm
 
 export class MyDatetimeDescriptor extends SqliteCodecDescriptor<void> {
-    override readonly dataType = sqliteText.id;
-    override readonly toCanonicalForm = datetimeCanonicalForm;
+    override readonly dataType = sqliteText.id
+    override readonly toCanonicalForm = datetimeCanonicalForm
     // codecId, traits, the JSON projection and the factory follow
 }
 ```
@@ -1176,14 +1176,14 @@ Read a column's canonical form through `canonicalFormOf`, and pass the renamed o
 
 ```ts
 // before
-canonicalDateTime(text, { shape: "instant", dataTypeId: "acme/instant" });
-mapDefault(stored, { dataTypeEntries, dataTypeLookup, columnDataType: codec.dataType });
-const toCanonical = codec.toCanonicalForm ?? dataTypes.get(codec.dataType)?.toCanonicalForm;
+canonicalDateTime(text, { shape: "instant", dataTypeId: "acme/instant" })
+mapDefault(stored, { dataTypeEntries, dataTypeLookup, columnDataType: codec.dataType })
+const toCanonical = codec.toCanonicalForm ?? dataTypes.get(codec.dataType)?.toCanonicalForm
 
 // after
-canonicalDateTime(text, { shape: "instant", ownerId: "acme/instant" });
-mapDefault(stored, { dataTypeEntries, dataTypeLookup, columnCodec: codec });
-const toCanonical = canonicalFormOf(codec, dataTypes);
+canonicalDateTime(text, { shape: "instant", ownerId: "acme/instant" })
+mapDefault(stored, { dataTypeEntries, dataTypeLookup, columnCodec: codec })
+const toCanonical = canonicalFormOf(codec, dataTypes)
 ```
 
 ## `authoring-entry-key-checked`
@@ -1297,10 +1297,10 @@ Import `assembleDataTypes` from `@internal/framework-components/codec`. Remove i
 
 ```ts
 // before
-import { assembleDataTypes } from "@internal/framework-components/control";
+import { assembleDataTypes } from "@internal/framework-components/control"
 
 // after
-import { assembleDataTypes } from "@internal/framework-components/codec";
+import { assembleDataTypes } from "@internal/framework-components/codec"
 ```
 
 ## `number-text-helpers-moved`
@@ -1309,10 +1309,10 @@ Import `numeralText` from `@internal/sql-contract/data-type`, adding it to an ex
 
 ```ts
 // before
-import { numeralText } from "@internal/sql-relational-core/ast";
+import { numeralText } from "@internal/sql-relational-core/ast"
 
 // after
-import { numeralText } from "@internal/sql-contract/data-type";
+import { numeralText } from "@internal/sql-contract/data-type"
 ```
 
 ## `data-type-support-moved`
@@ -1321,10 +1321,10 @@ Import each helper listed in the summary from `@internal/sql-contract/data-type-
 
 ```ts
 // before
-import { escapePslString, createNumberClassifier } from "@internal/sql-relational-core/ast";
+import { escapePslString, createNumberClassifier } from "@internal/sql-relational-core/ast"
 
 // after
-import { createNumberClassifier, escapePslString } from "@internal/sql-contract/data-type-support";
+import { createNumberClassifier, escapePslString } from "@internal/sql-contract/data-type-support"
 ```
 
 ## `numeric-limits-removed`
@@ -1333,13 +1333,13 @@ Validate `numeric` parameters against `pgNumericParams` instead of reading the t
 
 ```ts
 // before
-import { NUMERIC_PRECISION_RANGE } from "@internal/target-postgres/codecs";
-const fits = precision >= NUMERIC_PRECISION_RANGE.min && precision <= NUMERIC_PRECISION_RANGE.max;
+import { NUMERIC_PRECISION_RANGE } from "@internal/target-postgres/codecs"
+const fits = precision >= NUMERIC_PRECISION_RANGE.min && precision <= NUMERIC_PRECISION_RANGE.max
 
 // after
-import { pgNumericParams } from "@internal/target-postgres/data-types";
-import { type as arktype } from "arktype";
-const fits = !(pgNumericParams({ precision }) instanceof arktype.errors);
+import { pgNumericParams } from "@internal/target-postgres/data-types"
+import { type as arktype } from "arktype"
+const fits = !(pgNumericParams({ precision }) instanceof arktype.errors)
 ```
 
 ## `postgres-codecs-decode-server-text`
@@ -1420,7 +1420,7 @@ SQLite cannot store NaN: bound as a parameter, it becomes NULL. So `create({ val
 The column's stored `dataType` is the data type its codec represents (see `contract-stores-data-type`), so the build needs both lookups. Through the facades, list every extension whose codec the contract uses:
 
 ```ts
-defineContract({ extensions: { pgvector } }, ({ field, model }) => ({/* … */}));
+defineContract({ extensions: { pgvector } }, ({ field, model }) => ({/* … */}))
 ```
 
 A contract written with an empty definition (`defineContract({}, …)`) that names an extension's codec passes the lookups itself, as an extension's own contract space does:
@@ -1437,23 +1437,23 @@ export const contract = defineContract({}, () => ({
         },
     },
     models: {},
-}));
+}))
 
 // after
-import { assembleDataTypes } from "@internal/framework-components/codec";
-import { assemblePostgresCodecRegistryWithBuiltins } from "@internal/target-postgres/codecs";
-import { postgresDataTypes } from "@internal/target-postgres/data-types";
-import { pgvectorDataTypes } from "./core/data-types";
-import { pgvectorCodecRegistry } from "./core/registry";
+import { assembleDataTypes } from "@internal/framework-components/codec"
+import { assemblePostgresCodecRegistryWithBuiltins } from "@internal/target-postgres/codecs"
+import { postgresDataTypes } from "@internal/target-postgres/data-types"
+import { pgvectorDataTypes } from "./core/data-types"
+import { pgvectorCodecRegistry } from "./core/registry"
 
 const dataTypeLookup = assembleDataTypes([
     { id: "postgres", dataTypes: postgresDataTypes },
     { id: "pgvector", dataTypes: pgvectorDataTypes },
-]).lookup;
+]).lookup
 const codecLookup = assemblePostgresCodecRegistryWithBuiltins(
     [{ types: { codecTypes: { codecDescriptors: [...pgvectorCodecRegistry.values()] } } }],
     dataTypeLookup,
-);
+)
 
 export const contract = defineContract({ codecLookup, dataTypeLookup }, () => ({
     types: {
@@ -1464,7 +1464,7 @@ export const contract = defineContract({ codecLookup, dataTypeLookup }, () => ({
         },
     },
     models: {},
-}));
+}))
 ```
 
 The `storage.types` entry loses `nativeType` as `column-descriptors-drop-native-type` describes. A column whose codec the lookup lacks fails with `CONTRACT.CODEC_DESCRIPTOR_MISSING`; one whose codec's data type the lookup lacks fails with `CONTRACT.DATA_TYPE_UNREGISTERED`. A direct call of `buildSqlContractFromDefinition(definition, codecLookup, dataTypeLookup)` passes both.
@@ -1480,7 +1480,7 @@ A package that exposes its own `defineContract` over `buildBoundContract`, as th
         assembleDataTypes,
         type CodecLookupWithDescriptors,
         type DataTypeLookup,
-    } from "@internal/framework-components/codec";
+    } from "@internal/framework-components/codec"
     ```
 
 2. In the result type, the object passed to `ContractInput`'s build gains both lookups directly after `createNamespace`:
@@ -1506,9 +1506,9 @@ A package that exposes its own `defineContract` over `buildBoundContract`, as th
     ```ts
     const extensions: readonly ExtensionPackRef<"sql", string>[] = Object.values(
         definition.extensions ?? {},
-    );
+    )
     const dataTypeLookup =
-        definition.dataTypeLookup ?? assembleDataTypes([postgresPack, ...extensions]).lookup;
+        definition.dataTypeLookup ?? assembleDataTypes([postgresPack, ...extensions]).lookup
     const bound = {
         ...definition,
         createNamespace: postgresCreateNamespace,
@@ -1516,7 +1516,7 @@ A package that exposes its own `defineContract` over `buildBoundContract`, as th
             definition.codecLookup ??
             assemblePostgresCodecRegistryWithBuiltins(extensions, dataTypeLookup),
         dataTypeLookup,
-    };
+    }
     ```
 
     On SQLite, the target constant is the first contributor:
@@ -1524,14 +1524,14 @@ A package that exposes its own `defineContract` over `buildBoundContract`, as th
     ```ts
     const extensionPacks: readonly ExtensionPackRef<"sql", string>[] = Object.values(
         definition.extensions ?? {},
-    );
+    )
     const bound = {
         ...definition,
         createNamespace: sqliteCreateNamespace,
         codecLookup: definition.codecLookup ?? assembleSqliteCodecRegistry(target, extensionPacks),
         dataTypeLookup:
             definition.dataTypeLookup ?? assembleDataTypes([target, ...extensionPacks]).lookup,
-    };
+    }
     ```
 
     Both refuse a data type id that two packs register, with `CONTRACT.DATA_TYPE_DUPLICATE`.
@@ -1542,13 +1542,13 @@ The Postgres codec registry no longer carries the data types. Each function that
 
 ```ts
 // before
-const codecRegistry = assemblePostgresCodecRegistry(components);
-const adapter = new PostgresControlAdapter(codecRegistry);
+const codecRegistry = assemblePostgresCodecRegistry(components)
+const adapter = new PostgresControlAdapter(codecRegistry)
 
 // after
-const dataTypeLookup = assembleDataTypes(components).lookup;
-const codecRegistry = assemblePostgresCodecRegistry(components, dataTypeLookup);
-const adapter = new PostgresControlAdapter(codecRegistry, dataTypeLookup);
+const dataTypeLookup = assembleDataTypes(components).lookup
+const codecRegistry = assemblePostgresCodecRegistry(components, dataTypeLookup)
+const adapter = new PostgresControlAdapter(codecRegistry, dataTypeLookup)
 ```
 
 `assemblePostgresCodecRegistryWithBuiltins(extensions, dataTypeLookup)` and `createPostgresAdapterWithCodecRegistry(codecRegistry, dataTypeLookup)` change the same way. `createPostgresCodecRegistryWithBuiltins(codecDescriptors, dataTypeLookup)` takes the lookup in place of a list of data types, and defaults to the target's own. A built-in adapter in a test is `new PostgresControlAdapter(createPostgresBuiltinCodecLookup(), createPostgresBuiltinDataTypeLookup())`.
@@ -1557,10 +1557,10 @@ const adapter = new PostgresControlAdapter(codecRegistry, dataTypeLookup);
 
 ```ts
 // before
-const fromSchema = migrations.contractToSchema(fromContract);
+const fromSchema = migrations.contractToSchema(fromContract)
 
 // after
-const fromSchema = migrations.contractToSchema(fromContract, frameworkComponents);
+const fromSchema = migrations.contractToSchema(fromContract, frameworkComponents)
 ```
 
 Pass the framework components of the stack the contract was built with. A custom target's implementation passes them on to the family's `contractToSchemaIR` as `dataTypeLookup` and `codecLookup`.
@@ -1569,10 +1569,10 @@ Pass the framework components of the stack the contract was built with. A custom
 
 ```ts
 // before
-contractToSchemaIR(contract, { annotationNamespace: "pg", expandNativeType });
+contractToSchemaIR(contract, { annotationNamespace: "pg", expandNativeType })
 
 // after
-contractToSchemaIR(contract, { annotationNamespace: "pg", dataTypeLookup, codecLookup });
+contractToSchemaIR(contract, { annotationNamespace: "pg", dataTypeLookup, codecLookup })
 ```
 
 `dataTypeLookup` and `codecLookup` come from the assembled stack: `sqlTypeLookupsOf(frameworkComponents)` from `@internal/family-sql/control` returns both. Every field or parameter that holds a `DataTypeLookup` is now named `dataTypeLookup`; `dataTypes` names only a list of data types.
@@ -1581,7 +1581,7 @@ contractToSchemaIR(contract, { annotationNamespace: "pg", dataTypeLookup, codecL
 
 ```ts
 // before
-const ctx: AuthoringEntityContext = { family: "sql", target: "postgres" };
+const ctx: AuthoringEntityContext = { family: "sql", target: "postgres" }
 
 // after
 const ctx: AuthoringEntityContext = {
@@ -1589,7 +1589,7 @@ const ctx: AuthoringEntityContext = {
     target: "postgres",
     codecLookup: createPostgresBuiltinCodecLookup(),
     dataTypeLookup: createDataTypeLookup(postgresDataTypes),
-};
+}
 ```
 
 Pass the lookups of the stack the context serves; `createDataTypeLookup` from `@internal/framework-components/codec` builds a data type lookup from a list of data types, and `{ ...emptyCodecLookup, descriptorFor: () => undefined }`, with `emptyCodecLookup` from the same module, stands in where no codecs apply. A stub codec lookup that answers `descriptorFor` is typed `CodecLookupWithDescriptors`. A call of `interpretPslDocumentToMongoContract` passes `codecLookup` as well: the stack's codec lookup, or that stand-in.
@@ -1598,7 +1598,7 @@ Pass the lookups of the stack the context serves; `createDataTypeLookup` from `@
 
 ```ts
 // before
-deriveJsonSchema(fields, valueObjects, codecLookup, valueSets);
+deriveJsonSchema(fields, valueObjects, codecLookup, valueSets)
 derivePolymorphicJsonSchema(
     baseFields,
     discriminator,
@@ -1606,10 +1606,10 @@ derivePolymorphicJsonSchema(
     valueObjects,
     codecLookup,
     valueSets,
-);
+)
 
 // after
-deriveJsonSchema(fields, { codecLookup, dataTypeLookup }, valueObjects, valueSets);
+deriveJsonSchema(fields, { codecLookup, dataTypeLookup }, valueObjects, valueSets)
 derivePolymorphicJsonSchema(
     baseFields,
     discriminator,
@@ -1617,7 +1617,7 @@ derivePolymorphicJsonSchema(
     { codecLookup, dataTypeLookup },
     valueObjects,
     valueSets,
-);
+)
 ```
 
 `codecLookup` is a `CodecLookupWithDescriptors`, the stack's codec lookup. `dataTypeLookup` holds the stack's data types: `createDataTypeLookup(mongoDataTypes)`, with `createDataTypeLookup` from `@internal/framework-components/codec` and `mongoDataTypes` from `@internal/target-mongo/data-types`, plus any data types the extension registers. A call that passed no codec lookup passes the stack's now; without it the validator left out every scalar field's BSON type.
@@ -1636,14 +1636,14 @@ Code that called the hook on a target descriptor, such as a script that infers P
 
 ```ts
 // before
-const inferPslContract = postgresTargetDescriptor.inferPslContract;
+const inferPslContract = postgresTargetDescriptor.inferPslContract
 if (!inferPslContract) {
-    throw new Error("the postgres target descriptor has no inferPslContract");
+    throw new Error("the postgres target descriptor has no inferPslContract")
 }
-const ast = inferPslContract(rawSchemaNode);
+const ast = inferPslContract(rawSchemaNode)
 
 // after
-const ast = sqlFamilyDescriptor.create(controlStack).inferPslContract(rawSchemaNode);
+const ast = sqlFamilyDescriptor.create(controlStack).inferPslContract(rawSchemaNode)
 ```
 
 `sqlFamilyDescriptor` is the default export of `@internal/family-sql/control`, and `controlStack` is the stack `createControlStack` from `@internal/framework-components/control` builds for the family, target, adapter and driver the script already uses.
@@ -1741,16 +1741,16 @@ A pack that ships a contract with such fields re-emits it with `build:contract-s
 
 ```ts
 // before
-const renderDefault: DefaultRenderer = (def, column) => render(def);
-renderDefaultLiteral(value, { many: true, nativeType: "text", dataTypeId: "pg/text" });
+const renderDefault: DefaultRenderer = (def, column) => render(def)
+renderDefaultLiteral(value, { many: true, nativeType: "text", dataTypeId: "pg/text" })
 
 // after
-const renderDefault: DefaultRenderer = (def, column, type) => render(def, type.baseTypeName);
+const renderDefault: DefaultRenderer = (def, column, type) => render(def, type.baseTypeName)
 renderDefaultLiteral(value, {
     many: { elementNullable: false },
     baseTypeName: "text",
     dataType: "pg/text",
-});
+})
 ```
 
 `baseTypeName` is the type's written name without parameters, for example `jsonb` or `varchar`. Compare `dataType`, for example `pg/jsonb`, when the decision depends on which type the column stores.
@@ -1764,10 +1764,10 @@ Code that dispatched a column default through `accept` reads its `kind` instead:
 const sql = node.accept(
     { literal: (n, ctx) => renderLiteral(n, ctx.nativeType), function: (n) => n.expression },
     { nativeType: "jsonb" },
-);
+)
 
 // after
-const sql = node.kind === "literal" ? renderLiteral(node, "jsonb") : node.expression;
+const sql = node.kind === "literal" ? renderLiteral(node, "jsonb") : node.expression
 ```
 
 ## `ddl-nodes-hold-opaque-sql`
@@ -1820,7 +1820,7 @@ It returns the `DEFAULT …` clause for the column, or `''` when the column has 
         lower: () => ({ sql: "", params: [] }),
         lowerToExecuteRequest: async () => ({ sql: "", params: [] }),
         renderColumnDefault: async () => "",
-    };
+    }
     ```
 
 - **`buildColumnDefaultSql`** is removed from `target/planner-ddl-builders` of `@prisma/orm-postgres` and `@prisma/orm-target-postgres`. Build the column with `col`, `lit` and `fn` from `relational-core/contract-free`, and ask the adapter for the clause:
@@ -1830,26 +1830,26 @@ It returns the `DEFAULT …` clause for the column, or `''` when the column has 
     const clause = buildColumnDefaultSql(
         { kind: "literal", value: "member" },
         { nativeType: "text" },
-    );
+    )
     // after
     const clause = await adapter.renderColumnDefault(
         col("role", "text", { default: lit("member"), codecRef: { codecId: "pg/text@1" } }),
         "user",
-    );
+    )
     ```
 
 - **`SetDefaultCall`** (`target/op-factory-call` of `@prisma/orm-postgres` and `@prisma/orm-target-postgres`) takes the column instead of its name and the SQL text:
 
     ```typescript
     // before
-    new SetDefaultCall("public", "user", "role", "DEFAULT 'member'", "widening");
+    new SetDefaultCall("public", "user", "role", "DEFAULT 'member'", "widening")
     // after
     new SetDefaultCall(
         "public",
         "user",
         col("role", "text", { default: lit("member"), codecRef: { codecId: "pg/text@1" } }),
         "widening",
-    );
+    )
     ```
 
 ## `migration-ts-column-defaults`
@@ -1860,12 +1860,12 @@ On PostgreSQL, `setDefault` takes the column and its default:
 
 ```typescript
 // before
-this.setDefault({ table: "user", column: "role", defaultSql: "DEFAULT 'member'" });
+this.setDefault({ table: "user", column: "role", defaultSql: "DEFAULT 'member'" })
 // after
 this.setDefault({
     table: "user",
     column: col("role", "text", { default: lit("member"), codecRef: { codecId: "pg/text@1" } }),
-});
+})
 ```
 
 On SQLite, a column in `addColumn` or `recreateTable` carries the default and its codec, and a `recreateTable` postcheck that checks a default names the column:
@@ -1953,8 +1953,8 @@ When a computed projection such as `fns.eq` or `fns.raw` names a codec id but no
 `renderLoweredSql(ast, contract, codecDescriptorRegistry)` is now `renderLoweredSql(ast, contract, codecDescriptorRegistry, dataTypeLookup, capabilities)`. The renderer writes PostgreSQL parameter casts from the data type lookup (see `parameter-casts-use-base-names`): pass the stack's, or the target's own from `createPostgresBuiltinDataTypeLookup()` in `@internal/target-postgres/data-types`. It refuses a locking clause whose strength or option the given capabilities do not report. To render as the Postgres adapter does, pass its capabilities:
 
 ```ts
-import { postgresAdapterCapabilities } from "@internal/adapter-postgres/adapter";
-import { renderLoweredSql } from "@internal/adapter-postgres/sql-renderer";
+import { postgresAdapterCapabilities } from "@internal/adapter-postgres/adapter"
+import { renderLoweredSql } from "@internal/adapter-postgres/sql-renderer"
 
 renderLoweredSql(
     ast,
@@ -1962,7 +1962,7 @@ renderLoweredSql(
     codecDescriptorRegistry,
     dataTypeLookup,
     postgresAdapterCapabilities,
-);
+)
 ```
 
 ## `sql-runtime-close-refusal-option`
@@ -1985,8 +1985,8 @@ The collection changes from here to `custom-collection-methods-chain`, `scope` i
 A write needs a collection that is filtered on every code path. Code that filters only on some paths compiled before and no longer does:
 
 ```ts
-const posts = search ? db.Post.withTitle(search) : db.Post;
-await posts.deleteAll(); // error: The 'this' context of type 'PostCollection' is not assignable to method's 'this' of type 'HasWhere'
+const posts = search ? db.Post.withTitle(search) : db.Post
+await posts.deleteAll() // error: The 'this' context of type 'PostCollection' is not assignable to method's 'this' of type 'HasWhere'
 ```
 
 The same applies to an `if` with an early return, a `switch`, a loop, and a `let` reassigned in an `if`. Make the write only where the filter was applied, or filter on every path:
@@ -2026,7 +2026,7 @@ The exception is `update` with a relation callback, such as `posts: (posts) => p
 `cursor` and `distinctOn` need an order on the collection they are called on. The check is on the receiver, so a cast on the argument no longer bypasses it:
 
 ```ts
-await db.Post.cursor({ id } as never).all(); // error: The 'this' context of type 'PostCollection' is not assignable to method's 'this' of type 'HasOrderBy'
+await db.Post.cursor({ id } as never).all() // error: The 'this' context of type 'PostCollection' is not assignable to method's 'this' of type 'HasOrderBy'
 ```
 
 Add the order the query needs:
@@ -2039,10 +2039,10 @@ Add the order the query needs:
 Where the query is meant to run without an order, cast the collection instead of the argument:
 
 ```ts
-import type { Ordered } from "@internal/sql-orm-client";
+import type { Ordered } from "@internal/sql-orm-client"
 
-const unordered = db.Post as Ordered<typeof db.Post>;
-await unordered.cursor({ id }).all();
+const unordered = db.Post as Ordered<typeof db.Post>
+await unordered.cursor({ id }).all()
 ```
 
 ## `apply-is-a-collection-member`
@@ -2118,10 +2118,10 @@ import type {
     CollectionTypeStateOf,
     HasRow,
     HasTypeState,
-} from "@internal/sql-orm-client";
+} from "@internal/sql-orm-client"
 
-type RowOf<C extends HasRow> = CollectionRowOf<C>;
-type StateOf<C extends HasTypeState> = CollectionTypeStateOf<C>;
+type RowOf<C extends HasRow> = CollectionRowOf<C>
+type StateOf<C extends HasTypeState> = CollectionTypeStateOf<C>
 ```
 
 ## `return-type-of-a-chaining-method`
@@ -2173,12 +2173,12 @@ For every `.variant(...)` call matched by `detection`, replace the variant's mod
 
 ```ts
 // before
-db.orm.public.Task.variant("Bug");
-db.orm.events.variant("ViewProductEvent");
+db.orm.public.Task.variant("Bug")
+db.orm.events.variant("ViewProductEvent")
 
 // after, for @@base(Task, "bug") and a ViewProductEvent variant declaring "view-product"
-db.orm.public.Task.variant("bug");
-db.orm.events.variant("view-product");
+db.orm.public.Task.variant("bug")
+db.orm.events.variant("view-product")
 ```
 
 Custom collection methods that call `this.variant('<ModelName>')`, and helpers or closures that call `.variant()`, change the same way. When the argument is a variable or a forwarded parameter, follow it back to where the model name is written and replace it there, including in type annotations that list variant model names. Update code comments and READMEs that show `.variant('<ModelName>')` too.
@@ -2191,11 +2191,11 @@ A second `.variant()` call on a variant collection is rejected. It no longer rep
 
 ```ts
 // before
-const bugs = db.orm.public.Task.variant("Bug");
-const features = bugs.variant("Feature");
+const bugs = db.orm.public.Task.variant("Bug")
+const features = bugs.variant("Feature")
 
 // after
-const tasks = db.orm.public.Task;
-const bugs = tasks.variant("bug");
-const features = tasks.variant("feature");
+const tasks = db.orm.public.Task
+const bugs = tasks.variant("bug")
+const features = tasks.variant("feature")
 ```

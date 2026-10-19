@@ -198,12 +198,12 @@ Namespace selection separates _which namespace's table_ from _the ergonomic shor
 
 ```ts
 // Before
-const users = await db.sql.user.select("id", "email").build().execute();
-const alice = await db.orm.User.find({ where: { id } });
+const users = await db.sql.user.select("id", "email").build().execute()
+const alice = await db.orm.User.find({ where: { id } })
 
 // After — name the namespace the table/model is declared in (`public` for a standard schema)
-const users = await db.sql.public.user.select("id", "email").build().execute();
-const alice = await db.orm.public.User.find({ where: { id } });
+const users = await db.sql.public.user.select("id", "email").build().execute()
+const alice = await db.orm.public.User.find({ where: { id } })
 ```
 
 The same rule applies inside a `transaction` (`tx.sql.public.user`, `tx.orm.public.User`), inside a `prepare(...)` callback (`(sql) => sql.public.user…`), and to code that imports the builder outputs directly rather than through the facade (`sql.public.user`, `orm.public.User`). If your Postgres contract declares more than one namespace, name the namespace each table/model actually sits in — `db.sql.auth.user` for a table in the `auth` schema, `db.sql.public.profile` for one in `public`.
@@ -257,22 +257,22 @@ Replace direct `createRuntime` calls with the appropriate target class construct
 
 ```ts
 // Before
-import { createRuntime } from "@internal/sql-runtime";
-const runtime = createRuntime({ stackInstance, context, driver, ...opts });
+import { createRuntime } from "@internal/sql-runtime"
+const runtime = createRuntime({ stackInstance, context, driver, ...opts })
 
 // After — use the target factory (recommended for app code)
-import { postgres } from "@internal/postgres";
-const db = postgres({ contract, ...opts });
+import { postgres } from "@internal/postgres"
+const db = postgres({ contract, ...opts })
 // runtime is accessed via db.connect() / db.runtime() etc.
 
 // Or construct the target class directly (for advanced/test use)
-import { PostgresRuntimeImpl } from "@internal/postgres/runtime";
+import { PostgresRuntimeImpl } from "@internal/postgres/runtime"
 const runtime = new PostgresRuntimeImpl({
     adapter: stackInstance.adapter,
     context,
     driver,
     ...opts,
-});
+})
 ```
 
 The constructor options are identical to what `createRuntime` accepted, except `stackInstance` is not taken: pass `adapter` from `stackInstance.adapter` directly.
@@ -348,12 +348,12 @@ Replace `SqlContractSerializer` with `PostgresContractSerializer` in any migrati
 
 ```ts
 // Before
-import { SqlContractSerializer } from "@internal/family-sql/ir";
-const contract = new SqlContractSerializer().deserializeContract(contractJson) as Contract;
+import { SqlContractSerializer } from "@internal/family-sql/ir"
+const contract = new SqlContractSerializer().deserializeContract(contractJson) as Contract
 
 // After
-import { PostgresContractSerializer } from "@internal/target-postgres/runtime";
-const contract = new PostgresContractSerializer().deserializeContract(contractJson) as Contract;
+import { PostgresContractSerializer } from "@internal/target-postgres/runtime"
+const contract = new PostgresContractSerializer().deserializeContract(contractJson) as Contract
 ```
 
 SQLite and family-only (non-Postgres) contracts are unaffected — their namespaces carry only `table` entries, which the family serializer knows about.
@@ -392,10 +392,10 @@ Rules:
 If you author contracts in TypeScript instead of PSL: the native `enumType(name, values[])` and `enumColumn(...)` helpers from `@internal/adapter-postgres/column-types` are deleted. Author the domain enum with `enumType` + `member` from your target's contract-builder and return it under the `enums` key:
 
 ```ts
-import { defineContract, enumType, member } from "@internal/postgres/contract-builder";
+import { defineContract, enumType, member } from "@internal/postgres/contract-builder"
 
-const pgText = { codecId: "pg/text@1", nativeType: "text" } as const;
-const UserType = enumType("user_type", pgText, member("admin", "admin"), member("user", "user"));
+const pgText = { codecId: "pg/text@1", nativeType: "text" } as const
+const UserType = enumType("user_type", pgText, member("admin", "admin"), member("user", "user"))
 
 export const contract = defineContract({/* … */}, ({ field, model }) => ({
     enums: { user_type: UserType },
@@ -404,7 +404,7 @@ export const contract = defineContract({/* … */}, ({ field, model }) => ({
             fields: { /* … */ kind: field.namedType(UserType) },
         }),
     },
-}));
+}))
 ```
 
 Then re-emit: `prisma-next contract emit`. The emitted contract carries the enum as a domain entity plus a storage `valueSet`; the column becomes `pg/text@1` / `text` with a `valueSet` reference and a table-level check entry.
@@ -435,13 +435,13 @@ If your code imported `Models` from the generated contract, read a namespace's m
 
 ```ts
 // Before
-import type { Contract, Models } from "./prisma/contract";
-type UserModel = Models["User"];
+import type { Contract, Models } from "./prisma/contract"
+type UserModel = Models["User"]
 
 // After — name the namespace the model is declared in
-import type { Contract } from "./prisma/contract";
-type Models = Contract["domain"]["namespaces"]["public"]["models"];
-type UserModel = Models["User"];
+import type { Contract } from "./prisma/contract"
+type Models = Contract["domain"]["namespaces"]["public"]["models"]
+type UserModel = Models["User"]
 ```
 
 Use `public` for a standard single-schema Postgres project, or `__unbound__` for SQLite and Mongo. In a multi-schema Postgres contract, name the schema each model is declared in. Re-emit your contract (`prisma-next contract emit`) so the generated `.d.ts` drops the `Models` export; the emitted `contract.json` is unchanged.

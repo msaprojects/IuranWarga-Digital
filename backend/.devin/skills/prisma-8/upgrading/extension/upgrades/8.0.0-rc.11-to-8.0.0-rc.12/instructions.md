@@ -272,10 +272,10 @@ Code that calls a config section's `validate` directly, for example in a test, m
 
 ```ts
 // before
-section.validate(raw);
+section.validate(raw)
 
 // after
-section.validate(raw, { files: [configPath], keys: { contract: configPath } });
+section.validate(raw, { files: [configPath], keys: { contract: configPath } })
 ```
 
 `files` lists the config files that declared the section, nearest first. `keys` maps each top-level key of the section to the file that wrote it.
@@ -366,16 +366,16 @@ A **data type** is a stored type made first-class: `pg/int8`, `pg/jsonb`, `postg
 Every descriptor names the type it represents:
 
 ```ts
-import { pgvectorVector } from "./data-types";
+import { pgvectorVector } from "./data-types"
 
 export class PgVectorDescriptor extends PostgresCodecDescriptor<VectorParams> {
-    override readonly dataType = pgvectorVector.id;
-    override readonly codecId = VECTOR_CODEC_ID;
-    override readonly traits = ["equality"] as const;
-    override readonly targetTypes = ["vector"] as const;
-    override readonly paramsSchema: StandardSchemaV1<VectorParams> = vectorParamsSchema;
+    override readonly dataType = pgvectorVector.id
+    override readonly codecId = VECTOR_CODEC_ID
+    override readonly traits = ["equality"] as const
+    override readonly targetTypes = ["vector"] as const
+    override readonly paramsSchema: StandardSchemaV1<VectorParams> = vectorParamsSchema
     override factory(params: VectorParams): (ctx: CodecInstanceContext) => PgVectorCodec {
-        return () => new PgVectorCodec(this, params.length);
+        return () => new PgVectorCodec(this, params.length)
     }
 }
 ```
@@ -394,14 +394,14 @@ A pack that introduces a database type of its own declares each type with `dataT
 
 ```ts
 // data-types.ts
-import { type DataType, dataType } from "@internal/framework-components/codec";
-import { pgText } from "@internal/target-postgres/data-types";
+import { type DataType, dataType } from "@internal/framework-components/codec"
+import { pgText } from "@internal/target-postgres/data-types"
 
 export const postgisGeometry: DataType = dataType("postgis/geometry", {
     casts: { [pgText.id]: (value) => value },
-});
+})
 
-export const postgisDataTypes: readonly DataType[] = [postgisGeometry];
+export const postgisDataTypes: readonly DataType[] = [postgisGeometry]
 ```
 
 ```ts
@@ -414,7 +414,7 @@ const postgisPackMetaBase = {
     types: {
         codecTypes: { codecDescriptors: Array.from(postgisCodecRegistry.values()) /* … */ },
     },
-};
+}
 ```
 
 `dataTypes` sits beside `types`, not inside it: `types` is copied into an extension's contract space, and a cast is a function, which no contract holds.
@@ -429,11 +429,11 @@ This replaces the per-codec list of accepted shapes. Delete `literalTypes` from 
 
 ```ts
 const asNumeralText: Cast = (value) =>
-    typeof value === "number" ? numeralText(value) : wrongShape(value, "a number");
+    typeof value === "number" ? numeralText(value) : wrongShape(value, "a number")
 
 export const pgInt8: DataType = dataType("pg/int8", {
     casts: { [pgInt2.id]: asNumeralText, [pgInt4.id]: asNumeralText },
-});
+})
 ```
 
 Declaring no cast is a decision, not an omission. `pg/int4` declares none from `pg/int8`, so a number too wide for the column is refused before anything is decoded:
@@ -452,7 +452,7 @@ export const pgvectorVector: DataType = dataType("pgvector/vector", {
         of: [pgInt2.id, pgInt4.id, pgInt8.id, pgNumeric.id],
         cast: (elements) => elements.map(elementNumber),
     },
-});
+})
 ```
 
 Assembly refuses a cast whose source type no contract source can write, with `CONTRACT.DATA_TYPE_NOT_WRITABLE`: such a cast could never be exercised.
@@ -497,7 +497,7 @@ export function postgresDataTypeEntries(): Readonly<Record<string, AuthoringData
             print: printJsonBody,
             documentation: "Reads the body as a JSON document and stores it as the default value.",
         },
-    };
+    }
 }
 ```
 
@@ -517,7 +517,7 @@ const classifyPostgresNumber = createNumberClassifier({
     largerWhole: { type: pgNumeric.id, form: "text" },
     fraction: { type: pgNumeric.id, form: "text" },
     words: { type: pgNumeric.id, form: "text" },
-});
+})
 ```
 
 `createNumberClassifier`, `signedRange`, `parseJsonBody` and `printJsonBody` come from `@internal/sql-relational-core/ast`, so targets share one digit classifier and one JSON reader.
@@ -530,7 +530,7 @@ export function createPostgresDataTypeEntries(): Readonly<Record<string, Authori
         ...postgresDataTypeEntries(),
         [loweringEntryKey("sql")]: sqlDefaultLiteralTagEntry("sql"),
         [loweringEntryKey("pg.sql")]: sqlDefaultLiteralTagEntry("pg.sql"),
-    };
+    }
 }
 ```
 
@@ -556,7 +556,7 @@ export function createPostgresDefaultMapping(): DefaultMappingOptions {
     return {
         dataTypeEntries: postgresDataTypeEntries(),
         dataTypes: createDataTypeLookup(postgresDataTypes),
-    };
+    }
 }
 ```
 
@@ -567,7 +567,7 @@ const result = mapDefault(columnDefault, {
     ...defaultMapping,
     ...ifDefined("columnDataType", dataTypeForPrintedType(resolution.pslType.name, isEnumColumn)),
     list: column.many === true,
-});
+})
 ```
 
 A value no entry writes, or one that does not read back as the stored value, makes `mapDefault` return `undefined`, which is the signal to fall back to the raw database default: map it again as a function default, which prints as a named function or as ``@default(sql`<expression>`)``. `DefaultMappingResult` is now `{ attribute }` only; the `{ comment }` result and the `fallbackFunctionAttribute` option are removed along with `dbgenerated`. `formatLiteralValue` and the per-PSL-type formatter table a target printer used to supply (`PslDefaultValueFormat`, `formatPslValue`, `formatPslListLiteralValue`) are gone; delete them.
@@ -595,7 +595,7 @@ Use them rather than a local regex, so a printed value and the reader that parse
 Declaring a cast means naming the source type by its declaration, so the Postgres target now exports its types and its authoring entries from a `./data-types` subpath:
 
 ```ts
-import { pgInt2, pgInt4, pgInt8, pgNumeric, pgText } from "@internal/target-postgres/data-types";
+import { pgInt2, pgInt4, pgInt8, pgNumeric, pgText } from "@internal/target-postgres/data-types"
 ```
 
 The `@prisma/orm-postgres` facade forwards it as `@prisma/orm-postgres/target/data-types`, which is the import an out-of-repo extension uses.
@@ -610,12 +610,12 @@ A codec shared by several targets cannot name its data type itself, because the 
 
 ```ts
 export class SqlTextDescriptor extends CodecDescriptorTemplateImpl<void> {
-    override readonly codecId = SQL_TEXT_CODEC_ID;
-    override readonly traits = ["equality", "order", "textual"] as const;
-    override readonly targetTypes = ["text"] as const;
-    override readonly paramsSchema = undefined;
+    override readonly codecId = SQL_TEXT_CODEC_ID
+    override readonly traits = ["equality", "order", "textual"] as const
+    override readonly targetTypes = ["text"] as const
+    override readonly paramsSchema = undefined
     override factory(): (ctx: CodecInstanceContext) => SqlTextCodec {
-        return () => new SqlTextCodec(this);
+        return () => new SqlTextCodec(this)
     }
 }
 ```
@@ -627,7 +627,7 @@ export const postgresSqlTextDescriptor = postgresCodec(sqlTextDescriptor, {
     dataType: pgText.id,
     nativeType: () => "text",
     jsonProjection: identityJsonProjection,
-});
+})
 ```
 
 `dataType` is required in the adapter's options, so a target cannot adapt a template without deciding which of its types the codec represents. Every other descriptor — one written for a single target — extends `CodecDescriptorImpl` (or a target's subclass of it, such as `PostgresCodecDescriptor`) and declares `dataType` directly.
@@ -640,18 +640,18 @@ In every file matched by `detection`:
 
 ```ts
 // before
-import { CodecDescriptorImpl, voidParamsSchema } from "@internal/framework-components/codec";
-import type { StandardSchemaV1 } from "@standard-schema/spec";
+import { CodecDescriptorImpl, voidParamsSchema } from "@internal/framework-components/codec"
+import type { StandardSchemaV1 } from "@standard-schema/spec"
 
 class MyTextDescriptor extends CodecDescriptorImpl<void> {
-    override readonly paramsSchema: StandardSchemaV1<void> = voidParamsSchema;
+    override readonly paramsSchema: StandardSchemaV1<void> = voidParamsSchema
 }
 
 // after
-import { CodecDescriptorImpl } from "@internal/framework-components/codec";
+import { CodecDescriptorImpl } from "@internal/framework-components/codec"
 
 class MyTextDescriptor extends CodecDescriptorImpl<void> {
-    override readonly paramsSchema = undefined;
+    override readonly paramsSchema = undefined
 }
 ```
 
@@ -676,14 +676,14 @@ The language server now shows signature help for every PSL attribute, built from
 const mapAttribute = blockAttribute("map", {
     positional: [{ key: "name", type: str() }],
     named: { schema: optional(str()) },
-});
+})
 
 // after
 const mapAttribute = blockAttribute("map", {
     documentation: "Maps this block to its database name.",
     positional: [{ key: "name", type: str(), documentation: "The database name." }],
     named: { schema: { type: optional(str()), documentation: "The schema that holds it." } },
-});
+})
 ```
 
 An attribute with no parameters still needs its own `documentation`, for example `modelAttribute('rls', { documentation: '...' })`. The documentation is editor help only; parsing, validation and the emitted contract do not change.
@@ -725,11 +725,11 @@ Pass the real path when there is one; a synthetic name such as `'<inline>.prisma
 Find calls to `emit(contract, stack, emission, options)` imported from `@prisma/orm-toolchain/emitter`. Add a `deserializeContract` option that reads the canonical JSON object back into a contract through the family instance of the contract being emitted:
 
 ```ts
-const familyInstance = family.create(stack);
+const familyInstance = family.create(stack)
 const result = await emit(contract, stack, family.emission, {
     serializeContract: (c) => target.contractSerializer.serializeContract(c),
     deserializeContract: (json) => familyInstance.deserializeContract(json),
-});
+})
 ```
 
 `emit()` generates `contract.d.ts` from that re-read contract, so models, fields and relations appear in the order `contract.json` lists them. Use the family's own deserializer rather than an identity function: the family builds the objects the declaration generator reads. Direct calls to `generateContractDts` are unchanged.
@@ -759,7 +759,7 @@ const query = await db.prepare({ id: "pg/int4@1" }, (sql, params) =>
         .select("id")
         .where((f, fns) => fns.eq(f.id, params.id))
         .build(),
-);
+)
 
 // After
 const query = await db.prepare({ id: "pg/int4@1" }, (params) =>
@@ -767,7 +767,7 @@ const query = await db.prepare({ id: "pg/int4@1" }, (params) =>
         .select("id")
         .where((f, fns) => fns.eq(f.id, params.id))
         .build(),
-);
+)
 ```
 
 Apply the same translation to SQLite's flat SQL facade (`sql.users` becomes `db.sql.users`), retaining its existing codec ids. Keep `.query(target, params, options?)` and SQL statistics `.execute(target, params, options?)` calls unchanged. Do not rewrite historical release notes, applied upgrade recipes, generated contracts or tests as part of this source translation.
@@ -794,9 +794,9 @@ The Postgres adapter no longer contributes query operations; the target does. Ch
 
 ```ts
 // before
-import type { QueryOperationTypes } from "@internal/adapter-postgres/operation-types";
+import type { QueryOperationTypes } from "@internal/adapter-postgres/operation-types"
 // after
-import type { QueryOperationTypes } from "@internal/target-postgres/operation-types";
+import type { QueryOperationTypes } from "@internal/target-postgres/operation-types"
 ```
 
 Under the published facade, `@prisma/orm-postgres/adapter/operation-types` becomes `@prisma/orm-postgres/target/operation-types`. Emitted contracts name the target import under the alias `PgTargetQueryOps` instead of `PgAdapterQueryOps`, so a snapshot or fixture that pins emitted contract text needs regenerating.

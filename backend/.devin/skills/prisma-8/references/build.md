@@ -40,12 +40,12 @@ pnpm add -D @internal/vite-plugin-contract-emit
 
 ```typescript
 // vite.config.ts
-import { defineConfig } from "vite";
-import { prismaVitePlugin } from "@internal/vite-plugin-contract-emit";
+import { defineConfig } from "vite"
+import { prismaVitePlugin } from "@internal/vite-plugin-contract-emit"
 
 export default defineConfig({
     plugins: [prismaVitePlugin("prisma.config.ts")],
-});
+})
 ```
 
 The argument is the **path to `prisma.config.ts` relative to Vite root**. Not the path to `schema.psl` or `contract.ts` — the plugin reads the config to discover the contract source.
@@ -94,12 +94,12 @@ The plugin does **not** run during `vite build`. For CI and production deploys, 
 The Vite plugin is compatible with `@react-router/dev/vite`. Both plugins are listed in `vite.config.ts`; there's no ordering constraint between them today, and the Prisma 8 plugin's re-emit fires alongside React Router's own SSR re-load.
 
 ```typescript
-import { reactRouter } from "@react-router/dev/vite";
-import { prismaVitePlugin } from "@internal/vite-plugin-contract-emit";
+import { reactRouter } from "@react-router/dev/vite"
+import { prismaVitePlugin } from "@internal/vite-plugin-contract-emit"
 
 export default defineConfig({
     plugins: [reactRouter(), prismaVitePlugin("prisma.config.ts")],
-});
+})
 ```
 
 See [`examples/react-router-demo`](https://github.com/prisma/prisma/tree/main/examples/react-router-demo) for the canonical configuration plus a smoke test that proves the dev loop.

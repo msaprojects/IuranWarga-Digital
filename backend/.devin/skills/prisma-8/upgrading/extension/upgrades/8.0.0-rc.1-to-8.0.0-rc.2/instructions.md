@@ -349,14 +349,14 @@ changes:
 The aggregate method sets are built by enumerating the composed registry, once per `Collection` construction and once at `orm(...)`. A test that fabricates an `ExecutionContext` therefore has to supply one:
 
 ```ts
-import { buildSqlAggregateDescriptorRegistry } from "@internal/sql-relational-core/aggregate-descriptor-registry";
+import { buildSqlAggregateDescriptorRegistry } from "@internal/sql-relational-core/aggregate-descriptor-registry"
 
 const context = {
     contract,
     codecDescriptors,
     aggregateDescriptors: buildSqlAggregateDescriptorRegistry(descriptors, codecDescriptors),
     // …
-};
+}
 ```
 
 Two distinct failures tell you which half is missing:
@@ -385,9 +385,9 @@ const aggregateDescriptors = {
             output: { kind: "codec" as const, codecId: "pg/int8@1" },
             nullable: false as const,
             emptyResultJson: "0",
-        };
+        }
     },
-};
+}
 ```
 
 `emptyResultJson` is required on any non-nullable row — see [`non-nullable-aggregate-descriptors-declare-an-empty-result`](#non-nullable-aggregate-descriptors-declare-an-empty-result) for what the value means and which form to state it in.
@@ -422,26 +422,26 @@ Property 'count' does not exist on type 'AggregateOperationsUnavailable'.
 Runtime behaviour is unchanged — the methods are installed from the composed registry either way — so a cast is a legitimate fix where the contract is deliberately un-emitted:
 
 ```ts
-import type { AggregateSpec } from "@internal/sql-orm-client";
+import type { AggregateSpec } from "@internal/sql-orm-client"
 
-type DynamicAggregates = Record<string, (field?: string) => AggregateSpec[string]>;
+type DynamicAggregates = Record<string, (field?: string) => AggregateSpec[string]>
 
 const stats = await readings.aggregate((aggregate) => {
-    const dynamic = aggregate as DynamicAggregates;
-    return { total: dynamic["sum"]!("counter"), peak: dynamic["max"]!("counter") };
-});
+    const dynamic = aggregate as DynamicAggregates
+    return { total: dynamic["sum"]!("counter"), peak: dynamic["max"]!("counter") }
+})
 ```
 
 The same shape works for an include reducer, whose callback receives the refinement collection:
 
 ```ts
 const reduceToTotal = (related: unknown): unknown =>
-    (related as DynamicAggregates)["sum"]!("counter");
+    (related as DynamicAggregates)["sum"]!("counter")
 
 await readings
     .select("id")
     .include("samples", (samples) => reduceToTotal(samples) as never)
-    .all();
+    .all()
 ```
 
 Where an argument was previously widened past the types — `aggregate.sum('counter' as never)` compiled because `AggregateFieldNames` was already `never` for such a contract — the cast moves from the argument to the builder, and the field name goes back to being a plain string.
@@ -453,10 +453,10 @@ The better fix, wherever the pack can emit, is to emit: run `prisma-next contrac
 `count(field)` counts that field:
 
 ```ts
-await db.orm.User.aggregate((aggregate) => ({ all: aggregate.count() }));
+await db.orm.User.aggregate((aggregate) => ({ all: aggregate.count() }))
 // SELECT COUNT(*) …
 
-await db.orm.User.aggregate((aggregate) => ({ named: aggregate.count("email") }));
+await db.orm.User.aggregate((aggregate) => ({ named: aggregate.count("email") }))
 // SELECT COUNT("email") … — rows whose email is NULL are not counted
 ```
 
@@ -477,8 +477,8 @@ Aggregate operation names are an open vocabulary, and they now reach the consume
 **Declare a `lower` hook.** The AST's `AggregateExpr` carries only alphabet names, so a novel operation has no default form; the hook builds its whole expression from existing nodes:
 
 ```ts
-import type { SqlAggregateDescriptor } from "@internal/sql-relational-core/aggregate-descriptor-registry";
-import { FunctionCallExpr } from "@internal/sql-relational-core/ast";
+import type { SqlAggregateDescriptor } from "@internal/sql-relational-core/aggregate-descriptor-registry"
+import { FunctionCallExpr } from "@internal/sql-relational-core/ast"
 
 const bitOr: SqlAggregateDescriptor = {
     operation: "bitOr",
@@ -486,7 +486,7 @@ const bitOr: SqlAggregateDescriptor = {
     output: { kind: "codec", codecId: "pg/int8@1" },
     nullable: true,
     lower: ({ expr }) => FunctionCallExpr.of("bit_or", expr === undefined ? [] : [expr]),
-};
+}
 ```
 
 Without it, the execution context refuses to compose:
@@ -539,7 +539,7 @@ Everything else keeps its row: `min` / `max`, `sum` and `avg` over the float cod
 A descriptor that declares `nullable: false` must declare `emptyResultJson` beside it:
 
 ```ts
-import type { SqlAggregateDescriptor } from "@internal/sql-relational-core/aggregate-descriptor-registry";
+import type { SqlAggregateDescriptor } from "@internal/sql-relational-core/aggregate-descriptor-registry"
 
 const count: SqlAggregateDescriptor = {
     operation: "count",
@@ -547,7 +547,7 @@ const count: SqlAggregateDescriptor = {
     output: { kind: "codec", codecId: "pg/int8number@1" },
     nullable: false,
     emptyResultJson: 0,
-};
+}
 ```
 
 `AggregateResultNullability` — exported from `@internal/framework-components/components` — is a discriminated union (`{ nullable: true } | { nullable: false; emptyResultJson: JsonValue }`), so `{ nullable: false }` alone is a type error. The runtime check agrees: registry assembly raises `RUNTIME.AGGREGATE_DESCRIPTOR_INVALID`, and `contract emit` raises `CONTRACT.AGGREGATE_DESCRIPTOR_INVALID`.
@@ -563,9 +563,9 @@ If your pack consumes a resolution rather than contributing one, `ResolvedSqlAgg
 ```ts
 const nullability = descriptor.nullable
     ? ({ nullable: true } as const)
-    : ({ nullable: false, emptyResultJson: descriptor.emptyResultJson } as const);
+    : ({ nullable: false, emptyResultJson: descriptor.emptyResultJson } as const)
 
-return { operation, output, ...nullability, lower };
+return { operation, output, ...nullability, lower }
 ```
 
 ## `integer-codecs-check-the-js-type-they-are-given`
@@ -594,8 +594,8 @@ Two consequences for a pack:
 - **If your pack renders DDL literal defaults itself, read the stored value back first.** A contract stores a default in the codec's canonical JSON, so the pair is `decodeJson` then `encode`, in that order:
 
     ```ts
-    const value = stored instanceof Date ? stored : codec.decodeJson(stored);
-    const wire = await codec.encode(value, {});
+    const value = stored instanceof Date ? stored : codec.decodeJson(stored)
+    const wire = await codec.encode(value, {})
     ```
 
     A `Date` is the one authored value JSON has no notation for, so it is the one that arrives as itself.

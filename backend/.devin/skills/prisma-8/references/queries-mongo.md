@@ -31,20 +31,20 @@ The concept matches Postgres — `db.orm.<root>` returns a collection you compos
 
 ```typescript
 // src/queries/users.ts — adjust the relative import to match file depth.
-import { db } from "../prisma/db";
+import { db } from "../prisma/db"
 
 // All users.
-const users = await db.orm.users.all();
+const users = await db.orm.users.all()
 
 // Single row by equality filter.
-const alice = await db.orm.users.where({ email: "alice@example.com" }).first();
+const alice = await db.orm.users.where({ email: "alice@example.com" }).first()
 
 // Projection, sort, pagination — same chaining as Postgres.
 const recent = await db.orm.posts
     .select("title", "authorId", "createdAt")
     .orderBy({ createdAt: -1 })
     .limit(10)
-    .all();
+    .all()
 ```
 
 **`.where(...)`** accepts a plain object whose keys are model field names and values are compared with equality (codec-aware — `ObjectId` fields accept string ids from the contract). Chain multiple `.where({ ... })` calls to AND-compose filters.
@@ -54,8 +54,8 @@ For operators the object form doesn't cover (`.in([...])`, range comparisons, ne
 **Polymorphic roots.** When the contract declares variants on a model, narrow before querying. `.variant()` takes the discriminator value a variant declares (`"article"` from `@@base(Post, "article")`), not the variant's model name. Call it once, on the base collection; a second `.variant()` on a variant collection is refused:
 
 ```typescript
-const articles = await db.orm.posts.variant("article").all();
-const tutorials = await db.orm.posts.variant("tutorial").where({ authorId }).all();
+const articles = await db.orm.posts.variant("article").all()
+const tutorials = await db.orm.posts.variant("tutorial").where({ authorId }).all()
 ```
 
 **Sorting and pagination.** `.orderBy({ field: 1 | -1 })` (Mongo sort directions). `.limit(n)` maps to `$limit`; `.offset(n)` maps to `$skip`.
@@ -69,7 +69,7 @@ Mongo `.all()` returns the same `AsyncIterableResult` shape as Postgres — `awa
 Mongo reference relations eager-load through the same `.include('<relation>')` surface; the ORM lowers to `$lookup`:
 
 ```typescript
-const posts = await db.orm.posts.include("author").orderBy({ createdAt: -1 }).all();
+const posts = await db.orm.posts.include("author").orderBy({ createdAt: -1 }).all()
 // → Array<{ title, authorId, createdAt, author: { name, email, ... } }>
 ```
 
@@ -86,29 +86,29 @@ const user = await db.orm.users.create({
     email: "alice@example.com",
     bio: null,
     address: null,
-});
+})
 
 // Update one — plain object replaces top-level fields.
-await db.orm.users.where({ _id: user._id }).update({ bio: "Writer" });
+await db.orm.users.where({ _id: user._id }).update({ bio: "Writer" })
 
 // Update one — field operations ($push, $inc, dot-path $set).
 await db.orm.users
     .where({ _id: user._id })
-    .update((u) => [u.tags.push("admin"), u.loginCount.inc(1)]);
+    .update((u) => [u.tags.push("admin"), u.loginCount.inc(1)])
 
 // Update many / delete many — iterate or count.
-const updated = await db.orm.users.where({ bio: null }).updateAll({ bio: "filled" });
+const updated = await db.orm.users.where({ bio: null }).updateAll({ bio: "filled" })
 for await (const row of updated) {
     /* each modified doc */
 }
 
-await db.orm.users.where({ _id: user._id }).delete();
+await db.orm.users.where({ _id: user._id }).delete()
 
 // Upsert — filter via .where(), split create vs update branches.
 await db.orm.users.where({ email: "alice@example.com" }).upsert({
     create: { name: "Alice", email: "alice@example.com", bio: null, address: null },
     update: { bio: "Editor" },
-});
+})
 ```
 
 **Count-only terminals.** `.createAndCount(...)`, `.updateAndCount(...)`, `.deleteAndCount()` return numbers without re-reading full documents — useful for bulk operations where you only need the modified count.
@@ -120,9 +120,9 @@ await db.orm.users.where({ email: "alice@example.com" }).upsert({
 The Mongo ORM does not expose `.aggregate(...)` / `.groupBy(...)`. Express aggregations through **`db.query`** — the pipeline builder — with `.group(...)` and accumulator helpers:
 
 ```typescript
-import { acc } from "@prisma/orm-mongo/query-builder";
+import { acc } from "@prisma/orm-mongo/query-builder"
 
-const runtime = await db.runtime();
+const runtime = await db.runtime()
 const plan = db.query
     .from("posts")
     .match((f) => f.authorId.eq(authorId))
@@ -132,9 +132,9 @@ const plan = db.query
         latest: acc.max(f.createdAt),
     }))
     .sort({ postCount: -1 })
-    .build();
+    .build()
 
-const byKind = await runtime.query(plan);
+const byKind = await runtime.query(plan)
 ```
 
 Import `acc` and expression helpers (`fn`) from `@prisma/orm-mongo/query-builder` when building computed pipeline stages (as `examples/mongo-demo/src/server.ts` does).
@@ -145,10 +145,10 @@ The concept: `db.query.from('<root>')` starts a typed aggregation-pipeline chain
 
 ```typescript
 // src/queries/analytics.ts
-import { acc, fn } from "@prisma/orm-mongo/query-builder";
-import { db } from "../prisma/db";
+import { acc, fn } from "@prisma/orm-mongo/query-builder"
+import { db } from "../prisma/db"
 
-const runtime = await db.runtime();
+const runtime = await db.runtime()
 
 // Read pipeline — match, project, sort, limit.
 const plan = db.query
@@ -157,8 +157,8 @@ const plan = db.query
     .sort({ createdAt: -1 })
     .limit(10)
     .project("title", "authorId", "createdAt")
-    .build();
-const recent = await runtime.query(plan);
+    .build()
+const recent = await runtime.query(plan)
 
 // Cross-collection join ($lookup).
 const withAuthor = db.query
@@ -171,8 +171,8 @@ const withAuthor = db.query
             }))
             .as("author"),
     )
-    .build();
-const rows = await runtime.query(withAuthor);
+    .build()
+const rows = await runtime.query(withAuthor)
 ```
 
 **Filters — `.match(...)`.** Callback form: `.match((f) => f.status.eq('active'))`. Filters AND-compose across chained `.match(...)` calls. Field accessors support property access (`f.email`), callable dot paths (`f('address.city').eq('NYC')`), and `f.rawPath('path')` for migration/backfill paths outside the current contract.
@@ -182,21 +182,21 @@ const rows = await runtime.query(withAuthor);
 ```typescript
 const inserted = await runtime.query(
     db.query.from("users").insertOne({ name: "Alice", email: "a@e.com", bio: null }),
-);
+)
 
 const { affectedRows } = await runtime.execute(
     db.query
         .from("users")
         .match((f) => f.name.eq("Alice"))
         .updateMany((f) => [f.bio.set("filled")]),
-);
+)
 
 const [updated] = await runtime.query(
     db.query
         .from("users")
         .match((f) => f.email.eq("a@e.com"))
         .findOneAndUpdate((f) => [f.bio.set("updated")], { returnDocument: "after" }),
-);
+)
 ```
 
 Update callbacks return arrays of field operations (`.set`, `.inc`, `.push`, `.pull`, …). Pipeline-style updates use `f.stage.set(...)` inside an aggregation chain, then `.updateMany()` with no callback.
