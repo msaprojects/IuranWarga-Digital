@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express"
 import jwt from "jsonwebtoken"
+import { db } from "../prisma/db.ts"
 
 export const authenticateJWT = async (
     req: Request,
@@ -19,8 +20,27 @@ export const authenticateJWT = async (
             orgId: number
             username: string
         }
+        // find isActive Flag in user table and org table
+        if (!decoded) {
+            res.status(401).json({ message: "Unauthorized" })
+            return
+        }
+
+        const findUser = await db.orm.public.user.where({ id: decoded.userId }).first()
+        if (!findUser || !findUser.isActive) {
+            res.status(401).json({ message: "Unauthorized" })
+            return
+        }
+
+        const findOrg = await db.orm.public.organisasi.where({ id: decoded.orgId }).first()
+        if (!findOrg || !findOrg.isActive) {
+            res.status(401).json({ message: "Unauthorized" })
+            return
+        }
+
         res.locals.user = decoded
         next()
+
     } catch (error) {
         if (error instanceof jwt.TokenExpiredError) {
             res.status(401).json({ message: "Token expired" })

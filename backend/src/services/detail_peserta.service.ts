@@ -1,11 +1,18 @@
 import { db } from "../prisma/db.ts"
 import { HttpError } from "../utils/http_error.ts"
-import type { StatusKeluarga } from "../utils/constanta.ts"
+
+type StatusKeluargaValue =
+    | "KEPALA_KELUARGA"
+    | "SUAMI"
+    | "ISTRI"
+    | "ANAK"
+    | "ORANG_TUA"
+    | "LAINNYA"
 
 export type CreateDetailPesertaInput = {
     peserta_id: number
     nama: string
-    status_keluarga: StatusKeluarga
+    status_keluarga: StatusKeluargaValue
     isActive: boolean
 }
 
@@ -44,7 +51,7 @@ class DetailPesertaService {
         })
     }
 
-    async updateDetailPeserta(id:number,input: UpdateDetailPesertaInput){
+    async updateDataDetailPeserta(id:number,input: UpdateDetailPesertaInput){
         const findDetailPeserta = await db.orm.public.detail_peserta.where({ id: id }).first()
         if (!findDetailPeserta) {
             throw new HttpError(404, "Data Not Found")
@@ -56,7 +63,7 @@ class DetailPesertaService {
         })
     }
 
-    async deleteDetailPeserta(id: number) {
+    async deleteDataDetailPeserta(id: number) {
         const findDetailPeserta = await db.orm.public.detail_peserta.where({ id: id }).first()
         if (!findDetailPeserta) {
             throw new HttpError(404, "Data Not Found")

@@ -15,6 +15,7 @@ export const createDetailPesertaSchema = z.strictObject({
         .number()
         .int()
         .positive({ message: "Peserta ID harus berupa angka positif" }),
+    isActive: z.boolean().default(true),
 })
 
 export const updateDetailPesertaSchema = z.strictObject({

@@ -25,6 +25,13 @@ import {
 } from "../../validator/organisasi.validator.ts"
 import { userController } from "../controllers/user.controller.ts"
 import { authenticateJWT } from "../middlewares/authentication.ts"
+import {
+    createDetailPesertaSchema,
+    getDataDetailPesertaByIdSchema,
+    getDetailPesertaByPesertaIDSchema,
+    updateDetailPesertaSchema,
+} from "../../validator/detail_peserta.validator.ts"
+import { DetailPesertaController } from "../controllers/detail_peserta.controller.ts"
 
 export const router = Router()
 
@@ -41,6 +48,8 @@ router.use("/organisasi/:kode", authenticateJWT)
 router.use("/users/:kode", authenticateJWT)
 router.use("/user", authenticateJWT)
 router.use("/peserta", authenticateJWT)
+router.use("/detail-peserta-by-peserta/:peserta_id", authenticateJWT)
+router.use("/detail-peserta", authenticateJWT)
 
 router.get(
     "/organisasi/:kode",
@@ -117,4 +126,32 @@ router.get(
     "/peserta/qr/download/:qrUrl",
     validate(downloadQrCodePesertaSchema, "params"),
     pesertaController.downloadQRCode,
+)
+
+// DETAIL PESERTA
+router.get(
+    "/detail-peserta-by-peserta/:peserta_id",
+    validate(getDetailPesertaByPesertaIDSchema, "params"),
+    DetailPesertaController.getDataDetailPesertaByIDPeserta,
+)
+router.get(
+    "/detail-peserta/:id",
+    validate(getDataDetailPesertaByIdSchema, "params"),
+    DetailPesertaController.getDataDetailPesertaById,
+)
+router.post(
+    "/detail-peserta",
+    validate(createDetailPesertaSchema, "body"),
+    DetailPesertaController.createDataDetailPeserta,
+)
+router.patch(
+    "/detail-peserta/:id",
+    validate(getDataDetailPesertaByIdSchema, "params"),
+    validate(updateDetailPesertaSchema, "body"),
+    DetailPesertaController.updateDataDetailPeserta,
+)
+router.delete(
+    "/detail-peserta/:id",
+    validate(getDataDetailPesertaByIdSchema, "params"),
+    DetailPesertaController.deleteDataDetailPeserta,
 )

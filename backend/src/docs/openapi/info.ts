@@ -18,8 +18,9 @@ const apiInfo = {
             description: "Pengelolaan peserta dan data rumah berdasarkan organisasi.",
         },
         {
-            name: "QR Code",
-            description: "Pengelolaan dan unduhan QR Code untuk peserta.",
+            name: "Detail Peserta",
+            description:
+                "Pengelolaan anggota keluarga (detail peserta) yang terkait dengan satu peserta.",
         },
     ],
 } as const
