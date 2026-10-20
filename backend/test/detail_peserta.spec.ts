@@ -3,6 +3,7 @@ import request from "supertest"
 import app from "../src/app.ts"
 import { detailPesertaService } from "../src/services/detail_peserta.service.ts"
 import { HttpError } from "../src/utils/http_error.ts"
+import { authorizationHeader } from "./auth.ts"
 
 const detailPeserta = {
     id: 1,
@@ -37,7 +38,9 @@ describe("Detail Peserta API", () => {
 
     describe("GET /detail-peserta-by-peserta/:peserta_id", () => {
         it("mengambil daftar detail peserta berdasarkan peserta_id", async () => {
-            const response = await request(app).get("/api/detail-peserta-by-peserta/10")
+            const response = await request(app)
+                .get("/api/detail-peserta-by-peserta/10")
+                .set("Authorization", authorizationHeader())
 
             expect(response.status).toBe(200)
             expect(response.body).toEqual({
@@ -49,7 +52,9 @@ describe("Detail Peserta API", () => {
         })
 
         it("mengembalikan 400 untuk peserta_id yang tidak valid", async () => {
-            const response = await request(app).get("/api/detail-peserta-by-peserta/0")
+            const response = await request(app)
+                .get("/api/detail-peserta-by-peserta/0")
+                .set("Authorization", authorizationHeader())
 
             expect(response.status).toBe(400)
             expect(response.body.message).toBe("Validation Error")
@@ -63,7 +68,9 @@ describe("Detail Peserta API", () => {
                 },
             )
 
-            const response = await request(app).get("/api/detail-peserta-by-peserta/99")
+            const response = await request(app)
+                .get("/api/detail-peserta-by-peserta/99")
+                .set("Authorization", authorizationHeader())
 
             expect(response.status).toBe(404)
             expect(response.body).toEqual({ status: "failed", message: "Data Not Found" })
@@ -77,7 +84,9 @@ describe("Detail Peserta API", () => {
                 },
             )
 
-            const response = await request(app).get("/api/detail-peserta-by-peserta/10")
+            const response = await request(app)
+                .get("/api/detail-peserta-by-peserta/10")
+                .set("Authorization", authorizationHeader())
 
             expect(response.status).toBe(500)
             expect(response.body).toEqual({ status: "failed", message: "Internal Server Error" })
@@ -86,15 +95,21 @@ describe("Detail Peserta API", () => {
 
     describe("GET /detail-peserta/:id", () => {
         it("mengambil detail peserta berdasarkan id", async () => {
-            const response = await request(app).get("/api/detail-peserta/1")
+            const response = await request(app)
+                .get("/api/detail-peserta/1")
+                .set("Authorization", authorizationHeader())
 
             expect(response.status).toBe(200)
-            expect(response.body.data).toEqual(expect.objectContaining({ id: 1, nama: "Andi Santoso" }))
+            expect(response.body.data).toEqual(
+                expect.objectContaining({ id: 1, nama: "Andi Santoso" }),
+            )
             expect(detailPesertaService.getDetailPesertaById).toHaveBeenCalledWith(1)
         })
 
         it("mengembalikan 400 untuk id yang bukan bilangan bulat positif", async () => {
-            const response = await request(app).get("/api/detail-peserta/abc")
+            const response = await request(app)
+                .get("/api/detail-peserta/abc")
+                .set("Authorization", authorizationHeader())
 
             expect(response.status).toBe(400)
             expect(detailPesertaService.getDetailPesertaById).not.toHaveBeenCalled()
@@ -105,7 +120,9 @@ describe("Detail Peserta API", () => {
                 new HttpError(404, "Data Not Found"),
             )
 
-            const response = await request(app).get("/api/detail-peserta/99")
+            const response = await request(app)
+                .get("/api/detail-peserta/99")
+                .set("Authorization", authorizationHeader())
 
             expect(response.status).toBe(404)
             expect(response.body).toEqual({ status: "failed", message: "Data Not Found" })
@@ -114,7 +131,10 @@ describe("Detail Peserta API", () => {
 
     describe("POST /detail-peserta", () => {
         it("membuat detail peserta dengan input valid", async () => {
-            const response = await request(app).post("/api/detail-peserta").send(createPayload)
+            const response = await request(app)
+                .post("/api/detail-peserta")
+                .set("Authorization", authorizationHeader())
+                .send(createPayload)
 
             expect(response.status).toBe(201)
             expect(response.body).toEqual({
@@ -131,6 +151,7 @@ describe("Detail Peserta API", () => {
         it("menolak body dengan status_keluarga tidak valid", async () => {
             const response = await request(app)
                 .post("/api/detail-peserta")
+                .set("Authorization", authorizationHeader())
                 .send({ ...createPayload, status_keluarga: "Tetangga" })
 
             expect(response.status).toBe(400)
@@ -141,6 +162,7 @@ describe("Detail Peserta API", () => {
         it("menolak body dengan field tidak dikenal (strict object)", async () => {
             const response = await request(app)
                 .post("/api/detail-peserta")
+                .set("Authorization", authorizationHeader())
                 .send({ ...createPayload, unknownField: true })
 
             expect(response.status).toBe(400)
@@ -152,7 +174,10 @@ describe("Detail Peserta API", () => {
                 new HttpError(404, "Data Peserta Tidak Ditemukan / Sudah Tidak aktif"),
             )
 
-            const response = await request(app).post("/api/detail-peserta").send(createPayload)
+            const response = await request(app)
+                .post("/api/detail-peserta")
+                .set("Authorization", authorizationHeader())
+                .send(createPayload)
 
             expect(response.status).toBe(404)
             expect(response.body).toEqual({
@@ -166,6 +191,7 @@ describe("Detail Peserta API", () => {
         it("memperbarui detail peserta berdasarkan id", async () => {
             const response = await request(app)
                 .patch("/api/detail-peserta/1")
+                .set("Authorization", authorizationHeader())
                 .send({ nama: "Andi Baru" })
 
             expect(response.status).toBe(200)
@@ -181,7 +207,10 @@ describe("Detail Peserta API", () => {
         })
 
         it("mengembalikan 400 untuk id path yang tidak valid", async () => {
-            const response = await request(app).patch("/api/detail-peserta/0").send({ nama: "Andi Baru" })
+            const response = await request(app)
+                .patch("/api/detail-peserta/0")
+                .set("Authorization", authorizationHeader())
+                .send({ nama: "Andi Baru" })
 
             expect(response.status).toBe(400)
             expect(response.body.message).toBe("Validation Error")
@@ -189,7 +218,10 @@ describe("Detail Peserta API", () => {
         })
 
         it("mengembalikan 400 untuk body yang tidak valid", async () => {
-            const response = await request(app).patch("/api/detail-peserta/1").send({ nama: "x" })
+            const response = await request(app)
+                .patch("/api/detail-peserta/1")
+                .set("Authorization", authorizationHeader())
+                .send({ nama: "x" })
 
             expect(response.status).toBe(400)
             expect(detailPesertaService.updateDataDetailPeserta).not.toHaveBeenCalled()
@@ -202,6 +234,7 @@ describe("Detail Peserta API", () => {
 
             const response = await request(app)
                 .patch("/api/detail-peserta/99")
+                .set("Authorization", authorizationHeader())
                 .send({ nama: "Andi Baru" })
 
             expect(response.status).toBe(404)
@@ -211,7 +244,9 @@ describe("Detail Peserta API", () => {
 
     describe("DELETE /detail-peserta/:id", () => {
         it("menghapus detail peserta berdasarkan id", async () => {
-            const response = await request(app).delete("/api/detail-peserta/1")
+            const response = await request(app)
+                .delete("/api/detail-peserta/1")
+                .set("Authorization", authorizationHeader())
 
             expect(response.status).toBe(200)
             expect(response.body).toEqual({
@@ -223,7 +258,9 @@ describe("Detail Peserta API", () => {
         })
 
         it("mengembalikan 400 untuk id yang tidak valid", async () => {
-            const response = await request(app).delete("/api/detail-peserta/abc")
+            const response = await request(app)
+                .delete("/api/detail-peserta/abc")
+                .set("Authorization", authorizationHeader())
 
             expect(response.status).toBe(400)
             expect(detailPesertaService.deleteDataDetailPeserta).not.toHaveBeenCalled()
@@ -234,7 +271,9 @@ describe("Detail Peserta API", () => {
                 new HttpError(404, "Data Not Found"),
             )
 
-            const response = await request(app).delete("/api/detail-peserta/99")
+            const response = await request(app)
+                .delete("/api/detail-peserta/99")
+                .set("Authorization", authorizationHeader())
 
             expect(response.status).toBe(404)
             expect(response.body).toEqual({ status: "failed", message: "Data Not Found" })

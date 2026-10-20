@@ -8,6 +8,8 @@ import userPaths from "./openapi/user.ts"
 import commonSchemas from "./openapi/schemas/common.ts"
 import detailPesertaPaths from "./openapi/detail_peserta.ts"
 import detailPesertaSchemas from "./openapi/schemas/detail_peserta.ts"
+import jenisIuranPaths from "./openapi/jenis_iuran.ts"
+import jenisIuranSchemas from "./openapi/schemas/jenis_iuran.ts"
 
 const BEARER_SECURITY = [{ BearerAuth: [] }]
 const PUBLIC_SECURITY: Record<string, never>[] = []
@@ -61,6 +63,7 @@ const rawPaths = {
     ...userPaths,
     ...pesertaPaths,
     ...detailPesertaPaths,
+    ...jenisIuranPaths,
 } as unknown as OpenApiPaths
 
 const openApiSpec = {
@@ -98,6 +101,7 @@ const openApiSpec = {
             ...userSchemas,
             ...pesertaSchemas,
             ...detailPesertaSchemas,
+            ...jenisIuranSchemas,
         },
     },
 }

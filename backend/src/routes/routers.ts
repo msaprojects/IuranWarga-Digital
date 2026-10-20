@@ -32,6 +32,12 @@ import {
     updateDetailPesertaSchema,
 } from "../../validator/detail_peserta.validator.ts"
 import { DetailPesertaController } from "../controllers/detail_peserta.controller.ts"
+import {
+    createJenisIuranSchema,
+    detailJenisIuranIDSchema,
+    updateJenisIuranSchema,
+} from "../../validator/jenis_iuran.validator.ts"
+import { jenisIuranController } from "../controllers/jenis_iuran.controller.ts"
 
 export const router = Router()
 
@@ -50,6 +56,7 @@ router.use("/user", authenticateJWT)
 router.use("/peserta", authenticateJWT)
 router.use("/detail-peserta-by-peserta/:peserta_id", authenticateJWT)
 router.use("/detail-peserta", authenticateJWT)
+router.use("/jenis-iuran", authenticateJWT)
 
 router.get(
     "/organisasi/:kode",
@@ -154,4 +161,32 @@ router.delete(
     "/detail-peserta/:id",
     validate(getDataDetailPesertaByIdSchema, "params"),
     DetailPesertaController.deleteDataDetailPeserta,
+)
+
+// JENIS IURAN
+router.get(
+    "/jenis-iuran/organisasi/:kode",
+    validate(organisasiByKodeParamsSchema, "params"),
+    jenisIuranController.getJenisIuranByOrganisasi,
+)
+router.get(
+    "/jenis-iuran/:id",
+    validate(detailJenisIuranIDSchema, "params"),
+    jenisIuranController.getDetailJenisIuranByID,
+)
+router.post(
+    "/jenis-iuran",
+    validate(createJenisIuranSchema, "body"),
+    jenisIuranController.createJenisIuran,
+)
+router.patch(
+    "/jenis-iuran/:id",
+    validate(detailJenisIuranIDSchema, "params"),
+    validate(updateJenisIuranSchema, "body"),
+    jenisIuranController.updateJenisIuran,
+)
+router.delete(
+    "/jenis-iuran/:id",
+    validate(detailJenisIuranIDSchema, "params"),
+    jenisIuranController.deleteJenisIuran,
 )
