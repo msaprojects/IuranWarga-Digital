@@ -1,4 +1,4 @@
-const PERIODE_IURAN = ["HARIAN", "MINGGUAN", "BULANAN", "TAHUNAN"] as const
+import { PERIODE_IURAN } from "../../../utils/constanta.ts"
 
 const jenisIuranSchemas = {
     CreateJenisIuranInput: {
@@ -16,9 +16,10 @@ const jenisIuranSchemas = {
             judul: { type: "string", minLength: 3, maxLength: 45, example: "Iuran Kebersihan" },
             periode_iuran: { type: "string", enum: [...PERIODE_IURAN], example: "BULANAN" },
             nominal: {
-                type: "number",
-                example: 50000,
-                description: "Nominal iuran. Disimpan sebagai Decimal di basis data.",
+                type: "string",
+                pattern: "^\\d+(\\.\\d{1,2})?$",
+                example: "50000",
+                description: "Nominal iuran dalam bentuk string (kolom Decimal di basis data).",
             },
             tanggal_awal: {
                 type: "string",
@@ -43,7 +44,7 @@ const jenisIuranSchemas = {
         example: {
             judul: "Iuran Kebersihan",
             periode_iuran: "BULANAN",
-            nominal: 50000,
+            nominal: "50000",
             tanggal_awal: "2026-01-01",
             tanggal_akhir: "2026-12-31",
             organisasi_id: 1,
@@ -55,13 +56,13 @@ const jenisIuranSchemas = {
         properties: {
             judul: { type: "string", minLength: 3, maxLength: 45 },
             periode_iuran: { type: "string", enum: [...PERIODE_IURAN] },
-            nominal: { type: "number" },
+            nominal: { type: "string", pattern: "^\\d+(\\.\\d{1,2})?$" },
             tanggal_awal: { type: "string", format: "date" },
             tanggal_akhir: { type: "string", format: "date" },
             organisasi_id: { type: "integer", minimum: 1 },
             isActive: { type: "boolean" },
         },
-        example: { judul: "Iuran Keamanan", nominal: 75000 },
+        example: { judul: "Iuran Keamanan", nominal: "75000" },
     },
     JenisIuran: {
         type: "object",

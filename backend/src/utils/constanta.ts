@@ -4,12 +4,10 @@ export const enum UserRole {
     SUPERADMIN = "SUPERADMIN",
 }
 
-export const enum PeriodeIuran {
-    HARIAN = "HARIAN",
-    MINGGUAN = "MINGGUAN",
-    BULANAN = "BULANAN",
-    TAHUNAN = "TAHUNAN",
-}
+// Periode iuran: satu sumber kebenaran untuk service, validator, dan docs.
+// Dipakai sebagai `z.enum(PERIODE_IURAN)` dan sebagai tipe `PeriodeIuran`.
+export const PERIODE_IURAN = ["HARIAN", "MINGGUAN", "BULANAN", "TAHUNAN"] as const
+export type PeriodeIuran = (typeof PERIODE_IURAN)[number]
 
 export const enum StatusTagihan {
     BELUM_BAYAR = "BELUM_BAYAR",
@@ -25,14 +23,17 @@ export const enum StatusPembayaran {
     REFUNDED = "REFUNDED",
 }
 
-export const enum StatusKeluarga {
-    KEPALA_KELUARGA = "KEPALA_KELUARGA",
-    SUAMI = "SUAMI",
-    ISTRI = "ISTRI",
-    ANAK = "ANAK",
-    ORANG_TUA = "ORANG_TUA",
-    LAINNYA = "LAINNYA",
-}
+// Status keluarga: satu sumber kebenaran untuk service, validator, dan docs.
+// Dipakai sebagai `z.enum(STATUS_KELUARGA)` dan sebagai tipe `StatusKeluarga`.
+export const STATUS_KELUARGA = [
+    "KEPALA_KELUARGA",
+    "SUAMI",
+    "ISTRI",
+    "ANAK",
+    "ORANG_TUA",
+    "LAINNYA",
+] as const
+export type StatusKeluarga = (typeof STATUS_KELUARGA)[number]
 
 export const enum JenisKeuangan {
     PEMASUKAN = "PEMASUKAN",

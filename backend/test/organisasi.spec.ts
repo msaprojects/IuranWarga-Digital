@@ -124,10 +124,13 @@ describe("Organisasi API", () => {
             .set("Authorization", authorizationHeader())
 
         expect(response.status).toBe(500)
-        expect(response.body).toEqual({
-            status: "failed",
-            message: "Internal Server Error",
-        })
+        // 5xx sekarang membawa `code` + `requestId` — pakai objectContaining.
+        expect(response.body).toEqual(
+            expect.objectContaining({
+                status: "failed",
+                message: "Terjadi kesalahan pada server.",
+            }),
+        )
         expect(JSON.stringify(response.body)).not.toContain("credentials")
     })
 

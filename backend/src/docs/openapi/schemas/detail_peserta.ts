@@ -1,11 +1,4 @@
-const STATUS_KELUARGA = [
-    "KEPALA_KELUARGA",
-    "SUAMI",
-    "ISTRI",
-    "ANAK",
-    "ORANG_TUA",
-    "LAINNYA",
-] as const
+import { STATUS_KELUARGA } from "../../../utils/constanta.ts"
 
 const detailPesertaSchemas = {
     CreateDetailPesertaInput: {
@@ -34,8 +27,13 @@ const detailPesertaSchemas = {
         properties: {
             nama: { type: "string", minLength: 3, maxLength: 128 },
             status_keluarga: { type: "string", enum: [...STATUS_KELUARGA] },
-            peserta_id: { type: "integer", minimum: 1 },
-            isActive: { type: "boolean", default: true },
+            peserta_id: {
+                type: "integer",
+                minimum: 1,
+                description:
+                    "Pindahkan anggota keluarga ke peserta lain. Nilai harus merujuk peserta aktif.",
+            },
+            isActive: { type: "boolean" },
         },
         example: { nama: "Andi Santoso Baru", status_keluarga: "KEPALA_KELUARGA" },
     },

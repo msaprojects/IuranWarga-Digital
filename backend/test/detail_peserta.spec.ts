@@ -13,7 +13,7 @@ const detailPeserta = {
     isActive: true,
     createdAt: "2026-10-16T00:00:00.000Z",
     updatedAt: "2026-10-16T00:00:00.000Z",
-} satisfies Awaited<ReturnType<typeof detailPesertaService.getDetailPesertaById>>
+} satisfies Awaited<ReturnType<typeof detailPesertaService.getById>>
 
 const createPayload = {
     nama: "Andi Santoso",
@@ -23,13 +23,11 @@ const createPayload = {
 
 describe("Detail Peserta API", () => {
     beforeEach(() => {
-        jest.spyOn(detailPesertaService, "getDetailPesertaByPesertaID").mockReturnValue([
-            detailPeserta,
-        ] as unknown as ReturnType<typeof detailPesertaService.getDetailPesertaByPesertaID>)
-        jest.spyOn(detailPesertaService, "getDetailPesertaById").mockResolvedValue(detailPeserta)
-        jest.spyOn(detailPesertaService, "createDetailPeserta").mockResolvedValue(detailPeserta)
-        jest.spyOn(detailPesertaService, "updateDataDetailPeserta").mockResolvedValue(detailPeserta)
-        jest.spyOn(detailPesertaService, "deleteDataDetailPeserta").mockResolvedValue(detailPeserta)
+        jest.spyOn(detailPesertaService, "listByPesertaId").mockResolvedValue([detailPeserta])
+        jest.spyOn(detailPesertaService, "getById").mockResolvedValue(detailPeserta)
+        jest.spyOn(detailPesertaService, "create").mockResolvedValue(detailPeserta)
+        jest.spyOn(detailPesertaService, "update").mockResolvedValue(detailPeserta)
+        jest.spyOn(detailPesertaService, "delete").mockResolvedValue(detailPeserta)
     })
 
     afterEach(() => {
@@ -48,7 +46,7 @@ describe("Detail Peserta API", () => {
                 message: "Success",
                 data: [expect.objectContaining({ id: 1, peserta_id: 10, nama: "Andi Santoso" })],
             })
-            expect(detailPesertaService.getDetailPesertaByPesertaID).toHaveBeenCalledWith(10)
+            expect(detailPesertaService.listByPesertaId).toHaveBeenCalledWith(10)
         })
 
         it("mengembalikan 400 untuk peserta_id yang tidak valid", async () => {
@@ -58,14 +56,12 @@ describe("Detail Peserta API", () => {
 
             expect(response.status).toBe(400)
             expect(response.body.message).toBe("Validation Error")
-            expect(detailPesertaService.getDetailPesertaByPesertaID).not.toHaveBeenCalled()
+            expect(detailPesertaService.listByPesertaId).not.toHaveBeenCalled()
         })
 
         it("mengembalikan 404 jika data tidak ditemukan", async () => {
-            jest.spyOn(detailPesertaService, "getDetailPesertaByPesertaID").mockImplementation(
-                () => {
-                    throw new HttpError(404, "Data Not Found")
-                },
+            jest.spyOn(detailPesertaService, "listByPesertaId").mockRejectedValue(
+                new HttpError(404, "Detail peserta tidak ditemukan."),
             )
 
             const response = await request(app)
@@ -73,15 +69,16 @@ describe("Detail Peserta API", () => {
                 .set("Authorization", authorizationHeader())
 
             expect(response.status).toBe(404)
-            expect(response.body).toEqual({ status: "failed", message: "Data Not Found" })
+            expect(response.body).toEqual({
+                status: "failed",
+                message: "Detail peserta tidak ditemukan.",
+            })
         })
 
         it("mengembalikan 500 jika layanan gagal", async () => {
             jest.spyOn(console, "error").mockImplementation(() => {})
-            jest.spyOn(detailPesertaService, "getDetailPesertaByPesertaID").mockImplementation(
-                () => {
-                    throw new Error("unexpected failure")
-                },
+            jest.spyOn(detailPesertaService, "listByPesertaId").mockRejectedValue(
+                new Error("unexpected failure"),
             )
 
             const response = await request(app)
@@ -89,7 +86,13 @@ describe("Detail Peserta API", () => {
                 .set("Authorization", authorizationHeader())
 
             expect(response.status).toBe(500)
-            expect(response.body).toEqual({ status: "failed", message: "Internal Server Error" })
+            // 5xx sekarang membawa `code` + `requestId` — jangan kunci ke shape persis.
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    status: "failed",
+                    message: "Terjadi kesalahan pada server.",
+                }),
+            )
         })
     })
 
@@ -103,7 +106,7 @@ describe("Detail Peserta API", () => {
             expect(response.body.data).toEqual(
                 expect.objectContaining({ id: 1, nama: "Andi Santoso" }),
             )
-            expect(detailPesertaService.getDetailPesertaById).toHaveBeenCalledWith(1)
+            expect(detailPesertaService.getById).toHaveBeenCalledWith(1)
         })
 
         it("mengembalikan 400 untuk id yang bukan bilangan bulat positif", async () => {
@@ -112,12 +115,12 @@ describe("Detail Peserta API", () => {
                 .set("Authorization", authorizationHeader())
 
             expect(response.status).toBe(400)
-            expect(detailPesertaService.getDetailPesertaById).not.toHaveBeenCalled()
+            expect(detailPesertaService.getById).not.toHaveBeenCalled()
         })
 
         it("mengembalikan 404 jika detail peserta tidak ditemukan", async () => {
-            jest.spyOn(detailPesertaService, "getDetailPesertaById").mockRejectedValue(
-                new HttpError(404, "Data Not Found"),
+            jest.spyOn(detailPesertaService, "getById").mockRejectedValue(
+                new HttpError(404, "Detail peserta tidak ditemukan."),
             )
 
             const response = await request(app)
@@ -125,7 +128,10 @@ describe("Detail Peserta API", () => {
                 .set("Authorization", authorizationHeader())
 
             expect(response.status).toBe(404)
-            expect(response.body).toEqual({ status: "failed", message: "Data Not Found" })
+            expect(response.body).toEqual({
+                status: "failed",
+                message: "Detail peserta tidak ditemukan.",
+            })
         })
     })
 
@@ -139,10 +145,10 @@ describe("Detail Peserta API", () => {
             expect(response.status).toBe(201)
             expect(response.body).toEqual({
                 status: "success",
-                message: "Success",
+                message: "Detail peserta berhasil dibuat",
                 data: expect.objectContaining({ id: 1, peserta_id: 10 }),
             })
-            expect(detailPesertaService.createDetailPeserta).toHaveBeenCalledWith({
+            expect(detailPesertaService.create).toHaveBeenCalledWith({
                 ...createPayload,
                 isActive: true,
             })
@@ -156,7 +162,7 @@ describe("Detail Peserta API", () => {
 
             expect(response.status).toBe(400)
             expect(response.body.message).toBe("Validation Error")
-            expect(detailPesertaService.createDetailPeserta).not.toHaveBeenCalled()
+            expect(detailPesertaService.create).not.toHaveBeenCalled()
         })
 
         it("menolak body dengan field tidak dikenal (strict object)", async () => {
@@ -166,12 +172,12 @@ describe("Detail Peserta API", () => {
                 .send({ ...createPayload, unknownField: true })
 
             expect(response.status).toBe(400)
-            expect(detailPesertaService.createDetailPeserta).not.toHaveBeenCalled()
+            expect(detailPesertaService.create).not.toHaveBeenCalled()
         })
 
         it("mengembalikan 404 jika peserta tujuan tidak ditemukan", async () => {
-            jest.spyOn(detailPesertaService, "createDetailPeserta").mockRejectedValue(
-                new HttpError(404, "Data Peserta Tidak Ditemukan / Sudah Tidak aktif"),
+            jest.spyOn(detailPesertaService, "create").mockRejectedValue(
+                new HttpError(404, "Peserta tidak ditemukan / sudah tidak aktif."),
             )
 
             const response = await request(app)
@@ -182,7 +188,7 @@ describe("Detail Peserta API", () => {
             expect(response.status).toBe(404)
             expect(response.body).toEqual({
                 status: "failed",
-                message: "Data Peserta Tidak Ditemukan / Sudah Tidak aktif",
+                message: "Peserta tidak ditemukan / sudah tidak aktif.",
             })
         })
     })
@@ -197,13 +203,12 @@ describe("Detail Peserta API", () => {
             expect(response.status).toBe(200)
             expect(response.body).toEqual({
                 status: "success",
-                message: "Success",
+                message: "Detail peserta berhasil diperbarui",
                 data: expect.objectContaining({ id: 1 }),
             })
-            expect(detailPesertaService.updateDataDetailPeserta).toHaveBeenCalledWith(1, {
-                nama: "Andi Baru",
-                isActive: true,
-            })
+            // isActive sengaja TIDAK di-default pada PATCH; hanya field yang
+            // dikirim klien yang diteruskan ke service.
+            expect(detailPesertaService.update).toHaveBeenCalledWith(1, { nama: "Andi Baru" })
         })
 
         it("mengembalikan 400 untuk id path yang tidak valid", async () => {
@@ -214,7 +219,7 @@ describe("Detail Peserta API", () => {
 
             expect(response.status).toBe(400)
             expect(response.body.message).toBe("Validation Error")
-            expect(detailPesertaService.updateDataDetailPeserta).not.toHaveBeenCalled()
+            expect(detailPesertaService.update).not.toHaveBeenCalled()
         })
 
         it("mengembalikan 400 untuk body yang tidak valid", async () => {
@@ -224,12 +229,12 @@ describe("Detail Peserta API", () => {
                 .send({ nama: "x" })
 
             expect(response.status).toBe(400)
-            expect(detailPesertaService.updateDataDetailPeserta).not.toHaveBeenCalled()
+            expect(detailPesertaService.update).not.toHaveBeenCalled()
         })
 
         it("mengembalikan 404 jika detail peserta tidak ditemukan saat update", async () => {
-            jest.spyOn(detailPesertaService, "updateDataDetailPeserta").mockRejectedValue(
-                new HttpError(404, "Data Not Found"),
+            jest.spyOn(detailPesertaService, "update").mockRejectedValue(
+                new HttpError(404, "Detail peserta tidak ditemukan."),
             )
 
             const response = await request(app)
@@ -238,7 +243,10 @@ describe("Detail Peserta API", () => {
                 .send({ nama: "Andi Baru" })
 
             expect(response.status).toBe(404)
-            expect(response.body).toEqual({ status: "failed", message: "Data Not Found" })
+            expect(response.body).toEqual({
+                status: "failed",
+                message: "Detail peserta tidak ditemukan.",
+            })
         })
     })
 
@@ -251,10 +259,10 @@ describe("Detail Peserta API", () => {
             expect(response.status).toBe(200)
             expect(response.body).toEqual({
                 status: "success",
-                message: "Success",
+                message: "Detail peserta berhasil dihapus",
                 data: expect.objectContaining({ id: 1 }),
             })
-            expect(detailPesertaService.deleteDataDetailPeserta).toHaveBeenCalledWith(1)
+            expect(detailPesertaService.delete).toHaveBeenCalledWith(1)
         })
 
         it("mengembalikan 400 untuk id yang tidak valid", async () => {
@@ -263,12 +271,12 @@ describe("Detail Peserta API", () => {
                 .set("Authorization", authorizationHeader())
 
             expect(response.status).toBe(400)
-            expect(detailPesertaService.deleteDataDetailPeserta).not.toHaveBeenCalled()
+            expect(detailPesertaService.delete).not.toHaveBeenCalled()
         })
 
         it("mengembalikan 404 jika detail peserta tidak ditemukan saat hapus", async () => {
-            jest.spyOn(detailPesertaService, "deleteDataDetailPeserta").mockRejectedValue(
-                new HttpError(404, "Data Not Found"),
+            jest.spyOn(detailPesertaService, "delete").mockRejectedValue(
+                new HttpError(404, "Detail peserta tidak ditemukan."),
             )
 
             const response = await request(app)
@@ -276,7 +284,10 @@ describe("Detail Peserta API", () => {
                 .set("Authorization", authorizationHeader())
 
             expect(response.status).toBe(404)
-            expect(response.body).toEqual({ status: "failed", message: "Data Not Found" })
+            expect(response.body).toEqual({
+                status: "failed",
+                message: "Detail peserta tidak ditemukan.",
+            })
         })
     })
 })

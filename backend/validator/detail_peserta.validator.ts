@@ -1,37 +1,36 @@
 import z from "zod"
+import { STATUS_KELUARGA } from "../src/utils/constanta.ts"
 
-export const getDetailPesertaByPesertaIDSchema = z.strictObject({
+export const getDetailPesertaByPesertaIdSchema = z.strictObject({
     peserta_id: z.coerce.number().int().positive(),
 })
 
-export const getDataDetailPesertaByIdSchema = z.strictObject({
+export const detailPesertaIdSchema = z.strictObject({
     id: z.coerce.number().int().positive(),
 })
 
 export const createDetailPesertaSchema = z.strictObject({
-    nama: z.string().min(3, { message: "Nama tidak boleh kosong" }).max(128),
-    status_keluarga: z.enum(["KEPALA_KELUARGA", "SUAMI", "ISTRI", "ANAK", "ORANG_TUA", "LAINNYA"]),
+    nama: z.string().trim().min(3, { message: "Nama tidak boleh kosong" }).max(128),
+    status_keluarga: z.enum(STATUS_KELUARGA),
     peserta_id: z.coerce
         .number()
         .int()
         .positive({ message: "Peserta ID harus berupa angka positif" }),
-    isActive: z.boolean().default(true),
+    isActive: z.boolean().default(true).optional(),
 })
 
 export const updateDetailPesertaSchema = z.strictObject({
-    nama: z.string().min(3, { message: "Nama tidak boleh kosong" }).max(128).optional(),
-    status_keluarga: z
-        .enum(["KEPALA_KELUARGA", "SUAMI", "ISTRI", "ANAK", "ORANG_TUA", "LAINNYA"])
-        .optional(),
+    nama: z.string().trim().min(3, { message: "Nama tidak boleh kosong" }).max(128).optional(),
+    status_keluarga: z.enum(STATUS_KELUARGA).optional(),
     peserta_id: z.coerce
         .number()
         .int()
         .positive({ message: "Peserta ID harus berupa angka positif" })
         .optional(),
-    isActive: z.boolean().default(true).optional(),
+    isActive: z.boolean().optional(),
 })
 
-export type GetDetailPesertaByPesertaIDSchema = z.output<typeof getDetailPesertaByPesertaIDSchema>
-export type GetDataDetailPesertaByIDShema = z.output<typeof getDataDetailPesertaByIdSchema>
-export type CreateDataDetailPesertaSchema = z.output<typeof createDetailPesertaSchema>
-export type UpdateDataDetailPesertaSchema = z.output<typeof updateDetailPesertaSchema>
+export type GetDetailPesertaByPesertaIdParams = z.output<typeof getDetailPesertaByPesertaIdSchema>
+export type DetailPesertaIdParams = z.output<typeof detailPesertaIdSchema>
+export type CreateDetailPesertaBody = z.output<typeof createDetailPesertaSchema>
+export type UpdateDetailPesertaBody = z.output<typeof updateDetailPesertaSchema>

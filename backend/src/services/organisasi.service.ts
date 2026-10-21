@@ -29,7 +29,7 @@ type CreateOrganisasiWithUserInput = {
 }
 
 class OrganisasiService {
-    getByKode(kode: string) {
+    async getByKode(kode: string) {
         return db.orm.public.organisasi.where({ kode, isActive: true }).first()
     }
 
@@ -92,7 +92,7 @@ class OrganisasiService {
         return db.orm.public.organisasi.where({ kode, isActive: true }).update(input)
     }
 
-    deactivateByKode(kode: string) {
+    async deactivateByKode(kode: string) {
         return db.orm.public.organisasi.where({ kode, isActive: true }).update({ isActive: false })
     }
 }

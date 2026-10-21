@@ -1,11 +1,13 @@
 import z from "zod"
 
+// Daftar peserta/detail peserta per organisasi: `(id, kode)` di URL.
 export const getDetailPesertaByIdAndKodeOrganisasiSchema = z.strictObject({
     id: z.coerce.number().int().positive(),
     kode: z.string().trim().min(6).max(8),
 })
 
-export const getDetailPesertaByIdParamsSchema = z.strictObject({
+// Route hanya `/peserta/:id`, tanpa scope organisasi.
+export const pesertaIdSchema = z.strictObject({
     id: z.coerce.number().int().positive(),
 })
 
@@ -16,24 +18,25 @@ export const decryptQRCodeStringSchema = z.strictObject({
 export const createPesertaSchema = z.strictObject({
     kode: z.string().trim().min(6).max(8).optional(),
     nama: z.string().trim().min(3).max(45),
-    nomor_rumah: z.string().trim().min(1).max(20).optional(),
-    alamat: z.string().trim().min(3).max(128).optional(),
-    deskripsi: z.string().trim().min(3).max(256).optional(),
-    qr_token: z.string().trim().min(3).max(256).optional(),
+    nomor_rumah: z.string().trim().min(1).max(20).nullable().optional(),
+    alamat: z.string().trim().min(3).max(128).nullable().optional(),
+    deskripsi: z.string().trim().min(3).max(256).nullable().optional(),
+    qr_token: z.string().trim().min(3).max(256).nullable().optional(),
     isActive: z.boolean().default(true).optional(),
-    organisasi_id: z.number().int().positive(),
-    user_id: z.number().int().positive(),
+    organisasi_id: z.coerce.number().int().positive(),
+    user_id: z.coerce.number().int().positive().nullable().optional(),
 })
 
+// PATCH: semua field opsional, `kode` immutable (dihapus dari body),
+// field nullable boleh di-set null secara eksplisit.
 export const updatePesertaSchema = z.strictObject({
-    kode: z.string().trim().min(6).max(8).optional(),
-    nama: z.string().trim().min(3).max(45),
-    nomor_rumah: z.string().trim().min(1).max(20).optional(),
-    alamat: z.string().trim().min(3).max(128).optional(),
-    deskripsi: z.string().trim().min(3).max(256).optional(),
-    qr_token: z.string().trim().min(3).max(256).optional(),
-    isActive: z.boolean().default(true).optional(),
-    user_id: z.number().int().positive(),
+    nama: z.string().trim().min(3).max(45).optional(),
+    nomor_rumah: z.string().trim().min(1).max(20).nullable().optional(),
+    alamat: z.string().trim().min(3).max(128).nullable().optional(),
+    deskripsi: z.string().trim().min(3).max(256).nullable().optional(),
+    qr_token: z.string().trim().min(3).max(256).nullable().optional(),
+    isActive: z.boolean().optional(),
+    user_id: z.coerce.number().int().positive().nullable().optional(),
 })
 
 export const downloadQrCodePesertaSchema = z.strictObject({
@@ -48,7 +51,7 @@ export const generateQrCodePesertaSchema = z.strictObject({
 export type GetDetailPesertaByIdAndKodeOrganisasiParams = z.output<
     typeof getDetailPesertaByIdAndKodeOrganisasiSchema
 >
-export type GetDetailPesertaByIdParams = z.output<typeof getDetailPesertaByIdParamsSchema>
+export type PesertaIdParams = z.output<typeof pesertaIdSchema>
 export type CreatePesertaBody = z.output<typeof createPesertaSchema>
 export type UpdatePesertaBody = z.output<typeof updatePesertaSchema>
 export type DecryptQRCodeStringBody = z.output<typeof decryptQRCodeStringSchema>

@@ -14,7 +14,14 @@ describe("JWT authentication", () => {
         const response = await request(app).get("/api/peserta/ORG001")
 
         expect(response.status).toBe(401)
-        expect(response.body).toEqual({ message: "Unauthorized" })
+        // Setelah refactor: envelope error konsisten `{status:"failed", message:...}`
+        // dan pesan dalam Bahasa Indonesia agar tidak ambigu dengan HTTP status text.
+        expect(response.body).toEqual(
+            expect.objectContaining({
+                status: "failed",
+                message: "Token autentikasi tidak ditemukan.",
+            }),
+        )
         expect(getParticipants).not.toHaveBeenCalled()
     })
 
@@ -24,7 +31,12 @@ describe("JWT authentication", () => {
             .set("Authorization", "Bearer not-a-jwt")
 
         expect(response.status).toBe(401)
-        expect(response.body).toEqual({ message: "Invalid token" })
+        expect(response.body).toEqual(
+            expect.objectContaining({
+                status: "failed",
+                message: "Token tidak valid.",
+            }),
+        )
     })
 
     it("rejects an expired bearer token", async () => {
@@ -33,7 +45,12 @@ describe("JWT authentication", () => {
             .set("Authorization", expiredAuthorizationHeader())
 
         expect(response.status).toBe(401)
-        expect(response.body).toEqual({ message: "Token expired" })
+        expect(response.body).toEqual(
+            expect.objectContaining({
+                status: "failed",
+                message: "Token telah kedaluwarsa.",
+            }),
+        )
     })
 
     it("accepts a valid bearer token on a protected route", async () => {
@@ -45,5 +62,10 @@ describe("JWT authentication", () => {
 
         expect(response.status).toBe(200)
         expect(response.body.data).toEqual([])
+    })
+
+    it("memapar header X-Request-Id di setiap response (korelasi log)", async () => {
+        const response = await request(app).get("/api/peserta/ORG001")
+        expect(response.headers["x-request-id"]).toMatch(/^[0-9a-f-]{36}$/u)
     })
 })

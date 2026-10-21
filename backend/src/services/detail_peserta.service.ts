@@ -1,74 +1,81 @@
 import { db } from "../prisma/db.ts"
 import { HttpError } from "../utils/http_error.ts"
-
-type StatusKeluargaValue =
-    | "KEPALA_KELUARGA"
-    | "SUAMI"
-    | "ISTRI"
-    | "ANAK"
-    | "ORANG_TUA"
-    | "LAINNYA"
+import type { StatusKeluarga } from "../utils/constanta.ts"
 
 export type CreateDetailPesertaInput = {
     peserta_id: number
     nama: string
-    status_keluarga: StatusKeluargaValue
-    isActive: boolean
+    status_keluarga: StatusKeluarga
+    isActive?: boolean
 }
 
-export type UpdateDetailPesertaInput = Partial<
-    Pick<CreateDetailPesertaInput, "nama" | "status_keluarga" | "isActive">
->
+export type UpdateDetailPesertaInput = {
+    nama?: string
+    status_keluarga?: StatusKeluarga
+    peserta_id?: number
+    isActive?: boolean
+}
 
 class DetailPesertaService {
-    getDetailPesertaByPesertaID(peserta_id: number) {
-        const data = db.orm.public.detail_peserta.where({ peserta_id: peserta_id }).all()
-        if (!data) {
-            throw new HttpError(404, "Data Not Found")
-        }
-        return data
+    async listByPesertaId(peserta_id: number) {
+        return db.orm.public.detail_peserta.where({ peserta_id, isActive: true }).all()
     }
 
-    getDetailPesertaById(id: number) {
-        const data = db.orm.public.detail_peserta.where({ id: id }).first()
-        if (!data) {
-            throw new HttpError(404, "Data Not Found")
+    async getById(id: number) {
+        const row = await db.orm.public.detail_peserta.where({ id, isActive: true }).first()
+        if (!row) {
+            throw new HttpError(404, "Detail peserta tidak ditemukan.")
         }
-        return data
+        return row
     }
 
-    async createDetailPeserta(input: CreateDetailPesertaInput) {
-        const dataPeserta = await db.orm.public.peserta.where({ id: input.peserta_id }).first()
-        if (!dataPeserta) {
-            throw new HttpError(404, "Data Peserta Tidak Ditemukan / Sudah Tidak aktif")
+    async create(input: CreateDetailPesertaInput) {
+        const peserta = await db.orm.public.peserta
+            .where({ id: input.peserta_id, isActive: true })
+            .first()
+        if (!peserta) {
+            throw new HttpError(404, "Peserta tidak ditemukan / sudah tidak aktif.")
         }
 
         return db.orm.public.detail_peserta.create({
             peserta_id: input.peserta_id,
             nama: input.nama,
             status_keluarga: input.status_keluarga,
-            isActive: input.isActive,
+            isActive: input.isActive ?? true,
         })
     }
 
-    async updateDataDetailPeserta(id:number,input: UpdateDetailPesertaInput){
-        const findDetailPeserta = await db.orm.public.detail_peserta.where({ id: id }).first()
-        if (!findDetailPeserta) {
-            throw new HttpError(404, "Data Not Found")
+    async update(id: number, input: UpdateDetailPesertaInput) {
+        const existing = await db.orm.public.detail_peserta.where({ id }).first()
+        if (!existing) {
+            throw new HttpError(404, "Detail peserta tidak ditemukan.")
         }
-        return db.orm.public.detail_peserta.where({ id: id }).update({
-            nama: input.nama ?? findDetailPeserta.nama,
-            status_keluarga: input.status_keluarga ?? findDetailPeserta.status_keluarga,
-            isActive: input.isActive ?? findDetailPeserta.isActive,
+
+        // Kalau anggota keluarga dipindah ke peserta lain, pastikan peserta
+        // tujuan memang ada dan masih aktif.
+        if (input.peserta_id !== undefined && input.peserta_id !== existing.peserta_id) {
+            const target = await db.orm.public.peserta
+                .where({ id: input.peserta_id, isActive: true })
+                .first()
+            if (!target) {
+                throw new HttpError(404, "Peserta tujuan tidak ditemukan / sudah tidak aktif.")
+            }
+        }
+
+        return db.orm.public.detail_peserta.where({ id }).update({
+            nama: input.nama ?? existing.nama,
+            status_keluarga: input.status_keluarga ?? existing.status_keluarga,
+            peserta_id: input.peserta_id ?? existing.peserta_id,
+            isActive: input.isActive ?? existing.isActive,
         })
     }
 
-    async deleteDataDetailPeserta(id: number) {
-        const findDetailPeserta = await db.orm.public.detail_peserta.where({ id: id }).first()
-        if (!findDetailPeserta) {
-            throw new HttpError(404, "Data Not Found")
+    async delete(id: number) {
+        const existing = await db.orm.public.detail_peserta.where({ id }).first()
+        if (!existing) {
+            throw new HttpError(404, "Detail peserta tidak ditemukan.")
         }
-        return db.orm.public.detail_peserta.where({ id: id }).delete()
+        return db.orm.public.detail_peserta.where({ id }).delete()
     }
 }
 

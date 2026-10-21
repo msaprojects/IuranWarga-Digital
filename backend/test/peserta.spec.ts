@@ -82,7 +82,14 @@ describe("Peserta API", () => {
             .set("Authorization", authorizationHeader())
 
         expect(response.status).toBe(500)
-        expect(response.body).toEqual({ status: "failed", message: "Internal Server Error" })
+        // Setelah refactor, body 5xx menyertakan `code` & `requestId` — pakai
+        // objectContaining agar assertion tidak rapuh terhadap field tambahan.
+        expect(response.body).toEqual(
+            expect.objectContaining({
+                status: "failed",
+                message: "Terjadi kesalahan pada server.",
+            }),
+        )
     })
 
     it("mengambil detail peserta menggunakan ID dan kode organisasi", async () => {
@@ -96,7 +103,9 @@ describe("Peserta API", () => {
     })
 
     it("mengembalikan 404 jika peserta tidak ditemukan", async () => {
-        jest.spyOn(pesertaService, "getPesertaByIdAndOrganizationCode").mockResolvedValue(null)
+        jest.spyOn(pesertaService, "getPesertaByIdAndOrganizationCode").mockRejectedValue(
+            new HttpError(404, "Peserta tidak ditemukan / sudah tidak aktif."),
+        )
 
         const response = await request(app)
             .get("/api/peserta/99/ORG001")
@@ -105,7 +114,7 @@ describe("Peserta API", () => {
         expect(response.status).toBe(404)
         expect(response.body).toEqual({
             status: "failed",
-            message: "Peserta tidak ditemukan atau organisasi tidak aktif",
+            message: "Peserta tidak ditemukan / sudah tidak aktif.",
         })
     })
 
@@ -193,21 +202,35 @@ describe("Peserta API", () => {
             message: "Peserta berhasil diperbarui",
             data: expect.objectContaining({ id: 1 }),
         })
+        // PATCH: service hanya menerima field yang benar-benar dikirim.
         expect(pesertaService.updatePeserta).toHaveBeenCalledWith(1, {
             nama: "Budi Santoso Baru",
             user_id: 2,
-            isActive: true,
         })
     })
 
-    it("menolak pembaruan peserta jika nama atau user_id tidak disertakan", async () => {
+    it("memperbarui hanya field yang dikirim (PATCH semantics)", async () => {
         const response = await request(app)
             .patch("/api/peserta/1")
             .set("Authorization", authorizationHeader())
             .send({ alamat: "Alamat baru" })
 
-        expect(response.status).toBe(400)
-        expect(pesertaService.updatePeserta).not.toHaveBeenCalled()
+        // Setelah refactor, `nama` & `user_id` tidak wajib lagi di body PATCH.
+        expect(response.status).toBe(200)
+        expect(pesertaService.updatePeserta).toHaveBeenCalledWith(1, { alamat: "Alamat baru" })
+    })
+
+    it("mengizinkan null eksplisit pada field nullable saat PATCH", async () => {
+        const response = await request(app)
+            .patch("/api/peserta/1")
+            .set("Authorization", authorizationHeader())
+            .send({ nomor_rumah: null, user_id: null })
+
+        expect(response.status).toBe(200)
+        expect(pesertaService.updatePeserta).toHaveBeenCalledWith(1, {
+            nomor_rumah: null,
+            user_id: null,
+        })
     })
 
     it("membuat QR Code untuk peserta berdasarkan kode peserta dan kode organisasi", async () => {

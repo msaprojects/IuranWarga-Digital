@@ -1,7 +1,7 @@
 import {
     getDetailPesertaByIdAndKodeOrganisasiSchema,
     createPesertaSchema,
-    getDetailPesertaByIdParamsSchema,
+    pesertaIdSchema,
     updatePesertaSchema,
     decryptQRCodeStringSchema,
     generateQrCodePesertaSchema,
@@ -27,8 +27,8 @@ import { userController } from "../controllers/user.controller.ts"
 import { authenticateJWT } from "../middlewares/authentication.ts"
 import {
     createDetailPesertaSchema,
-    getDataDetailPesertaByIdSchema,
-    getDetailPesertaByPesertaIDSchema,
+    detailPesertaIdSchema,
+    getDetailPesertaByPesertaIdSchema,
     updateDetailPesertaSchema,
 } from "../../validator/detail_peserta.validator.ts"
 import { DetailPesertaController } from "../controllers/detail_peserta.controller.ts"
@@ -110,7 +110,7 @@ router.get(
 router.post("/peserta", validate(createPesertaSchema, "body"), pesertaController.createPeserta)
 router.patch(
     "/peserta/:id",
-    validate(getDetailPesertaByIdParamsSchema, "params"),
+    validate(pesertaIdSchema, "params"),
     validate(updatePesertaSchema, "body"),
     pesertaController.updatePeserta,
 )
@@ -138,29 +138,29 @@ router.get(
 // DETAIL PESERTA
 router.get(
     "/detail-peserta-by-peserta/:peserta_id",
-    validate(getDetailPesertaByPesertaIDSchema, "params"),
-    DetailPesertaController.getDataDetailPesertaByIDPeserta,
+    validate(getDetailPesertaByPesertaIdSchema, "params"),
+    DetailPesertaController.listByPeserta,
 )
 router.get(
     "/detail-peserta/:id",
-    validate(getDataDetailPesertaByIdSchema, "params"),
-    DetailPesertaController.getDataDetailPesertaById,
+    validate(detailPesertaIdSchema, "params"),
+    DetailPesertaController.getById,
 )
 router.post(
     "/detail-peserta",
     validate(createDetailPesertaSchema, "body"),
-    DetailPesertaController.createDataDetailPeserta,
+    DetailPesertaController.create,
 )
 router.patch(
     "/detail-peserta/:id",
-    validate(getDataDetailPesertaByIdSchema, "params"),
+    validate(detailPesertaIdSchema, "params"),
     validate(updateDetailPesertaSchema, "body"),
-    DetailPesertaController.updateDataDetailPeserta,
+    DetailPesertaController.update,
 )
 router.delete(
     "/detail-peserta/:id",
-    validate(getDataDetailPesertaByIdSchema, "params"),
-    DetailPesertaController.deleteDataDetailPeserta,
+    validate(detailPesertaIdSchema, "params"),
+    DetailPesertaController.delete,
 )
 
 // JENIS IURAN

@@ -1,18 +1,18 @@
 import type { Request, Response } from "express"
 import type { OrganisasiByKodeParams } from "../../validator/organisasi.validator.ts"
 import type {
-    DetailJenisIuranIDSchema,
-    CreateJenisIuranIDSchema,
-    UpdateJenisIuranIDSchema,
+    JenisIuranIdParams,
+    CreateJenisIuranBody,
+    UpdateJenisIuranBody,
 } from "../../validator/jenis_iuran.validator.ts"
 import { jenisIuranService } from "../services/jenis_iuran.service.ts"
 import { resHandler } from "../utils/response_handler.ts"
 
 export type OrganisasiKodeInputLocal = { validated: { params: OrganisasiByKodeParams } }
-export type DetailJenisIuranByIDLocal = { validated: { params: DetailJenisIuranIDSchema } }
-export type CreateJenisIuranLocal = { validated: { body: CreateJenisIuranIDSchema } }
+export type DetailJenisIuranByIDLocal = { validated: { params: JenisIuranIdParams } }
+export type CreateJenisIuranLocal = { validated: { body: CreateJenisIuranBody } }
 export type UpdateJenisIuranLocal = {
-    validated: { params: DetailJenisIuranIDSchema; body: UpdateJenisIuranIDSchema }
+    validated: { params: JenisIuranIdParams; body: UpdateJenisIuranBody }
 }
 
 export const jenisIuranController = {

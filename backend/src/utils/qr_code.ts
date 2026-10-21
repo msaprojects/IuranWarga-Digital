@@ -1,5 +1,6 @@
 import QRCode from "qrcode"
 import sharp from "sharp"
+import { InternalServerError } from "./http_error.ts"
 
 function escapeXmlText(value: string): string {
     const entities: Record<string, string> = {
@@ -26,7 +27,12 @@ export async function writeQrCodeWithLabel(
     const { width, height } = await sharp(qrImage).metadata()
 
     if (width === undefined || height === undefined) {
-        throw new Error("Gagal membaca dimensi gambar QR Code.")
+        // Kondisi ini bug internal (QRCode.toBuffer seharusnya selalu mengembalikan
+        // PNG valid). Gunakan InternalServerError + code agar klien melihat pesan
+        // 500 yang bisa dikorelasikan dengan log requestId.
+        throw new InternalServerError("Gagal membaca dimensi gambar QR Code.", {
+            code: "QR.DIMENSION_UNKNOWN",
+        })
     }
 
     const labelHeight = 48

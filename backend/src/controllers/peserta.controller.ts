@@ -1,120 +1,85 @@
-import { resHandler } from "./../utils/response_handler"
-import { pesertaService } from "./../services/peserta.service"
+import { resHandler } from "../utils/response_handler.ts"
+import { pesertaService } from "../services/peserta.service.ts"
 import type {
-    GetDetailPesertaByIdAndKodeOrganisasiParams,
-    GetDetailPesertaByIdParams,
     CreatePesertaBody,
-    UpdatePesertaBody,
     DecryptQRCodeStringBody,
-    GenerateQrCodePesertaBody,
     DownloadQrCodePesertaBody,
-} from "./../../validator/peserta.validator"
-import type { OrganisasiByKodeParams } from "./../../validator/organisasi.validator"
-import type { Response, Request } from "express"
+    GenerateQrCodePesertaBody,
+    GetDetailPesertaByIdAndKodeOrganisasiParams,
+    PesertaIdParams,
+    UpdatePesertaBody,
+} from "../../validator/peserta.validator.ts"
+import type { OrganisasiByKodeParams } from "../../validator/organisasi.validator.ts"
+import type { Request, Response } from "express"
 
 type KodeOrgParamsLocals = { validated: { params: OrganisasiByKodeParams } }
-type getDetailPesertaByOrganisasiLocals = {
+type DetailPesertaByOrgLocals = {
     validated: { params: GetDetailPesertaByIdAndKodeOrganisasiParams }
 }
-type createPesertaDataLocals = { validated: { body: CreatePesertaBody } }
-type updatePesertaDataLocals = {
-    validated: { params: GetDetailPesertaByIdParams; body: UpdatePesertaBody }
+type CreatePesertaLocals = { validated: { body: CreatePesertaBody } }
+type UpdatePesertaLocals = {
+    validated: { params: PesertaIdParams; body: UpdatePesertaBody }
 }
-type decryptQRCodeLocals = { validated: { params: DecryptQRCodeStringBody } }
-
-type generateQRCodeLocals = { validated: { params: GenerateQrCodePesertaBody } }
-type downloadQrCodeLocals = { validated: { params: DownloadQrCodePesertaBody } }
+type DecryptQrLocals = { validated: { params: DecryptQRCodeStringBody } }
+type GenerateQrLocals = { validated: { params: GenerateQrCodePesertaBody } }
+type DownloadQrLocals = { validated: { params: DownloadQrCodePesertaBody } }
 
 export const pesertaController = {
-    // find data peserta by organization code
     async getPesertaByOrganizationCode(
         _req: Request,
         res: Response<unknown, KodeOrgParamsLocals>,
     ): Promise<void> {
         const { kode } = res.locals.validated.params
-
-        const peserta = await pesertaService.getAllPesertaByOrganizationCode(kode)
-        if (!peserta) {
-            resHandler.error(res, 404, "Organisasi tidak ditemukan atau tidak aktif")
-            return
-        }
-
-        resHandler.success(res, 200, "Success", peserta)
+        // Service akan throw 404 bila organisasi tidak ada / tidak aktif.
+        const data = await pesertaService.getAllPesertaByOrganizationCode(kode)
+        resHandler.success(res, 200, "Success", data)
     },
 
-    // get detail peserta by organization code and peserta id
     async getDetailPesertaByOrganizationCode(
         _req: Request,
-        res: Response<unknown, getDetailPesertaByOrganisasiLocals>,
+        res: Response<unknown, DetailPesertaByOrgLocals>,
     ): Promise<void> {
         const { id, kode } = res.locals.validated.params
-        const peserta = await pesertaService.getPesertaByIdAndOrganizationCode(id, kode)
-        if (!peserta) {
-            resHandler.error(res, 404, "Peserta tidak ditemukan atau organisasi tidak aktif")
-            return
-        }
-        resHandler.success(res, 200, "Success", peserta)
+        // Service akan throw 404 untuk peserta atau organisasi yang tidak ada.
+        const data = await pesertaService.getPesertaByIdAndOrganizationCode(id, kode)
+        resHandler.success(res, 200, "Success", data)
     },
 
-    // create peserta
-    async createPeserta(
-        _req: Request,
-        res: Response<unknown, createPesertaDataLocals>,
-    ): Promise<void> {
-        const peserta = await pesertaService.createPeserta(res.locals.validated.body)
-        resHandler.success(res, 201, "Peserta berhasil dibuat", peserta)
+    async createPeserta(_req: Request, res: Response<unknown, CreatePesertaLocals>): Promise<void> {
+        const data = await pesertaService.createPeserta(res.locals.validated.body)
+        resHandler.success(res, 201, "Peserta berhasil dibuat", data)
     },
 
-    // update peserta
-    async updatePeserta(
-        _req: Request,
-        res: Response<unknown, updatePesertaDataLocals>,
-    ): Promise<void> {
+    async updatePeserta(_req: Request, res: Response<unknown, UpdatePesertaLocals>): Promise<void> {
         const { id } = res.locals.validated.params
-        const input = res.locals.validated.body
-        const peserta = await pesertaService.updatePeserta(id, input)
-        resHandler.success(res, 200, "Peserta berhasil diperbarui", peserta)
+        const data = await pesertaService.updatePeserta(id, res.locals.validated.body)
+        resHandler.success(res, 200, "Peserta berhasil diperbarui", data)
     },
 
-    // revoke qr code make qr_token null in peserta table
     async revokeQRCode(
         _req: Request,
-        res: Response<unknown, getDetailPesertaByOrganisasiLocals>,
+        res: Response<unknown, DetailPesertaByOrgLocals>,
     ): Promise<void> {
         const { id, kode } = res.locals.validated.params
-        const peserta = await pesertaService.revokeQRCode(id, kode)
-        resHandler.success(res, 200, "QR Code berhasil dicabut", peserta)
+        const data = await pesertaService.revokeQRCode(id, kode)
+        resHandler.success(res, 200, "QR Code berhasil dicabut", data)
     },
 
-    // generate qrcode token for peserta by organization code and peserta id
-    async generateQRCode(
-        _req: Request,
-        res: Response<unknown, generateQRCodeLocals>,
-    ): Promise<void> {
+    async generateQRCode(_req: Request, res: Response<unknown, GenerateQrLocals>): Promise<void> {
         const { kodePeserta, kodeOrganisasi } = res.locals.validated.params
-
-        const peserta = await pesertaService.generateQrCode(
-            String(kodePeserta),
-            String(kodeOrganisasi),
-        )
-
-        resHandler.success(res, 200, "QR Code berhasil digenerate", peserta)
+        const data = await pesertaService.generateQrCode(kodePeserta, kodeOrganisasi)
+        resHandler.success(res, 200, "QR Code berhasil digenerate", data)
     },
 
-    // decrypt qr code string to extract peserta detail data
-    async decryptQRCode(_req: Request, res: Response<unknown, decryptQRCodeLocals>): Promise<void> {
+    async decryptQRCode(_req: Request, res: Response<unknown, DecryptQrLocals>): Promise<void> {
         const { qrCodeString } = res.locals.validated.params
-        const peserta = await pesertaService.decryptQrCode(qrCodeString)
-        resHandler.success(res, 200, "QR Code berhasil didecrypt", peserta)
+        const data = await pesertaService.decryptQrCode(qrCodeString)
+        resHandler.success(res, 200, "QR Code berhasil didecrypt", data)
     },
 
-    // download qr code
-    async downloadQRCode(
-        _req: Request,
-        res: Response<unknown, downloadQrCodeLocals>,
-    ): Promise<void> {
+    async downloadQRCode(_req: Request, res: Response<unknown, DownloadQrLocals>): Promise<void> {
         const { qrUrl } = res.locals.validated.params
-        const peserta = await pesertaService.downloadQrCode(qrUrl)
-        resHandler.success(res, 200, "QR Code berhasil didownload", peserta)
+        const data = await pesertaService.downloadQrCode(qrUrl)
+        resHandler.success(res, 200, "QR Code berhasil didownload", data)
     },
 }

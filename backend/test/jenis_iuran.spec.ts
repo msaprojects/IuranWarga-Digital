@@ -21,7 +21,7 @@ const jenisIuran = {
 const createPayload = {
     judul: "Iuran Keamanan",
     periode_iuran: "BULANAN",
-    nominal: 75000,
+    nominal: "75000",
     tanggal_awal: "2026-01-01",
     tanggal_akhir: "2026-12-31",
     organisasi_id: 1,
@@ -70,7 +70,7 @@ describe("Jenis Iuran API", () => {
             const response = await request(app).get("/api/jenis-iuran/1")
 
             expect(response.status).toBe(401)
-            expect(response.body.message).toBe("Unauthorized")
+            expect(response.body.message).toBe("Token autentikasi tidak ditemukan.")
             expect(jenisIuranService.getJenisIuranByID).not.toHaveBeenCalled()
         })
     })
@@ -120,6 +120,22 @@ describe("Jenis Iuran API", () => {
             expect(response.status).toBe(400)
             expect(jenisIuranService.getJenisIuranByID).not.toHaveBeenCalled()
         })
+
+        it("mengembalikan 404 jika jenis iuran tidak ditemukan", async () => {
+            jest.spyOn(jenisIuranService, "getJenisIuranByID").mockRejectedValue(
+                new HttpError(404, "Jenis iuran tidak ditemukan."),
+            )
+
+            const response = await request(app)
+                .get("/api/jenis-iuran/99")
+                .set("Authorization", authorizationHeader())
+
+            expect(response.status).toBe(404)
+            expect(response.body).toEqual({
+                status: "failed",
+                message: "Jenis iuran tidak ditemukan.",
+            })
+        })
     })
 
     describe("POST /jenis-iuran", () => {
@@ -139,7 +155,7 @@ describe("Jenis Iuran API", () => {
                 expect.objectContaining({
                     judul: "Iuran Keamanan",
                     periode_iuran: "BULANAN",
-                    nominal: 75000,
+                    nominal: "75000",
                     organisasi_id: 1,
                     isActive: true,
                 }),
@@ -151,6 +167,17 @@ describe("Jenis Iuran API", () => {
                 .post("/api/jenis-iuran")
                 .set("Authorization", authorizationHeader())
                 .send({ ...createPayload, periode_iuran: "TIGA_BULANAN" })
+
+            expect(response.status).toBe(400)
+            expect(response.body.message).toBe("Validation Error")
+            expect(jenisIuranService.createJenisIuran).not.toHaveBeenCalled()
+        })
+
+        it("menolak nominal yang bukan string angka positif", async () => {
+            const response = await request(app)
+                .post("/api/jenis-iuran")
+                .set("Authorization", authorizationHeader())
+                .send({ ...createPayload, nominal: "abc" })
 
             expect(response.status).toBe(400)
             expect(response.body.message).toBe("Validation Error")
