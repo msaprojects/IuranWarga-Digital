@@ -5,6 +5,7 @@ import { writeQrCodeWithLabel } from "../utils/qr_code.ts"
 import path from "path"
 import * as fs from "node:fs"
 import { BadRequestError, HttpError, NotFoundError } from "../utils/http_error.ts"
+import { JENIS_PESERTA, type JenisPeserta } from "../utils/constanta.ts"
 
 // Kode peserta dibuat acak dengan panjang tetap; konstanta ini menjaga agar
 // generator (service) dan validasi input (validator) tidak saling drift.
@@ -13,9 +14,7 @@ const KODE_MAX_LENGTH = 8
 const KODE_MAX_RETRY = 5
 const QR_FOLDER_SEGMENTS = ["uploads", "qrcodes"] as const
 
-// Field peserta yang aman di-expose ke klien lewat endpoint list. Detail view
-// menambah `qr_token` & `organisasi_id` karena pengguna memerlukan keduanya
-// untuk aksi downstream (revoke/generate QR).
+// Field peserta yang di-expose ke klien lewat endpoint list.
 const PESERTA_LIST_SELECT = [
     "id",
     "kode",
@@ -25,6 +24,7 @@ const PESERTA_LIST_SELECT = [
     "deskripsi",
     "isActive",
     "user_id",
+    "jenis_peserta",
 ] as const
 const PESERTA_DETAIL_SELECT = [...PESERTA_LIST_SELECT, "qr_token", "organisasi_id"] as const
 
@@ -38,6 +38,7 @@ export type CreatePesertaInput = {
     isActive?: boolean
     organisasi_id: number
     user_id?: number | null
+    jenis_peserta?: JenisPeserta
 }
 
 export type UpdatePesertaInput = {
@@ -48,6 +49,7 @@ export type UpdatePesertaInput = {
     qr_token?: string | null
     isActive?: boolean
     user_id?: number | null
+    jenis_peserta?: JenisPeserta
 }
 
 class PesertaService {
@@ -92,6 +94,7 @@ class PesertaService {
             isActive: input.isActive ?? true,
             organisasi_id: organization.id,
             user_id: input.user_id ?? null,
+            jenis_peserta: input.jenis_peserta ?? JENIS_PESERTA[0],
         })
     }
 
@@ -107,9 +110,6 @@ class PesertaService {
         }
         if (input.user_id != null) await this.assertUserAktif(input.user_id)
 
-        // PATCH semantics: field yang dikirim (termasuk `null` eksplisit)
-        // akan menimpa; field `undefined` dipertahankan. `??` tidak cukup
-        // karena tidak membedakan "klien mengirim null" vs "tidak dikirim".
         return db.orm.public.peserta.where({ id }).update({
             nama: this.pick(input.nama, existing.nama),
             nomor_rumah: this.pick(input.nomor_rumah, existing.nomor_rumah),
@@ -118,6 +118,7 @@ class PesertaService {
             qr_token: this.pick(input.qr_token, existing.qr_token),
             isActive: this.pick(input.isActive, existing.isActive),
             user_id: this.pick(input.user_id, existing.user_id),
+            jenis_peserta: this.pick(input.jenis_peserta, existing.jenis_peserta),
         })
     }
 
@@ -135,7 +136,6 @@ class PesertaService {
 
         const qrCodeString = encryptQRCodeString(kodeOrganisasi, kodePeserta)
         if (!qrCodeString) {
-            // Gunakan HttpError agar errorHandler mengirim 500 dengan pesan rapi.
             throw new HttpError(500, "Gagal membuat QR Code, silakan coba lagi.")
         }
 
@@ -155,9 +155,7 @@ class PesertaService {
                 qr_path: qrFileName,
             })
         } catch (err) {
-            // Best-effort rollback: hapus file yatim jika update DB gagal.
-            // Kegagalan hapus file TIDAK boleh menelan error asli — cukup catat
-            // di stderr agar ops tahu ada yatime file yang perlu di-prune.
+            // hapus file yang gagal disimpan,
             try {
                 fs.rmSync(filePath, { force: true })
             } catch (rmErr) {
@@ -170,15 +168,13 @@ class PesertaService {
                     }),
                 )
             }
-            // Biarkan error Prisma mengalir apa adanya — errorHandler akan memetakan
-            // SqlQueryError (mis. 23505 unique) ke 409, SqlConnectionError ke 503.
+            // orm error
             throw err
         }
 
-        // Kembalikan URL publik (bukan filesystem path absolut), agar
-        // respons konsisten lintas OS & dapat dikonsumsi langsung oleh klien.
         const baseUrl = String(process.env.URL_PATH ?? "").replace(/\/+$/, "")
         const publicPath = QR_FOLDER_SEGMENTS.join("/")
+        // return url
         return `${baseUrl}/${publicPath}/${qrFileName}`
     }
 
@@ -187,10 +183,12 @@ class PesertaService {
         if (!decryptedData) {
             throw new HttpError(400, "String QR Code tidak valid.")
         }
+
         const [kodeOrganisasi, kodePeserta] = decryptedData.split(":")
         if (!kodeOrganisasi || !kodePeserta) {
             throw new HttpError(400, "String QR Code tidak valid.")
         }
+
         const organization = await this.assertOrganisasiAktifByKode(kodeOrganisasi)
         const peserta = await db.orm.public.peserta
             .where({ kode: kodePeserta, organisasi_id: organization.id, isActive: true })
@@ -198,6 +196,7 @@ class PesertaService {
         if (!peserta) {
             throw new HttpError(404, "Peserta tidak ditemukan / sudah tidak aktif.")
         }
+
         return peserta
     }
 
@@ -219,6 +218,7 @@ class PesertaService {
         if (!qrFileName) {
             throw new BadRequestError("URL QR Code tidak valid.", { code: "CLIENT.QR_URL_INVALID" })
         }
+
         const findQrCode = await db.orm.public.peserta.where({ qr_path: qrFileName }).first()
         if (!findQrCode?.qr_path) {
             throw new NotFoundError(
@@ -227,8 +227,6 @@ class PesertaService {
             )
         }
 
-        // Sama dengan generateQrCode: gunakan CWD sebagai akar folder upload
-        // agar path identik walau source dir (`src/services`) != dist dir.
         const filePath = path.join(
             process.cwd(),
             ...QR_FOLDER_SEGMENTS,
@@ -237,7 +235,7 @@ class PesertaService {
         try {
             return fs.readFileSync(filePath)
         } catch (error) {
-            // ENOENT: baris DB ada tapi file hilang → 404 (konsisten dengan cek qr_path).
+            // check file fisik
             if (
                 error instanceof Error &&
                 "code" in error &&
@@ -248,17 +246,13 @@ class PesertaService {
                     { code: "FS.QR_FILE_MISSING", cause: error },
                 )
             }
-            // EACCES/EPERM/EISDIR/dsb. biarkan mengalir → errorHandler peta ke 500 + code FS.
+
             throw error
         }
     }
 
     // ---- helpers --------------------------------------------------------
 
-    /**
-     * Bedakan "klien mengirim nilai" (termasuk `null`) vs "klien tidak mengirim field".
-     * Hanya `undefined` yang jatuh ke fallback.
-     */
     private pick<T>(incoming: T | undefined, fallback: T): T {
         return incoming !== undefined ? incoming : fallback
     }
@@ -268,9 +262,11 @@ class PesertaService {
             .where({ id: organisasi_id, isActive: true })
             .select("id")
             .first()
+
         if (!org) {
             throw new HttpError(404, "Organisasi tidak ditemukan / sudah tidak aktif.")
         }
+
         return org
     }
 
@@ -296,9 +292,7 @@ class PesertaService {
     }
 
     /**
-     * Kembalikan kode yang dijamin unik dalam satu organisasi.
-     * - `provided` diisi → pakai apa adanya, tolak bila sudah terpakai.
-     * - `provided` kosong → generate acak, retry hingga KODE_MAX_RETRY.
+     * CEK Kode Peserta, untuk memastikan kode unik dan tidak sedang digunakan
      */
     private async ensureUniqueKode(organisasi_id: number, provided?: string): Promise<string> {
         if (provided) {

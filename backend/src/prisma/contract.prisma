@@ -83,6 +83,8 @@ model peserta {
   alamat      String?
   deskripsi   String?
 
+  jenis_peserta JenisPeserta
+
   // Token yang digunakan untuk QR Code.
   // Jangan simpan NIK/KK/nama langsung sebagai isi QR.
   qr_token String? @unique
@@ -156,6 +158,8 @@ model jenis_iuran {
   tanggal_awal  Date
   tanggal_akhir Date
 
+  jenis_peserta JenisPeserta
+
   isActive Boolean @default(true)
 
   organisasi_id Int
@@ -224,8 +228,8 @@ model tagihan_iuran {
   updatedAt TimestamptzString @default(now())
 
   // misal: peserta pindah rumah, tagihan dibatalkan atau alasan lainnya.
-  deletedAt TimestamptzString?
-  deletedBy Int?
+  deletedAt          TimestamptzString?
+  deletedBy          Int?
   deletedDescription String?
 
   // Relations
@@ -441,4 +445,11 @@ enum JenisKeuangan {
 enum LedgerSign {
   DEBIT
   KREDIT
+}
+
+enum JenisPeserta {
+  RUMAH
+  KOS
+  TEMPAT_USAHA
+  LAINNYA
 }

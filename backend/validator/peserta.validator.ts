@@ -1,4 +1,5 @@
 import z from "zod"
+import { JENIS_PESERTA } from "../src/utils/constanta.ts"
 
 // Daftar peserta/detail peserta per organisasi: `(id, kode)` di URL.
 export const getDetailPesertaByIdAndKodeOrganisasiSchema = z.strictObject({
@@ -25,6 +26,7 @@ export const createPesertaSchema = z.strictObject({
     isActive: z.boolean().default(true).optional(),
     organisasi_id: z.coerce.number().int().positive(),
     user_id: z.coerce.number().int().positive().nullable().optional(),
+    jenis_peserta: z.enum(JENIS_PESERTA).default(JENIS_PESERTA[0]).optional(),
 })
 
 // PATCH: semua field opsional, `kode` immutable (dihapus dari body),
@@ -37,6 +39,7 @@ export const updatePesertaSchema = z.strictObject({
     qr_token: z.string().trim().min(3).max(256).nullable().optional(),
     isActive: z.boolean().optional(),
     user_id: z.coerce.number().int().positive().nullable().optional(),
+    jenis_peserta: z.enum(JENIS_PESERTA).optional()
 })
 
 export const downloadQrCodePesertaSchema = z.strictObject({

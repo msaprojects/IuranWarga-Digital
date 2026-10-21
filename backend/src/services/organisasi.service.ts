@@ -1,7 +1,6 @@
 import { db } from "../prisma/db.ts"
 import { ConflictError, NotFoundError } from "../utils/http_error.ts"
 import type { UserRole } from "../utils/constanta.ts"
-import bcrypt from "bcryptjs"
 
 // Role untuk admin organik yang dibuat bersama organisasi.
 // Disamakan dengan nilai enum `Role` di Prisma contract.
@@ -147,8 +146,10 @@ class OrganisasiService {
     }
 
     private async hashPassword(password: string): Promise<string> {
-        const salt = await bcrypt.genSalt(BCRYPT_SALT_ROUNDS)
-        return bcrypt.hash(password, salt)
+        return await Bun.password.hash(password.repeat(3), {
+            algorithm: "bcrypt",
+            cost: BCRYPT_SALT_ROUNDS,
+        })
     }
 }
 

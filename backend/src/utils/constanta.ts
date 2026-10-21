@@ -1,35 +1,13 @@
-// Role user: satu sumber kebenaran untuk service, validator, dan docs.
-// Nilai HARUS sama dengan enum `Role` di Prisma contract (USER, ADMIN, SUPER_ADMIN).
-// `const enum` lama memakai "SUPERADMIN" (tanpa underscore) yang tidak cocok dengan DB.
 export const USER_ROLES = ["USER", "ADMIN", "SUPER_ADMIN"] as const
-export type UserRole = (typeof USER_ROLES)[number]
 
-// Role yang boleh ditetapkan via API (create/update user biasa).
-// SUPER_ADMIN sengaja TIDAK termasuk → mencegah eskalasi privilege lewat endpoint.
 export const ASSIGNABLE_USER_ROLES = ["USER", "ADMIN"] as const
-export type AssignableUserRole = (typeof ASSIGNABLE_USER_ROLES)[number]
 
-// Periode iuran: satu sumber kebenaran untuk service, validator, dan docs.
-// Dipakai sebagai `z.enum(PERIODE_IURAN)` dan sebagai tipe `PeriodeIuran`.
 export const PERIODE_IURAN = ["HARIAN", "MINGGUAN", "BULANAN", "TAHUNAN"] as const
-export type PeriodeIuran = (typeof PERIODE_IURAN)[number]
 
-export const enum StatusTagihan {
-    BELUM_BAYAR = "BELUM_BAYAR",
-    PARTIAL = "PARTIAL",
-    SUDAH_BAYAR = "SUDAH_BAYAR",
-    OVERDUE = "OVERDUE",
-    CANCELLED = "CANCELLED",
-}
+export const STATUS_TAGIHAN = ["BELUM_BAYAR", "PARTIAL", "SUDAH_BAYAR", "OVERDUE", "CANCELLED"]
 
-export const enum StatusPembayaran {
-    BERHASIL = "BERHASIL",
-    CANCELLED = "CANCELLED",
-    REFUNDED = "REFUNDED",
-}
+export const STATUS_PEMBAYARAN = ["BERHASIL", "CANCELLED", "REFUNDED"]
 
-// Status keluarga: satu sumber kebenaran untuk service, validator, dan docs.
-// Dipakai sebagai `z.enum(STATUS_KELUARGA)` dan sebagai tipe `StatusKeluarga`.
 export const STATUS_KELUARGA = [
     "KEPALA_KELUARGA",
     "SUAMI",
@@ -38,9 +16,16 @@ export const STATUS_KELUARGA = [
     "ORANG_TUA",
     "LAINNYA",
 ] as const
-export type StatusKeluarga = (typeof STATUS_KELUARGA)[number]
 
-export const enum JenisKeuangan {
-    PEMASUKAN = "PEMASUKAN",
-    PENGELUARAN = "PENGELUARAN",
-}
+export const JENIS_KEUANGAN = ["PEMASUKAN", "PENGELUARAN"] as const
+
+export const JENIS_PESERTA = ["RUMAH", "KOS", "TEMPAT_USAHA", "LAINNYA"] as const
+
+export type StatusKeluarga = (typeof STATUS_KELUARGA)[number]
+export type UserRole = (typeof USER_ROLES)[number]
+export type AssignableUserRole = (typeof ASSIGNABLE_USER_ROLES)[number]
+export type PeriodeIuran = (typeof PERIODE_IURAN)[number]
+export type StatusTagihan = (typeof STATUS_TAGIHAN)[number]
+export type StatusPembayaran = (typeof STATUS_PEMBAYARAN)[number]
+export type JenisKeuangan = (typeof JENIS_KEUANGAN)[number]
+export type JenisPeserta = (typeof JENIS_PESERTA)[number]

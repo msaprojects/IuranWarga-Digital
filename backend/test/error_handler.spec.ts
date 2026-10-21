@@ -81,7 +81,12 @@ const sqlConnectionError = (init: { message?: string; transient?: boolean } = {}
 
 // ---------- tests ----------
 describe("errorHandler", () => {
-    let consoleErrorSpy: jest.SpyInstance
+    // Jest 30 + `@jest/globals` mengekspor `jest` sebagai NILAI (bukan namespace
+    // tipe), sehingga `jest.SpyInstance` tidak lagi tersedia → TS2694.
+    // Tipe spy canonical adalah `Mock` dari `jest-mock` (re-exported transitif
+    // oleh @jest/globals). Kami pakai `ReturnType<typeof jest.spyOn>` supaya
+    // tetap sinkron kalau Jest mengubah struktur internal spy-nya.
+    let consoleErrorSpy: ReturnType<typeof jest.spyOn>
     beforeEach(() => {
         consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => undefined)
     })

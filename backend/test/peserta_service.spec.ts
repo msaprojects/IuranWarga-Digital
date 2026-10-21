@@ -47,6 +47,7 @@ const existingPeserta = {
     isActive: true,
     organisasi_id: 1,
     user_id: 2,
+    jenis_peserta: 'RUMAH',
 }
 
 beforeEach(() => {
@@ -127,6 +128,7 @@ describe("PesertaService", () => {
                 isActive: true,
                 organisasi_id: 1,
                 user_id: 2,
+                jenis_peserta:'RUMAH'
             })
         })
 
@@ -203,6 +205,7 @@ describe("PesertaService", () => {
                 qr_token: existingPeserta.qr_token,
                 isActive: existingPeserta.isActive,
                 user_id: existingPeserta.user_id,
+                jenis_peserta: existingPeserta.jenis_peserta,
             })
         })
 

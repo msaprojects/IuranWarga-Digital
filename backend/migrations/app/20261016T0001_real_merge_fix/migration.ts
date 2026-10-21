@@ -12,6 +12,13 @@ import {
     placeholder,
     primaryKey,
 } from "@prisma/orm-postgres/migration"
+import postgres from "@prisma/orm-postgres/runtime"
+
+// Build a typed contract view over the emitted end-contract JSON. `postgres(...)`
+// connects lazily, so this opens no connection; its `contract` is the validated,
+// branded `Contract<SqlStorage>` that `dataTransform` requires (the raw JSON import
+// widens `namespace` to `string`, which fails to satisfy the branded `NamespaceId`).
+const { contract } = postgres<End>({ contractJson: endContract })
 
 export default class M extends Migration<Start, End> {
     override readonly startContractJson = startContract
@@ -109,7 +116,7 @@ export default class M extends Migration<Start, End> {
                 table: "peserta",
                 column: col("jenis", "text", { codecRef: { codecId: "pg/text@1" } }),
             }),
-            this.dataTransform(endContract, "backfill-peserta-jenis", {
+            this.dataTransform(contract, "backfill-peserta-jenis", {
                 check: () => placeholder("backfill-peserta-jenis:check"),
                 run: () => placeholder("backfill-peserta-jenis:run"),
             }),

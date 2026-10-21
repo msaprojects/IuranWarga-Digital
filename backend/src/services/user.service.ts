@@ -1,5 +1,4 @@
 import { generateJWT } from "../utils/jwtutils.ts"
-import bcrypt from "bcryptjs"
 import { db } from "../prisma/db.ts"
 import { ConflictError, NotFoundError, UnauthorizedError } from "../utils/http_error.ts"
 import { BCRYPT_SALT_ROUNDS } from "./organisasi.service.ts"
@@ -30,7 +29,7 @@ export type UpdateUserInput = Partial<
     >
 >
 
-// Kolom yang boleh dibaca klien (password tidak pernah keluar).
+// Kolom yang di return
 const USER_PUBLIC_SELECT = [
     "id",
     "username",
@@ -44,9 +43,7 @@ const USER_PUBLIC_SELECT = [
 ] as const
 
 /**
- * Drop kolom sensitif (password hash) dari baris `user` sebelum
- * dikembalikan ke controller → response. Jangan sampai hash bocor,
- * bahkan untuk request yang ter-autentikasi.
+ * Drop kolom sensitif (password hash)
  */
 function tanpaPassword<T extends { password: unknown }>(row: T): Omit<T, "password"> {
     const { password: _ignored, ...safe } = row
@@ -54,7 +51,7 @@ function tanpaPassword<T extends { password: unknown }>(row: T): Omit<T, "passwo
 }
 
 class UserService {
-    /** ID organisasi aktif, atau lempar NotFoundError bila tidak ada/tidak aktif. */
+    // Check Organisasi dan kembalikan id organisasi.
     private async assertOrganisasiAktifByKode(organizationCode: string) {
         const organization = await db.orm.public.organisasi
             .where({ kode: organizationCode, isActive: true })
@@ -90,8 +87,10 @@ class UserService {
     }
 
     private async hashPassword(password: string): Promise<string> {
-        const salt = await bcrypt.genSalt(BCRYPT_SALT_ROUNDS)
-        return bcrypt.hash(password, salt)
+        return await Bun.password.hash(password.repeat(3), {
+            algorithm: "bcrypt",
+            cost: BCRYPT_SALT_ROUNDS,
+        })
     }
 
     /**
@@ -205,7 +204,7 @@ class UserService {
             })
         }
 
-        const isPasswordValid = await bcrypt.compare(password, user.password)
+        const isPasswordValid = await Bun.password.verify(password, user.password)
         if (!isPasswordValid) {
             throw new UnauthorizedError("Username atau password salah.", {
                 code: "AUTH.INVALID_CREDENTIALS",

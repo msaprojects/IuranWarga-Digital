@@ -19,6 +19,7 @@ const peserta = {
     user_id: 2,
     createdAt: "2026-10-16T00:00:00.000Z",
     updatedAt: "2026-10-16T00:00:00.000Z",
+    jenis_peserta: "RUMAH",
 } satisfies Awaited<ReturnType<typeof pesertaService.createPeserta>>
 
 const createPayload = {
@@ -27,6 +28,7 @@ const createPayload = {
     alamat: "Jl. Melati No. 10",
     organisasi_id: 1,
     user_id: 2,
+    jenis_peserta: "RUMAH",
 }
 
 describe("Peserta API", () => {
@@ -142,6 +144,7 @@ describe("Peserta API", () => {
         expect(pesertaService.createPeserta).toHaveBeenCalledWith({
             ...createPayload,
             isActive: true,
+            jenis_peserta: "RUMAH",
         })
     })
 
@@ -156,6 +159,7 @@ describe("Peserta API", () => {
             ...createPayload,
             kode: "PST002",
             isActive: true,
+            jenis_peserta: "RUMAH",
         })
     })
 
@@ -217,7 +221,9 @@ describe("Peserta API", () => {
 
         // Setelah refactor, `nama` & `user_id` tidak wajib lagi di body PATCH.
         expect(response.status).toBe(200)
-        expect(pesertaService.updatePeserta).toHaveBeenCalledWith(1, { alamat: "Alamat baru" })
+        expect(pesertaService.updatePeserta).toHaveBeenCalledWith(1, {
+            alamat: "Alamat baru",
+        })
     })
 
     it("mengizinkan null eksplisit pada field nullable saat PATCH", async () => {
@@ -225,7 +231,6 @@ describe("Peserta API", () => {
             .patch("/api/peserta/1")
             .set("Authorization", authorizationHeader())
             .send({ nomor_rumah: null, user_id: null })
-
         expect(response.status).toBe(200)
         expect(pesertaService.updatePeserta).toHaveBeenCalledWith(1, {
             nomor_rumah: null,

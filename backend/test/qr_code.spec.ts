@@ -33,9 +33,13 @@ describe("writeQrCodeWithLabel", () => {
             .raw()
             .toBuffer()
 
+        // `noUncheckedIndexedAccess` membuat `buf[i]` bertipe `number | undefined`,
+        // memicu TS2532 pada perbandingan. Pakai `readUInt8(offset)` yang
+        // mengembalikan `number` murni (dan tetap melempar bila offset invalid),
+        // sehingga invarian “stride 3 = kanal R” dieksekusi tanpa assertion.
         const containsDarkText = Array.from(
-            { length: labelPixels.length / 3 },
-            (_, index) => labelPixels[index * 3] < 80,
+            { length: Math.floor(labelPixels.length / 3) },
+            (_, index) => labelPixels.readUInt8(index * 3) < 80,
         ).some(Boolean)
 
         expect(containsDarkText).toBe(true)
