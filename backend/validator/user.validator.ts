@@ -1,4 +1,5 @@
-import z from "zod"
+import { z } from "zod"
+import { ASSIGNABLE_USER_ROLES } from "../src/utils/constanta.ts"
 
 export const getDetailUserByIdAndKodeOrganisasiSchema = z.strictObject({
     id: z.coerce.number().int().positive(),
@@ -13,11 +14,11 @@ export const createUserSchema = z.strictObject({
     username: z.string().trim().min(6).max(12),
     name: z.string().trim().min(3).max(45),
     password: z.string().trim().min(8).max(12),
-    role: z.enum(["ADMIN", "USER"]),
-    organisasi_id: z.number().int().positive(),
-    isActive: z.boolean().default(true),
-    email: z.string().email().nullable().default(null),
-    contact: z.string().trim().nullable().default(null),
+    role: z.enum(ASSIGNABLE_USER_ROLES),
+    organisasi_id: z.coerce.number().int().positive(),
+    isActive: z.boolean().default(true).optional(),
+    email: z.string().email().trim().max(320).nullable().default(null),
+    contact: z.string().trim().max(20).nullable().default(null),
 })
 
 export const updateUserSchema = z
@@ -25,11 +26,15 @@ export const updateUserSchema = z
         username: z.string().trim().min(6).max(12).optional(),
         name: z.string().trim().min(3).max(45).optional(),
         password: z.string().trim().min(8).max(12).optional(),
-        role: z.enum(["ADMIN", "USER"]).optional(),
-        organisasi_id: z.number().int().positive().optional(),
+        role: z.enum(ASSIGNABLE_USER_ROLES).optional(),
+        organisasi_id: z.coerce.number().int().positive().optional(),
         isActive: z.boolean().optional(),
-        email: z.string().email().nullable().default(null).optional(),
-        contact: z.string().trim().nullable().default(null).optional(),
+        // PATCH: `.nullable().optional()` TANPA `.default(null)`.
+        // Default akan memaksa field yang tidak dikirim menjadi `null`,
+        // sehingga tanpa sengaja menghapus data. `null` hanya terjadi bila
+        // klien mengirim null secara eksplisit.
+        email: z.string().email().trim().max(320).nullable().optional(),
+        contact: z.string().trim().max(20).nullable().optional(),
     })
     .refine((data) => Object.keys(data).length > 0, {
         message: "Harap berikan setidaknya satu field untuk diperbarui.",

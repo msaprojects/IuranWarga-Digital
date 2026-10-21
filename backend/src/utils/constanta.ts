@@ -1,8 +1,13 @@
-export const enum UserRole {
-    USER = "USER",
-    ADMIN = "ADMIN",
-    SUPERADMIN = "SUPERADMIN",
-}
+// Role user: satu sumber kebenaran untuk service, validator, dan docs.
+// Nilai HARUS sama dengan enum `Role` di Prisma contract (USER, ADMIN, SUPER_ADMIN).
+// `const enum` lama memakai "SUPERADMIN" (tanpa underscore) yang tidak cocok dengan DB.
+export const USER_ROLES = ["USER", "ADMIN", "SUPER_ADMIN"] as const
+export type UserRole = (typeof USER_ROLES)[number]
+
+// Role yang boleh ditetapkan via API (create/update user biasa).
+// SUPER_ADMIN sengaja TIDAK termasuk → mencegah eskalasi privilege lewat endpoint.
+export const ASSIGNABLE_USER_ROLES = ["USER", "ADMIN"] as const
+export type AssignableUserRole = (typeof ASSIGNABLE_USER_ROLES)[number]
 
 // Periode iuran: satu sumber kebenaran untuk service, validator, dan docs.
 // Dipakai sebagai `z.enum(PERIODE_IURAN)` dan sebagai tipe `PeriodeIuran`.

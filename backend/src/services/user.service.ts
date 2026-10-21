@@ -1,13 +1,15 @@
-import { generateJWT } from "./../utils/jwtutils"
-import bcrypt, { genSalt } from "bcryptjs"
+import { generateJWT } from "../utils/jwtutils.ts"
+import bcrypt from "bcryptjs"
 import { db } from "../prisma/db.ts"
-import { HttpError } from "../utils/http_error.ts"
+import { ConflictError, NotFoundError, UnauthorizedError } from "../utils/http_error.ts"
+import { BCRYPT_SALT_ROUNDS } from "./organisasi.service.ts"
+import type { UserRole } from "../utils/constanta.ts"
 
 export type CreateUserInput = {
     username: string
     name: string
     password: string
-    role: "USER" | "ADMIN" | "SUPER_ADMIN"
+    role: UserRole
     organisasi_id: number
     isActive?: boolean
     email: string | null
@@ -28,80 +30,109 @@ export type UpdateUserInput = Partial<
     >
 >
 
+// Kolom yang boleh dibaca klien (password tidak pernah keluar).
+const USER_PUBLIC_SELECT = [
+    "id",
+    "username",
+    "name",
+    "role",
+    "organisasi_id",
+    "latestLogin",
+    "isActive",
+    "email",
+    "contact",
+] as const
+
+/**
+ * Drop kolom sensitif (password hash) dari baris `user` sebelum
+ * dikembalikan ke controller → response. Jangan sampai hash bocor,
+ * bahkan untuk request yang ter-autentikasi.
+ */
+function tanpaPassword<T extends { password: unknown }>(row: T): Omit<T, "password"> {
+    const { password: _ignored, ...safe } = row
+    return safe
+}
+
 class UserService {
-    private async getActiveOrganizationId(organizationCode: string) {
+    /** ID organisasi aktif, atau lempar NotFoundError bila tidak ada/tidak aktif. */
+    private async assertOrganisasiAktifByKode(organizationCode: string) {
         const organization = await db.orm.public.organisasi
             .where({ kode: organizationCode, isActive: true })
             .select("id")
             .first()
+        if (!organization) {
+            throw new NotFoundError("Organisasi tidak ditemukan / sudah tidak aktif.", {
+                code: "ORG.NOT_FOUND",
+            })
+        }
+        return organization.id
+    }
 
-        return organization?.id ?? null
+    private async assertOrganisasiAktifById(organisasi_id: number) {
+        const organization = await db.orm.public.organisasi
+            .where({ id: organisasi_id, isActive: true })
+            .select("id")
+            .first()
+        if (!organization) {
+            throw new NotFoundError("Organisasi tidak ditemukan atau tidak aktif.", {
+                code: "ORG.NOT_FOUND",
+            })
+        }
+        return organization
     }
 
     /**
-     * Mengambil data detail user berdasarkan ID dan Kode Organisasi.
-     * alasan : Kenapa tidak ID saja? karena untuk memastikan user tersebut
-     *          memang berada di organisasi yang sama dengan kode organisasi yang diberikan,
-     *          sehingga menambah lapisan keamanan dan validasi.
+     * Bedakan "klien mengirim nilai" (termasuk `null`) vs "klien tidak mengirim field".
+     * Hanya `undefined` yang jatuh ke nilai lama.
+     */
+    private pick<T>(incoming: T | undefined, fallback: T): T {
+        return incoming !== undefined ? incoming : fallback
+    }
+
+    private async hashPassword(password: string): Promise<string> {
+        const salt = await bcrypt.genSalt(BCRYPT_SALT_ROUNDS)
+        return bcrypt.hash(password, salt)
+    }
+
+    /**
+     * Detail user berdasarkan ID + kode organisasi.
+     * Kode organisasi ikut divalidasi agar user dipastikan berada di organisasi
+     * yang sama (lapisan validasi multi-tenant).
      */
     async getUserByIdAndOrganizationCode(id: number, organizationCode: string) {
-        const organizationId = await this.getActiveOrganizationId(organizationCode)
-        if (organizationId === null) {
-            return null
-        }
+        const organizationId = await this.assertOrganisasiAktifByKode(organizationCode)
 
-        return db.orm.public.user
-            .where({ id, organisasi_id: organizationId })
-            .select(
-                "id",
-                "username",
-                "name",
-                "role",
-                "organisasi_id",
-                "latestLogin",
-                "isActive",
-                "email",
-                "contact",
-            )
+        const user = await db.orm.public.user
+            .where({ id, organisasi_id: organizationId, isActive: true })
+            .select(...USER_PUBLIC_SELECT)
             .first()
+        if (!user) {
+            throw new NotFoundError("User tidak ditemukan / sudah tidak aktif.", {
+                code: "USER.NOT_FOUND",
+            })
+        }
+        return user
     }
 
     async getUsersByOrganizationCode(organizationCode: string) {
-        const organizationId = await this.getActiveOrganizationId(organizationCode)
-        if (organizationId === null) {
-            return []
-        }
+        const organizationId = await this.assertOrganisasiAktifByKode(organizationCode)
 
         return db.orm.public.user
-            .where({ organisasi_id: organizationId })
+            .where({ organisasi_id: organizationId, isActive: true })
             .select("id", "username", "name", "role", "organisasi_id", "latestLogin")
             .all()
     }
 
     async createUser(input: CreateUserInput) {
-        const organization = await db.orm.public.organisasi
-            .where({ id: input.organisasi_id, isActive: true })
-            .select("id")
-            .first()
-        if (!organization) {
-            throw new HttpError(404, "Organisasi tidak ditemukan atau tidak aktif.")
-        }
+        const organization = await this.assertOrganisasiAktifById(input.organisasi_id)
 
-        const existingUser = await db.orm.public.user.where({ username: input.username }).first()
-        if (existingUser) {
-            throw new HttpError(409, "Username sudah digunakan.")
-        }
-        if (input.email && (await db.orm.public.user.where({ email: input.email }).first())) {
-            throw new HttpError(409, "Email sudah digunakan.")
-        }
-        if (input.contact && (await db.orm.public.user.where({ contact: input.contact }).first())) {
-            throw new HttpError(409, "Nomor kontak sudah digunakan.")
-        }
+        await this.assertUsernameBebas(input.username)
+        await this.assertEmailBebas(input.email)
+        await this.assertContactBebas(input.contact)
 
-        const salt = await bcrypt.genSalt(12)
-        const hashedPassword = await bcrypt.hash(input.password, salt)
+        const hashedPassword = await this.hashPassword(input.password)
 
-        return db.orm.public.user.create({
+        const created = await db.orm.public.user.create({
             username: input.username,
             name: input.name,
             password: hashedPassword,
@@ -111,58 +142,57 @@ class UserService {
             email: input.email,
             contact: input.contact,
         })
+        return tanpaPassword(created)
     }
 
     async updateUser(id: number, input: UpdateUserInput) {
         const user = await db.orm.public.user.where({ id }).first()
         if (!user) {
-            throw new HttpError(404, "User tidak ditemukan.")
+            throw new NotFoundError("User tidak ditemukan.", { code: "USER.NOT_FOUND" })
         }
 
         if (input.username && input.username !== user.username) {
-            const existingUser = await db.orm.public.user
-                .where({ username: input.username })
-                .first()
-            if (existingUser) {
-                throw new HttpError(409, "Username sudah digunakan.")
-            }
+            await this.assertUsernameBebas(input.username)
         }
         if (input.email && input.email !== user.email) {
-            const existingUser = await db.orm.public.user.where({ email: input.email }).first()
-            if (existingUser) {
-                throw new HttpError(409, "Email sudah digunakan.")
-            }
+            await this.assertEmailBebas(input.email)
         }
         if (input.contact && input.contact !== user.contact) {
-            const existingUser = await db.orm.public.user.where({ contact: input.contact }).first()
-            if (existingUser) {
-                throw new HttpError(409, "Nomor kontak sudah digunakan.")
-            }
+            await this.assertContactBebas(input.contact)
+        }
+        // Pindah organisasi → pastikan tujuan valid & aktif (cegah lintas-tenant).
+        if (input.organisasi_id !== undefined && input.organisasi_id !== user.organisasi_id) {
+            await this.assertOrganisasiAktifById(input.organisasi_id)
         }
 
-        // Hash the password if it is provided in the input
-        if (input.password) {
-            const salt = await bcrypt.genSalt(12)
-            const hashedPassword = await bcrypt.hash(input.password, salt)
-            input.password = hashedPassword
-        }
+        const hashedPassword = input.password
+            ? await this.hashPassword(input.password)
+            : user.password
 
-        return db.orm.public.user.where({ id }).update({
-            username: input.username ?? user.username,
-            name: input.name ?? user.name,
-            password: input.password ?? user.password,
-            role: input.role ?? user.role,
-            organisasi_id: input.organisasi_id ?? user.organisasi_id,
-            isActive: input.isActive ?? user.isActive,
-            email: input.email ?? user.email,
-            contact: input.contact ?? user.contact,
+        const updated = await db.orm.public.user.where({ id }).update({
+            username: this.pick(input.username, user.username),
+            name: this.pick(input.name, user.name),
+            password: hashedPassword,
+            role: this.pick(input.role, user.role),
+            organisasi_id: this.pick(input.organisasi_id, user.organisasi_id),
+            isActive: this.pick(input.isActive, user.isActive),
+            email: this.pick(input.email, user.email),
+            contact: this.pick(input.contact, user.contact),
         })
+        if (!updated) {
+            // Race: row hilang antara cek-existence dan update.
+            throw new NotFoundError("User tidak ditemukan.", { code: "USER.NOT_FOUND" })
+        }
+        return tanpaPassword(updated)
     }
 
     async loginUser(username: string, password: string) {
         const user = await db.orm.public.user.where({ username }).first()
+        // Satu pesan untuk user-tak-ada & salah-password (cegah user enumeration).
         if (!user) {
-            throw new HttpError(401, "Username atau password salah.")
+            throw new UnauthorizedError("Username atau password salah.", {
+                code: "AUTH.INVALID_CREDENTIALS",
+            })
         }
 
         const organization = await db.orm.public.organisasi
@@ -170,18 +200,27 @@ class UserService {
             .select("id", "kode")
             .first()
         if (!organization) {
-            throw new HttpError(401, "Organisasi anda tidak ditemukan atau sudah tidak aktif.")
+            throw new UnauthorizedError("Organisasi anda tidak ditemukan atau sudah tidak aktif.", {
+                code: "ORG.INACTIVE",
+            })
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password)
         if (!isPasswordValid) {
-            throw new HttpError(401, "Username atau password salah.")
+            throw new UnauthorizedError("Username atau password salah.", {
+                code: "AUTH.INVALID_CREDENTIALS",
+            })
         }
 
-        // generate JWT token
+        // User nonaktif tidak boleh login meski kredensial benar.
+        if (!user.isActive) {
+            throw new UnauthorizedError("Akun anda sudah dinonaktifkan.", {
+                code: "AUTH.ACCOUNT_INACTIVE",
+            })
+        }
+
         const token = generateJWT(user.id, organization.kode, organization.id, user.username)
 
-        // update latest login timestamp
         await db.orm.public.user
             .where({ id: user.id })
             .update({ latestLogin: new Date().toISOString() })
@@ -195,6 +234,31 @@ class UserService {
                 kode_organisasi: organization.kode,
             },
             token,
+        }
+    }
+
+    // ---- helpers keunikan ------------------------------------------------
+
+    private async assertUsernameBebas(username: string) {
+        const taken = await db.orm.public.user.where({ username }).first()
+        if (taken) {
+            throw new ConflictError("Username sudah digunakan.", { code: "USER.USERNAME_TAKEN" })
+        }
+    }
+
+    private async assertEmailBebas(email: string | null) {
+        if (!email) return
+        const taken = await db.orm.public.user.where({ email }).first()
+        if (taken) {
+            throw new ConflictError("Email sudah digunakan.", { code: "USER.EMAIL_TAKEN" })
+        }
+    }
+
+    private async assertContactBebas(contact: string | null) {
+        if (!contact) return
+        const taken = await db.orm.public.user.where({ contact }).first()
+        if (taken) {
+            throw new ConflictError("Nomor kontak sudah digunakan.", { code: "USER.CONTACT_TAKEN" })
         }
     }
 }

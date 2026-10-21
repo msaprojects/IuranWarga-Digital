@@ -16,16 +16,12 @@ type UpdateLocals = {
     }
 }
 
+// Service kini melempar NotFoundError/ConflictError → tidak perlu cek null di sini;
+// errorHandler memetakan langsung ke envelope + status yang benar.
 export const orgController = {
     async getByKode(_req: Request, res: Response<unknown, ParamsLocals>): Promise<void> {
         const { kode } = res.locals.validated.params
         const organisasi = await orgService.getByKode(kode)
-
-        if (!organisasi) {
-            resHandler.error(res, 404, "Organisasi tidak ditemukan")
-            return
-        }
-
         resHandler.success(res, 200, "Success", organisasi)
     },
 
@@ -38,24 +34,12 @@ export const orgController = {
         const { kode } = res.locals.validated.params
         const input = res.locals.validated.body
         const organisasi = await orgService.updateByKode(kode, input)
-
-        if (!organisasi) {
-            resHandler.error(res, 404, "Organisasi tidak ditemukan")
-            return
-        }
-
         resHandler.success(res, 200, "Organisasi berhasil diperbarui", organisasi)
     },
 
     async deactivate(_req: Request, res: Response<unknown, ParamsLocals>): Promise<void> {
         const { kode } = res.locals.validated.params
         const organisasi = await orgService.deactivateByKode(kode)
-
-        if (!organisasi) {
-            resHandler.error(res, 404, "Organisasi tidak ditemukan atau sudah nonaktif")
-            return
-        }
-
         resHandler.success(res, 200, "Organisasi berhasil dinonaktifkan", organisasi)
     },
 }

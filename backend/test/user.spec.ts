@@ -2,9 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals
 import request from "supertest"
 import app from "../src/app.ts"
 import { userService } from "../src/services/user.service"
-import { HttpError } from "../src/utils/http_error.ts"
+import { ConflictError, NotFoundError, UnauthorizedError } from "../src/utils/http_error.ts"
 import { authorizationHeader } from "./auth.ts"
 
+// Service kini mengembalikan objek tanpa `password` untuk create/update,
+// dan melempar NotFoundError (bukan null) untuk lookup yang gagal.
 const user = {
     id: 1,
     latestLogin: null,
@@ -15,7 +17,7 @@ const user = {
     isActive: true,
     email: null,
     contact: null,
-} satisfies NonNullable<Awaited<ReturnType<typeof userService.getUserByIdAndOrganizationCode>>>
+} satisfies Awaited<ReturnType<typeof userService.getUserByIdAndOrganizationCode>>
 
 const createUser = {
     id: 2,
@@ -24,7 +26,6 @@ const createUser = {
     latestLogin: null,
     username: "user01",
     name: "User Organisasi",
-    password: "password123",
     role: "USER",
     organisasi_id: 1,
     isActive: true,
@@ -33,12 +34,26 @@ const createUser = {
 } satisfies Awaited<ReturnType<typeof userService.createUser>>
 
 beforeEach(() => {
+    // Selaraskan mock dengan kontrak service baru: lempar NotFoundError
+    // (controller tidak lagi cek-null).
     jest.spyOn(userService, "getUserByIdAndOrganizationCode").mockImplementation(
-        async (id, kode) => (id === 1 && kode === "ORG001" ? user : null),
+        async (id, kode) => {
+            if (id !== 1 || kode !== "ORG001") {
+                throw new NotFoundError("User tidak ditemukan / sudah tidak aktif.", {
+                    code: "USER.NOT_FOUND",
+                })
+            }
+            return user
+        },
     )
-    jest.spyOn(userService, "getUsersByOrganizationCode").mockImplementation(async (kode) =>
-        kode === "ORG001" ? [user] : [],
-    )
+    jest.spyOn(userService, "getUsersByOrganizationCode").mockImplementation(async (kode) => {
+        if (kode !== "ORG001") {
+            throw new NotFoundError("Organisasi tidak ditemukan / sudah tidak aktif.", {
+                code: "ORG.NOT_FOUND",
+            })
+        }
+        return [user]
+    })
     jest.spyOn(userService, "createUser").mockResolvedValue(createUser)
     jest.spyOn(userService, "updateUser").mockResolvedValue(createUser)
     jest.spyOn(userService, "loginUser").mockResolvedValue({
@@ -74,6 +89,13 @@ describe("User API", () => {
         expect(userService.getUsersByOrganizationCode).toHaveBeenCalledWith("ORG001")
     })
 
+    it("mengembalikan 404 daftar user jika organisasi tidak dikenal", async () => {
+        const response = await authenticated.get("/api/users/ORG999")
+
+        expect(response.status).toBe(404)
+        expect(response.body.message).toBe("Organisasi tidak ditemukan / sudah tidak aktif.")
+    })
+
     it("mengambil detail user berdasarkan ID dan kode organisasi", async () => {
         const response = await authenticated.get("/api/user/1/ORG001")
 
@@ -105,12 +127,16 @@ describe("User API", () => {
         expect(response.body.data).toEqual(
             expect.objectContaining({ id: 2, username: "user01", name: "User Organisasi" }),
         )
+        // Password tidak boleh pernah bocor di response.
+        expect(response.body.data).not.toHaveProperty("password")
         expect(userService.createUser).toHaveBeenCalled()
     })
 
     it("mengembalikan 404 jika organisasi untuk user tidak ditemukan", async () => {
         jest.spyOn(userService, "createUser").mockRejectedValueOnce(
-            new HttpError(404, "Organisasi tidak ditemukan atau tidak aktif."),
+            new NotFoundError("Organisasi tidak ditemukan atau tidak aktif.", {
+                code: "ORG.NOT_FOUND",
+            }),
         )
 
         const response = await authenticated.post("/api/user").send({
@@ -127,7 +153,7 @@ describe("User API", () => {
 
     it("mengembalikan 409 jika username sudah digunakan", async () => {
         jest.spyOn(userService, "createUser").mockRejectedValueOnce(
-            new HttpError(409, "Username sudah digunakan."),
+            new ConflictError("Username sudah digunakan.", { code: "USER.USERNAME_TAKEN" }),
         )
 
         const response = await authenticated.post("/api/user").send({
@@ -149,6 +175,7 @@ describe("User API", () => {
 
         expect(response.status).toBe(200)
         expect(response.body.data).toEqual(expect.objectContaining({ id: 2, username: "user01" }))
+        expect(response.body.data).not.toHaveProperty("password")
         expect(userService.updateUser).toHaveBeenCalled()
     })
 
@@ -156,6 +183,7 @@ describe("User API", () => {
         const response = await authenticated.get("/api/user/2/ORG001")
 
         expect(response.status).toBe(404)
+        expect(response.body.message).toBe("User tidak ditemukan / sudah tidak aktif.")
         expect(userService.getUserByIdAndOrganizationCode).toHaveBeenCalledWith(2, "ORG001")
     })
 
@@ -191,7 +219,9 @@ describe("User API", () => {
 
     it("mengembalikan 401 jika kredensial login salah", async () => {
         jest.spyOn(userService, "loginUser").mockRejectedValueOnce(
-            new HttpError(401, "Username atau password salah."),
+            new UnauthorizedError("Username atau password salah.", {
+                code: "AUTH.INVALID_CREDENTIALS",
+            }),
         )
 
         const response = await request(app).post("/api/user/login").send({
@@ -201,5 +231,21 @@ describe("User API", () => {
 
         expect(response.status).toBe(401)
         expect(response.body.message).toBe("Username atau password salah.")
+    })
+
+    it("mengembalikan 401 jika akun login dinonaktifkan", async () => {
+        jest.spyOn(userService, "loginUser").mockRejectedValueOnce(
+            new UnauthorizedError("Akun anda sudah dinonaktifkan.", {
+                code: "AUTH.ACCOUNT_INACTIVE",
+            }),
+        )
+
+        const response = await request(app).post("/api/user/login").send({
+            username: "nonaktif01",
+            password: "password123",
+        })
+
+        expect(response.status).toBe(401)
+        expect(response.body.message).toBe("Akun anda sudah dinonaktifkan.")
     })
 })

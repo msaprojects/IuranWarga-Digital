@@ -2,7 +2,7 @@ import request from "supertest"
 import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
 import app from "../src/app.ts"
 import { orgService } from "../src/services/organisasi.service.ts"
-import { HttpError } from "../src/utils/http_error.ts"
+import { HttpError, NotFoundError } from "../src/utils/http_error.ts"
 import { authorizationHeader } from "./auth.ts"
 
 const organisasi = {
@@ -20,10 +20,17 @@ const organisasi = {
 } satisfies NonNullable<Awaited<ReturnType<typeof orgService.getByKode>>>
 
 beforeEach(() => {
-    jest.spyOn(orgService, "getByKode").mockImplementation(async (kode) =>
-        kode === organisasi.kode ? organisasi : null,
-    )
-    jest.spyOn(orgService, "create").mockResolvedValue(undefined)
+    // Service kini melempar NotFoundError (bukan return null) untuk kode tak dikenal,
+    // agar selaras dengan controller yang tidak lagi cek-null.
+    jest.spyOn(orgService, "getByKode").mockImplementation(async (kode) => {
+        if (kode !== organisasi.kode) {
+            throw new NotFoundError("Organisasi tidak ditemukan / sudah tidak aktif.", {
+                code: "ORG.NOT_FOUND",
+            })
+        }
+        return organisasi
+    })
+    jest.spyOn(orgService, "create").mockResolvedValue(organisasi)
     jest.spyOn(orgService, "updateByKode").mockResolvedValue(organisasi)
     jest.spyOn(orgService, "deactivateByKode").mockResolvedValue({
         ...organisasi,
@@ -238,7 +245,9 @@ describe("Organisasi API", () => {
     })
 
     it("seharusnya mengembalikan 404 saat organisasi tidak ditemukan untuk update", async () => {
-        jest.spyOn(orgService, "updateByKode").mockResolvedValueOnce(null)
+        jest.spyOn(orgService, "updateByKode").mockRejectedValueOnce(
+            new NotFoundError("Organisasi tidak ditemukan.", { code: "ORG.NOT_FOUND" }),
+        )
 
         const response = await request(app)
             .patch("/api/organisasi/ORG999")

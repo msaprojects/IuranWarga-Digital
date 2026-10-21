@@ -1,3 +1,5 @@
+import { ASSIGNABLE_USER_ROLES, USER_ROLES } from "../../../utils/constanta.ts"
+
 const userSchemas = {
     CreateUserInput: {
         type: "object",
@@ -7,7 +9,8 @@ const userSchemas = {
             username: { type: "string", minLength: 6, maxLength: 12 },
             name: { type: "string", minLength: 3, maxLength: 45 },
             password: { type: "string", minLength: 8, maxLength: 12, writeOnly: true },
-            role: { type: "string", enum: ["ADMIN", "USER"] },
+            // Hanya role yang boleh ditetapkan via API (SUPER_ADMIN reserved).
+            role: { type: "string", enum: [...ASSIGNABLE_USER_ROLES] },
             organisasi_id: { type: "integer", minimum: 1 },
             isActive: { type: "boolean", default: true },
             email: { type: ["string", "null"], format: "email", default: null },
@@ -22,9 +25,10 @@ const userSchemas = {
             username: { type: "string", minLength: 6, maxLength: 12 },
             name: { type: "string", minLength: 3, maxLength: 45 },
             password: { type: "string", minLength: 8, maxLength: 12, writeOnly: true },
-            role: { type: "string", enum: ["ADMIN", "USER"] },
+            role: { type: "string", enum: [...ASSIGNABLE_USER_ROLES] },
             organisasi_id: { type: "integer", minimum: 1 },
             isActive: { type: "boolean" },
+            // PATCH: omit = pertahankan nilai lama; null eksplisit = kosongkan.
             email: { type: ["string", "null"], format: "email" },
             contact: { type: ["string", "null"] },
         },
@@ -50,7 +54,7 @@ const userSchemas = {
             id: { type: "integer", example: 1 },
             username: { type: "string", example: "johndoe" },
             name: { type: ["string", "null"], example: "John Doe" },
-            role: { type: "string", enum: ["ADMIN", "USER", "SUPER_ADMIN"] },
+            role: { type: "string", enum: [...USER_ROLES] },
             organisasi_id: { type: ["integer", "null"], example: 1 },
             email: { type: ["string", "null"], format: "email" },
             contact: { type: ["string", "null"] },
@@ -95,7 +99,7 @@ const userSchemas = {
                             id: { type: "integer" },
                             username: { type: "string" },
                             name: { type: ["string", "null"] },
-                            role: { type: "string", enum: ["ADMIN", "USER", "SUPER_ADMIN"] },
+                            role: { type: "string", enum: [...USER_ROLES] },
                             kode_organisasi: { type: "string" },
                         },
                     },
