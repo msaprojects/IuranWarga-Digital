@@ -59,6 +59,7 @@ model user {
   pembayaran_iuran   pembayaran_iuran[]
   keuangan           keuangan[]
   transaction_ledger transaction_ledger[]
+  tagihan_diterbitkan tagihan_iuran[]
 
   @@index([organisasi_id])
   @@index([role])
@@ -196,7 +197,15 @@ model tagihan_iuran {
   id Int @id @default(autoincrement())
 
   // Nomor tagihan yang bisa ditampilkan kepada user.
-  nomor_tagihan String @unique
+  // Unik DI DALAM satu organisasi (bukan global) agar tidak tabrakan antar-org.
+  nomor_tagihan String
+
+  // Kunci periode kanonik, mis. "2026" (TAHUNAN), "2026-10" (BULANAN),
+  // "2026-10-W3" (MINGGUAN), "2026-10-05" (HARIAN).
+  // Ini satu-satunya dasar anti-tumpang tindih: (peserta, jenis_iuran, periode) unik.
+  // Dihasilkan IDENTIK oleh jalur manual maupun cron (computePeriodeKey), sehingga
+  // penerbitan ganda — manual lalu cron, atau cron di-retry — menjadi no-op.
+  periode String
 
   organisasi_id Int
   organisasi    organisasi @relation(fields: [organisasi_id], references: [id])
@@ -207,7 +216,8 @@ model tagihan_iuran {
   peserta_id Int
   peserta    peserta @relation(fields: [peserta_id], references: [id])
 
-  // Periode tagihan.
+  // Periode label untuk tampilan/penyaringan; tetap disimpan tetapi BUKAN dasar
+  // unique lagi — keunikan periode sepenuhnya dipegang oleh kolom `periode`.
   tahun Int
   bulan Int?
 
@@ -222,6 +232,15 @@ model tagihan_iuran {
 
   status StatusTagihan
 
+  // Asal penerbitan tagihan: dibuat manual oleh petugas, atau oleh cron.
+  // Berguna untuk audit dan membedakan jalur ketika keduanya menyentuh tagihan
+  // yang sama (jalur penerbitan tetap idempoten via unique periode).
+  source SumberTagihan @default(MANUAL)
+
+  // User yang menerbitkan tagihan secara manual. Null bila tagihan dibuat cron.
+  issued_by Int?
+  penerbit  user? @relation(fields: [issued_by], references: [id])
+
   keterangan String?
 
   createdAt TimestamptzString @default(now())
@@ -235,13 +254,19 @@ model tagihan_iuran {
   // Relations
   pembayaran pembayaran_iuran[]
 
-  @@unique([peserta_id, jenis_iuran_id, tahun, bulan])
+  // Anti-tumpang tindih: satu tagihan per (peserta, jenis_iuran, periode).
+  // Row yang di-soft-delete (deletedAt terisi) TETAP menduduki slot ini, sehingga
+  // cron/manual menolak menerbitkan ulang periode yang sama — sesuai keputusan
+  // "deleted = skip re-issue" (admin memang sengaja membatalkan periode itu).
+  @@unique([peserta_id, jenis_iuran_id, periode])
+  @@unique([organisasi_id, nomor_tagihan])
   @@index([organisasi_id])
   @@index([jenis_iuran_id])
   @@index([peserta_id])
   @@index([status])
+  @@index([periode])
   @@index([tanggal_jatuh_tempo])
-  @@index([tahun, bulan])
+  @@index([issued_by])
 }
 
 // ============================================================
@@ -452,4 +477,9 @@ enum JenisPeserta {
   KOS
   TEMPAT_USAHA
   LAINNYA
+}
+
+enum SumberTagihan {
+  MANUAL
+  CRON
 }

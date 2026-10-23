@@ -24,3 +24,12 @@ Content-Type: application/json
         "contact": "+6281234567890"
     }
 }
+
+### Test Notifikasi CMMS
+POST http://192.168.5.99:9994/api/v1/notifikasi
+Content-Type: application/json
+
+{
+  "title": "Test Notifikasi",
+  "message": "Ini adalah pesan notifikasi test dari CMMS."
+}

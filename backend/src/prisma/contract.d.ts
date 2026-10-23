@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'e15d5b2621748ff96c488815906f975024e908ee5df411aba410ce5cf75688f2'>;
+  StorageHashBase<'0dcced1d2ed701087ba985c4d98f33e10124369fbee76a45170a657f0c1cb6c1'>;
 export type ExecutionHash =
   ExecutionHashBase<'5a97b77418540dec627a48c686dafc19ce7d676c6c9525a2b3210d0b9992b995'>;
 export type ProfileHash =
@@ -328,13 +328,16 @@ export type FieldOutputTypes = {
       readonly deletedBy: CodecTypes['pg/int4@1']['output'] | null;
       readonly deletedDescription: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly issued_by: CodecTypes['pg/int4@1']['output'] | null;
       readonly jenis_iuran_id: CodecTypes['pg/int4@1']['output'];
       readonly keterangan: CodecTypes['pg/text@1']['output'] | null;
       readonly nominal_tagihan: CodecTypes['pg/numeric@1']['output'];
       readonly nominal_terbayar: CodecTypes['pg/numeric@1']['output'];
       readonly nomor_tagihan: CodecTypes['pg/text@1']['output'];
       readonly organisasi_id: CodecTypes['pg/int4@1']['output'];
+      readonly periode: CodecTypes['pg/text@1']['output'];
       readonly peserta_id: CodecTypes['pg/int4@1']['output'];
+      readonly source: 'MANUAL' | 'CRON';
       readonly status: 'BELUM_BAYAR' | 'PARTIAL' | 'SUDAH_BAYAR' | 'OVERDUE' | 'CANCELLED';
       readonly tahun: CodecTypes['pg/int4@1']['output'];
       readonly tanggal_jatuh_tempo: CodecTypes['pg/date-temporal@1']['output'];
@@ -463,13 +466,16 @@ export type FieldInputTypes = {
       readonly deletedBy: CodecTypes['pg/int4@1']['input'] | null;
       readonly deletedDescription: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly issued_by: CodecTypes['pg/int4@1']['input'] | null;
       readonly jenis_iuran_id: CodecTypes['pg/int4@1']['input'];
       readonly keterangan: CodecTypes['pg/text@1']['input'] | null;
       readonly nominal_tagihan: CodecTypes['pg/numeric@1']['input'];
       readonly nominal_terbayar: CodecTypes['pg/numeric@1']['input'];
       readonly nomor_tagihan: CodecTypes['pg/text@1']['input'];
       readonly organisasi_id: CodecTypes['pg/int4@1']['input'];
+      readonly periode: CodecTypes['pg/text@1']['input'];
       readonly peserta_id: CodecTypes['pg/int4@1']['input'];
+      readonly source: 'MANUAL' | 'CRON';
       readonly status: 'BELUM_BAYAR' | 'PARTIAL' | 'SUDAH_BAYAR' | 'OVERDUE' | 'CANCELLED';
       readonly tahun: CodecTypes['pg/int4@1']['input'];
       readonly tanggal_jatuh_tempo: CodecTypes['pg/date-temporal@1']['input'];
@@ -598,13 +604,16 @@ export type StorageColumnTypes = {
       readonly deletedBy: CodecTypes['pg/int4@1']['output'] | null;
       readonly deletedDescription: CodecTypes['pg/text@1']['output'] | null;
       readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly issued_by: CodecTypes['pg/int4@1']['output'] | null;
       readonly jenis_iuran_id: CodecTypes['pg/int4@1']['output'];
       readonly keterangan: CodecTypes['pg/text@1']['output'] | null;
       readonly nominal_tagihan: CodecTypes['pg/numeric@1']['output'];
       readonly nominal_terbayar: CodecTypes['pg/numeric@1']['output'];
       readonly nomor_tagihan: CodecTypes['pg/text@1']['output'];
       readonly organisasi_id: CodecTypes['pg/int4@1']['output'];
+      readonly periode: CodecTypes['pg/text@1']['output'];
       readonly peserta_id: CodecTypes['pg/int4@1']['output'];
+      readonly source: 'MANUAL' | 'CRON';
       readonly status: 'BELUM_BAYAR' | 'PARTIAL' | 'SUDAH_BAYAR' | 'OVERDUE' | 'CANCELLED';
       readonly tahun: CodecTypes['pg/int4@1']['output'];
       readonly tanggal_jatuh_tempo: CodecTypes['pg/date-temporal@1']['output'];
@@ -733,13 +742,16 @@ export type StorageColumnInputTypes = {
       readonly deletedBy: CodecTypes['pg/int4@1']['input'] | null;
       readonly deletedDescription: CodecTypes['pg/text@1']['input'] | null;
       readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly issued_by: CodecTypes['pg/int4@1']['input'] | null;
       readonly jenis_iuran_id: CodecTypes['pg/int4@1']['input'];
       readonly keterangan: CodecTypes['pg/text@1']['input'] | null;
       readonly nominal_tagihan: CodecTypes['pg/numeric@1']['input'];
       readonly nominal_terbayar: CodecTypes['pg/numeric@1']['input'];
       readonly nomor_tagihan: CodecTypes['pg/text@1']['input'];
       readonly organisasi_id: CodecTypes['pg/int4@1']['input'];
+      readonly periode: CodecTypes['pg/text@1']['input'];
       readonly peserta_id: CodecTypes['pg/int4@1']['input'];
+      readonly source: 'MANUAL' | 'CRON';
       readonly status: 'BELUM_BAYAR' | 'PARTIAL' | 'SUDAH_BAYAR' | 'OVERDUE' | 'CANCELLED';
       readonly tahun: CodecTypes['pg/int4@1']['input'];
       readonly tanggal_jatuh_tempo: CodecTypes['pg/date-temporal@1']['input'];
@@ -910,13 +922,16 @@ export namespace Models {
     deletedBy: CodecTypes['pg/int4@1']['output'] | null;
     deletedDescription: CodecTypes['pg/text@1']['output'] | null;
     id: CodecTypes['pg/int4@1']['output'];
+    issued_by: CodecTypes['pg/int4@1']['output'] | null;
     jenis_iuran_id: CodecTypes['pg/int4@1']['output'];
     keterangan: CodecTypes['pg/text@1']['output'] | null;
     nominal_tagihan: CodecTypes['pg/numeric@1']['output'];
     nominal_terbayar: CodecTypes['pg/numeric@1']['output'];
     nomor_tagihan: CodecTypes['pg/text@1']['output'];
     organisasi_id: CodecTypes['pg/int4@1']['output'];
+    periode: CodecTypes['pg/text@1']['output'];
     peserta_id: CodecTypes['pg/int4@1']['output'];
+    source: 'MANUAL' | 'CRON';
     status: 'BELUM_BAYAR' | 'PARTIAL' | 'SUDAH_BAYAR' | 'OVERDUE' | 'CANCELLED';
     tahun: CodecTypes['pg/int4@1']['output'];
     tanggal_jatuh_tempo: CodecTypes['pg/date-temporal@1']['output'];
@@ -925,8 +940,9 @@ export namespace Models {
     jenis_iuran: public_jenis_iuran;
     organisasi: public_organisasi;
     pembayaran: public_pembayaran_iuran[];
+    penerbit: public_user | null;
     peserta: public_peserta;
-    readonly [RelationKeys]?: 'jenis_iuran' | 'organisasi' | 'pembayaran' | 'peserta';
+    readonly [RelationKeys]?: 'jenis_iuran' | 'organisasi' | 'pembayaran' | 'penerbit' | 'peserta';
   };
   export type public_transaction_ledger = {
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -959,9 +975,15 @@ export namespace Models {
     organisasi: public_organisasi | null;
     pembayaran_iuran: public_pembayaran_iuran[];
     peserta: public_peserta[];
+    tagihan_diterbitkan: public_tagihan_iuran[];
     transaction_ledger: public_transaction_ledger[];
     readonly [RelationKeys]?:
-      'keuangan' | 'organisasi' | 'pembayaran_iuran' | 'peserta' | 'transaction_ledger';
+      | 'keuangan'
+      | 'organisasi'
+      | 'pembayaran_iuran'
+      | 'peserta'
+      | 'tagihan_diterbitkan'
+      | 'transaction_ledger';
   };
 }
 
@@ -1900,6 +1922,12 @@ type ContractBase = Omit<
                   };
                   readonly many: false;
                 };
+                readonly issued_by: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly jenis_iuran_id: {
                   readonly dataType: 'pg/int4';
                   readonly codecId: 'pg/int4@1';
@@ -1936,10 +1964,26 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly many: false;
                 };
+                readonly periode: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
                 readonly peserta_id: {
                   readonly dataType: 'pg/int4';
                   readonly codecId: 'pg/int4@1';
                   readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly source: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'MANUAL'>;
+                  };
                   readonly many: false;
                 };
                 readonly status: {
@@ -1976,10 +2020,16 @@ type ContractBase = Omit<
               };
               primaryKey: { readonly columns: readonly ['id'] };
               uniques: readonly [
-                { readonly columns: readonly ['nomor_tagihan'] },
-                { readonly columns: readonly ['peserta_id', 'jenis_iuran_id', 'tahun', 'bulan'] },
+                { readonly columns: readonly ['peserta_id', 'jenis_iuran_id', 'periode'] },
+                { readonly columns: readonly ['organisasi_id', 'nomor_tagihan'] },
               ];
               indexes: readonly [
+                {
+                  readonly name: 'tagihan_iuran_issued_by_idx_bd60d33c';
+                  readonly prefix: 'tagihan_iuran_issued_by_idx';
+                  readonly columns: readonly ['issued_by'];
+                  readonly unique: false;
+                },
                 {
                   readonly name: 'tagihan_iuran_jenis_iuran_id_idx_3ca5ef71';
                   readonly prefix: 'tagihan_iuran_jenis_iuran_id_idx';
@@ -1993,6 +2043,12 @@ type ContractBase = Omit<
                   readonly unique: false;
                 },
                 {
+                  readonly name: 'tagihan_iuran_periode_idx_3b0fa9e1';
+                  readonly prefix: 'tagihan_iuran_periode_idx';
+                  readonly columns: readonly ['periode'];
+                  readonly unique: false;
+                },
+                {
                   readonly name: 'tagihan_iuran_peserta_id_idx_52c9abf0';
                   readonly prefix: 'tagihan_iuran_peserta_id_idx';
                   readonly columns: readonly ['peserta_id'];
@@ -2002,12 +2058,6 @@ type ContractBase = Omit<
                   readonly name: 'tagihan_iuran_status_idx_e98638ab';
                   readonly prefix: 'tagihan_iuran_status_idx';
                   readonly columns: readonly ['status'];
-                  readonly unique: false;
-                },
-                {
-                  readonly name: 'tagihan_iuran_tahun_bulan_idx_bc66ba83';
-                  readonly prefix: 'tagihan_iuran_tahun_bulan_idx';
-                  readonly columns: readonly ['tahun', 'bulan'];
                   readonly unique: false;
                 },
                 {
@@ -2051,6 +2101,18 @@ type ContractBase = Omit<
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'peserta';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'tagihan_iuran';
+                    readonly columns: readonly ['issued_by'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'user';
                     readonly columns: readonly ['id'];
                   };
                 },
@@ -2335,6 +2397,10 @@ type ContractBase = Omit<
                 'OVERDUE',
                 'CANCELLED',
               ];
+            };
+            readonly SumberTagihan: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['MANUAL', 'CRON'];
             };
           };
         };
@@ -3208,6 +3274,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly issued_by: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
               readonly jenis_iuran_id: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
@@ -3232,9 +3302,17 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly periode: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly peserta_id: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly source: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly status: {
                 readonly nullable: false;
@@ -3296,6 +3374,15 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['tagihan_iuran_id'];
                 };
               };
+              readonly penerbit: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'user' };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['issued_by'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
               readonly peserta: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -3319,13 +3406,16 @@ type ContractBase = Omit<
                 readonly deletedBy: { readonly column: 'deletedBy' };
                 readonly deletedDescription: { readonly column: 'deletedDescription' };
                 readonly id: { readonly column: 'id' };
+                readonly issued_by: { readonly column: 'issued_by' };
                 readonly jenis_iuran_id: { readonly column: 'jenis_iuran_id' };
                 readonly keterangan: { readonly column: 'keterangan' };
                 readonly nominal_tagihan: { readonly column: 'nominal_tagihan' };
                 readonly nominal_terbayar: { readonly column: 'nominal_terbayar' };
                 readonly nomor_tagihan: { readonly column: 'nomor_tagihan' };
                 readonly organisasi_id: { readonly column: 'organisasi_id' };
+                readonly periode: { readonly column: 'periode' };
                 readonly peserta_id: { readonly column: 'peserta_id' };
+                readonly source: { readonly column: 'source' };
                 readonly status: { readonly column: 'status' };
                 readonly tahun: { readonly column: 'tahun' };
                 readonly tanggal_jatuh_tempo: { readonly column: 'tanggal_jatuh_tempo' };
@@ -3528,6 +3618,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['user_id'];
                 };
               };
+              readonly tagihan_diterbitkan: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'tagihan_iuran';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['issued_by'];
+                };
+              };
               readonly transaction_ledger: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -3628,6 +3729,13 @@ type ContractBase = Omit<
               { readonly name: 'SUDAH_BAYAR'; readonly value: 'SUDAH_BAYAR' },
               { readonly name: 'OVERDUE'; readonly value: 'OVERDUE' },
               { readonly name: 'CANCELLED'; readonly value: 'CANCELLED' },
+            ];
+          };
+          readonly SumberTagihan: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'MANUAL'; readonly value: 'MANUAL' },
+              { readonly name: 'CRON'; readonly value: 'CRON' },
             ];
           };
         };

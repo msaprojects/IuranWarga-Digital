@@ -2,6 +2,7 @@ import "dotenv/config"
 import http from "node:http"
 import app from "./app.ts"
 import { db } from "./prisma/db.ts"
+import { startTagihanScheduler, stopTagihanScheduler } from "./services/tagihan_scheduler.ts"
 
 const PORT = Number(process.env.PORT ?? 3000)
 
@@ -20,6 +21,10 @@ const server = app.listen(PORT, (): void => {
     console.log(`[startup] Server is running on port ${PORT}`)
 })
 
+// Scheduler harian penerbitan tagihan (in-process, idempoten). Aktif kecuali dimatikan
+// via TAGIHAN_CRON_ENABLED=false.
+startTagihanScheduler()
+
 // ---------- Process-level safety nets ----------
 //
 // Tanpa ini, Node >= 15 default-nya MATI saat unhandled rejection — bagus, tapi
@@ -29,6 +34,9 @@ let shuttingDown = false
 const shutdown = (reason: string, exitCode: number): void => {
     if (shuttingDown) return
     shuttingDown = true
+
+    // Hentikan scheduler lebih dulu agar tidak ada job baru yang menembak DB saat drain.
+    stopTagihanScheduler()
 
     console.error(`[shutdown] ${reason}; closing HTTP server then DB pool.`)
 

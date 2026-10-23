@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { PERIODE_IURAN } from "../src/utils/constanta.ts"
+import { JENIS_PESERTA, PERIODE_IURAN } from "../src/utils/constanta.ts"
 
 // Nominal disimpan sebagai Decimal di basis data, jadi kontrak API memakai string
 // untuk menghindari kehilangan presisi floating-point pada nilai uang.
@@ -15,6 +15,7 @@ export const detailJenisIuranIDSchema = z.strictObject({
 export const createJenisIuranSchema = z.strictObject({
     judul: z.string().trim().min(3).max(45),
     periode_iuran: z.enum(PERIODE_IURAN),
+    jenis_peserta: z.enum(JENIS_PESERTA),
     nominal: nominalSchema,
     tanggal_awal: z.coerce.date(),
     tanggal_akhir: z.coerce.date(),
@@ -25,6 +26,7 @@ export const createJenisIuranSchema = z.strictObject({
 export const updateJenisIuranSchema = z.strictObject({
     judul: z.string().trim().min(3).max(45).optional(),
     periode_iuran: z.enum(PERIODE_IURAN).optional(),
+    jenis_peserta: z.enum(JENIS_PESERTA).optional(),
     nominal: nominalSchema.optional(),
     tanggal_awal: z.coerce.date().optional(),
     tanggal_akhir: z.coerce.date().optional(),

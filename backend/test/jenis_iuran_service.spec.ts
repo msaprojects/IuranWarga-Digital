@@ -39,9 +39,11 @@ const existingJenisIuran = {
     id: 1,
     judul: "Iuran Kebersihan",
     periode_iuran: "BULANAN",
+    jenis_peserta: "RUMAH",
     nominal: "50000",
-    tanggal_awal: now,
-    tanggal_akhir: end,
+    // Kolom `date-temporal` dikembalikan ORM sebagai Temporal.PlainDate, bukan Date.
+    tanggal_awal: new Temporal.PlainDate(2026, 1, 1),
+    tanggal_akhir: new Temporal.PlainDate(2026, 12, 31),
     isActive: true,
     organisasi_id: 1,
 }
@@ -66,6 +68,7 @@ describe("JenisIuranService", () => {
                 jenisIuranService.createJenisIuran({
                     judul: "Iuran Keamanan",
                     periode_iuran: "BULANAN",
+                    jenis_peserta: "RUMAH",
                     nominal: "50000",
                     tanggal_awal: end,
                     tanggal_akhir: now,
@@ -84,6 +87,7 @@ describe("JenisIuranService", () => {
             const input = {
                 judul: "Iuran Keamanan",
                 periode_iuran: "BULANAN" as const,
+                jenis_peserta: "RUMAH" as const,
                 nominal: "75000",
                 tanggal_awal: now,
                 tanggal_akhir: end,
@@ -93,7 +97,18 @@ describe("JenisIuranService", () => {
             await expect(jenisIuranService.createJenisIuran(input)).resolves.toBeDefined()
 
             expect(mockWhere).toHaveBeenCalledWith({ id: 1, isActive: true })
-            expect(mockCreate).toHaveBeenCalledWith(input)
+            // Service menyesuaikan `Date` (lapisan transport) -> `Temporal.PlainDate` (codec date-temporal).
+            expect(mockCreate).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    judul: "Iuran Keamanan",
+                    periode_iuran: "BULANAN",
+                    jenis_peserta: "RUMAH",
+                    nominal: "75000",
+                    organisasi_id: 1,
+                    tanggal_awal: expect.any(Temporal.PlainDate),
+                    tanggal_akhir: expect.any(Temporal.PlainDate),
+                }),
+            )
         })
 
         it("melempar 404 saat organisasi tidak ditemukan", async () => {
@@ -103,6 +118,7 @@ describe("JenisIuranService", () => {
                 jenisIuranService.createJenisIuran({
                     judul: "Iuran Keamanan",
                     periode_iuran: "BULANAN",
+                    jenis_peserta: "RUMAH",
                     nominal: "75000",
                     tanggal_awal: now,
                     tanggal_akhir: end,
@@ -164,8 +180,8 @@ describe("JenisIuranService", () => {
                 expect.objectContaining({
                     judul: "Iuran Sampah",
                     nominal: "50000",
-                    tanggal_awal: now,
-                    tanggal_akhir: end,
+                    tanggal_awal: expect.any(Temporal.PlainDate),
+                    tanggal_akhir: expect.any(Temporal.PlainDate),
                     isActive: true,
                 }),
             )

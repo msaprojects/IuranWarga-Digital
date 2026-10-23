@@ -21,6 +21,7 @@ const jenisIuran = {
 const createPayload = {
     judul: "Iuran Keamanan",
     periode_iuran: "BULANAN",
+    jenis_peserta: "RUMAH",
     nominal: "75000",
     tanggal_awal: "2026-01-01",
     tanggal_akhir: "2026-12-31",
@@ -155,6 +156,7 @@ describe("Jenis Iuran API", () => {
                 expect.objectContaining({
                     judul: "Iuran Keamanan",
                     periode_iuran: "BULANAN",
+                    jenis_peserta: "RUMAH",
                     nominal: "75000",
                     organisasi_id: 1,
                     isActive: true,

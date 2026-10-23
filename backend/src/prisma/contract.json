@@ -204,6 +204,19 @@
                 "value": "CANCELLED"
               }
             ]
+          },
+          "SumberTagihan": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "MANUAL",
+                "value": "MANUAL"
+              },
+              {
+                "name": "CRON",
+                "value": "CRON"
+              }
+            ]
           }
         },
         "models": {
@@ -1509,6 +1522,13 @@
                   "kind": "scalar"
                 }
               },
+              "issued_by": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "jenis_iuran_id": {
                 "nullable": false,
                 "type": {
@@ -1551,11 +1571,31 @@
                   "kind": "scalar"
                 }
               },
+              "periode": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "peserta_id": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/int4@1",
                   "kind": "scalar"
+                }
+              },
+              "source": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "SumberTagihan",
+                  "namespaceId": "public",
+                  "plane": "domain"
                 }
               },
               "status": {
@@ -1648,6 +1688,22 @@
                   "namespace": "public"
                 }
               },
+              "penerbit": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "issued_by"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "user",
+                  "namespace": "public"
+                }
+              },
               "peserta": {
                 "cardinality": "N:1",
                 "nullable": false,
@@ -1685,6 +1741,9 @@
                 "id": {
                   "column": "id"
                 },
+                "issued_by": {
+                  "column": "issued_by"
+                },
                 "jenis_iuran_id": {
                   "column": "jenis_iuran_id"
                 },
@@ -1703,8 +1762,14 @@
                 "organisasi_id": {
                   "column": "organisasi_id"
                 },
+                "periode": {
+                  "column": "periode"
+                },
                 "peserta_id": {
                   "column": "peserta_id"
+                },
+                "source": {
+                  "column": "source"
                 },
                 "status": {
                   "column": "status"
@@ -2024,6 +2089,21 @@
                 },
                 "to": {
                   "model": "peserta",
+                  "namespace": "public"
+                }
+              },
+              "tagihan_diterbitkan": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "issued_by"
+                  ]
+                },
+                "to": {
+                  "model": "tagihan_iuran",
                   "namespace": "public"
                 }
               },
@@ -3152,6 +3232,11 @@
             "tagihan_iuran": {
               "checks": [
                 {
+                  "expression": "\"source\" IN ('MANUAL', 'CRON')",
+                  "name": "tagihan_iuran_source_check_fee47fa6",
+                  "prefix": "tagihan_iuran_source_check"
+                },
+                {
                   "expression": "\"status\" IN ('BELUM_BAYAR', 'PARTIAL', 'SUDAH_BAYAR', 'OVERDUE', 'CANCELLED')",
                   "name": "tagihan_iuran_status_check_7f92ac25",
                   "prefix": "tagihan_iuran_status_check"
@@ -3196,6 +3281,11 @@
                   },
                   "nullable": false
                 },
+                "issued_by": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                },
                 "jenis_iuran_id": {
                   "codecId": "pg/int4@1",
                   "dataType": "pg/int4",
@@ -3226,10 +3316,30 @@
                   "dataType": "pg/int4",
                   "nullable": false
                 },
+                "periode": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
                 "peserta_id": {
                   "codecId": "pg/int4@1",
                   "dataType": "pg/int4",
                   "nullable": false
+                },
+                "source": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": "MANUAL"
+                  },
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "SumberTagihan",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
                 },
                 "status": {
                   "codecId": "pg/text@1",
@@ -3315,9 +3425,33 @@
                     "namespaceId": "public",
                     "tableName": "peserta"
                   }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "issued_by"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "tagihan_iuran"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
                 }
               ],
               "indexes": [
+                {
+                  "columns": [
+                    "issued_by"
+                  ],
+                  "name": "tagihan_iuran_issued_by_idx_bd60d33c",
+                  "prefix": "tagihan_iuran_issued_by_idx",
+                  "unique": false
+                },
                 {
                   "columns": [
                     "jenis_iuran_id"
@@ -3332,6 +3466,14 @@
                   ],
                   "name": "tagihan_iuran_organisasi_id_idx_2f5facc4",
                   "prefix": "tagihan_iuran_organisasi_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "periode"
+                  ],
+                  "name": "tagihan_iuran_periode_idx_3b0fa9e1",
+                  "prefix": "tagihan_iuran_periode_idx",
                   "unique": false
                 },
                 {
@@ -3352,15 +3494,6 @@
                 },
                 {
                   "columns": [
-                    "tahun",
-                    "bulan"
-                  ],
-                  "name": "tagihan_iuran_tahun_bulan_idx_bc66ba83",
-                  "prefix": "tagihan_iuran_tahun_bulan_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
                     "tanggal_jatuh_tempo"
                   ],
                   "name": "tagihan_iuran_tanggal_jatuh_tempo_idx_f7559409",
@@ -3376,15 +3509,15 @@
               "uniques": [
                 {
                   "columns": [
-                    "nomor_tagihan"
+                    "peserta_id",
+                    "jenis_iuran_id",
+                    "periode"
                   ]
                 },
                 {
                   "columns": [
-                    "peserta_id",
-                    "jenis_iuran_id",
-                    "tahun",
-                    "bulan"
+                    "organisasi_id",
+                    "nomor_tagihan"
                   ]
                 }
               ]
@@ -3753,6 +3886,13 @@
                 "OVERDUE",
                 "CANCELLED"
               ]
+            },
+            "SumberTagihan": {
+              "kind": "valueSet",
+              "values": [
+                "MANUAL",
+                "CRON"
+              ]
             }
           }
         },
@@ -3760,7 +3900,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "e15d5b2621748ff96c488815906f975024e908ee5df411aba410ce5cf75688f2"
+    "storageHash": "0dcced1d2ed701087ba985c4d98f33e10124369fbee76a45170a657f0c1cb6c1"
   },
   "execution": {
     "executionHash": "5a97b77418540dec627a48c686dafc19ce7d676c6c9525a2b3210d0b9992b995",
