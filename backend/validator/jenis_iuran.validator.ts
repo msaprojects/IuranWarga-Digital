@@ -16,8 +16,6 @@ export const createJenisIuranSchema = z.strictObject({
     judul: z.string().trim().min(3).max(45),
     periode_iuran: z.enum(PERIODE_IURAN),
     nominal: nominalSchema,
-    tanggal_awal: z.coerce.date(),
-    tanggal_akhir: z.coerce.date(),
     isActive: z.boolean().default(true).optional(),
     organisasi_id: z.coerce.number().int().positive(),
 })
@@ -26,8 +24,6 @@ export const updateJenisIuranSchema = z.strictObject({
     judul: z.string().trim().min(3).max(45).optional(),
     periode_iuran: z.enum(PERIODE_IURAN).optional(),
     nominal: nominalSchema.optional(),
-    tanggal_awal: z.coerce.date().optional(),
-    tanggal_akhir: z.coerce.date().optional(),
     isActive: z.boolean().optional(),
     organisasi_id: z.coerce.number().int().positive().optional(),
 })

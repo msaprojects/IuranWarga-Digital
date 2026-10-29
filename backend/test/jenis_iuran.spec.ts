@@ -10,8 +10,6 @@ const jenisIuran = {
     judul: "Iuran Kebersihan",
     periode_iuran: "BULANAN",
     nominal: "50000",
-    tanggal_awal: "2026-01-01T00:00:00.000Z",
-    tanggal_akhir: "2026-12-31T00:00:00.000Z",
     isActive: true,
     organisasi_id: 1,
     createdAt: "2026-10-16T00:00:00.000Z",
@@ -22,8 +20,6 @@ const createPayload = {
     judul: "Iuran Keamanan",
     periode_iuran: "BULANAN",
     nominal: "75000",
-    tanggal_awal: "2026-01-01",
-    tanggal_akhir: "2026-12-31",
     organisasi_id: 1,
 }
 
@@ -59,8 +55,6 @@ describe("Jenis Iuran API", () => {
             "judul",
             "periode_iuran",
             "nominal",
-            "tanggal_awal",
-            "tanggal_akhir",
             "organisasi_id",
         ])
     })

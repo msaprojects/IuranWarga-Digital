@@ -381,20 +381,6 @@
                   "plane": "domain"
                 }
               },
-              "tanggal_akhir": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/date-temporal@1",
-                  "kind": "scalar"
-                }
-              },
-              "tanggal_awal": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/date-temporal@1",
-                  "kind": "scalar"
-                }
-              },
               "updatedAt": {
                 "nullable": false,
                 "type": {
@@ -461,12 +447,6 @@
                 },
                 "periode_iuran": {
                   "column": "periode_iuran"
-                },
-                "tanggal_akhir": {
-                  "column": "tanggal_akhir"
-                },
-                "tanggal_awal": {
-                  "column": "tanggal_awal"
                 },
                 "updatedAt": {
                   "column": "updatedAt"
@@ -1578,13 +1558,6 @@
                   "kind": "scalar"
                 }
               },
-              "tanggal_jatuh_tempo": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/date-temporal@1",
-                  "kind": "scalar"
-                }
-              },
               "tanggal_terbit": {
                 "nullable": false,
                 "type": {
@@ -1711,9 +1684,6 @@
                 },
                 "tahun": {
                   "column": "tahun"
-                },
-                "tanggal_jatuh_tempo": {
-                  "column": "tanggal_jatuh_tempo"
                 },
                 "tanggal_terbit": {
                   "column": "tanggal_terbit"
@@ -2282,16 +2252,6 @@
                     "namespaceId": "public",
                     "plane": "storage"
                   }
-                },
-                "tanggal_akhir": {
-                  "codecId": "pg/date-temporal@1",
-                  "dataType": "pg/date",
-                  "nullable": false
-                },
-                "tanggal_awal": {
-                  "codecId": "pg/date-temporal@1",
-                  "dataType": "pg/date",
-                  "nullable": false
                 },
                 "updatedAt": {
                   "codecId": "pg/timestamptz-string@1",
@@ -3247,11 +3207,6 @@
                   "dataType": "pg/int4",
                   "nullable": false
                 },
-                "tanggal_jatuh_tempo": {
-                  "codecId": "pg/date-temporal@1",
-                  "dataType": "pg/date",
-                  "nullable": false
-                },
                 "tanggal_terbit": {
                   "codecId": "pg/date-temporal@1",
                   "dataType": "pg/date",
@@ -3357,14 +3312,6 @@
                   ],
                   "name": "tagihan_iuran_tahun_bulan_idx_bc66ba83",
                   "prefix": "tagihan_iuran_tahun_bulan_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
-                    "tanggal_jatuh_tempo"
-                  ],
-                  "name": "tagihan_iuran_tanggal_jatuh_tempo_idx_f7559409",
-                  "prefix": "tagihan_iuran_tanggal_jatuh_tempo_idx",
                   "unique": false
                 }
               ],
@@ -3760,7 +3707,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "e15d5b2621748ff96c488815906f975024e908ee5df411aba410ce5cf75688f2"
+    "storageHash": "be22093153160a087703378d87173869d825f5fcd6b7c4094810176f54c90ae3"
   },
   "execution": {
     "executionHash": "5a97b77418540dec627a48c686dafc19ce7d676c6c9525a2b3210d0b9992b995",

@@ -155,9 +155,6 @@ model jenis_iuran {
 
   nominal Decimal
 
-  tanggal_awal  Date
-  tanggal_akhir Date
-
   jenis_peserta JenisPeserta
 
   isActive Boolean @default(true)
@@ -211,8 +208,7 @@ model tagihan_iuran {
   tahun Int
   bulan Int?
 
-  tanggal_terbit      Date
-  tanggal_jatuh_tempo Date
+  tanggal_terbit Date
 
   // Nominal yang wajib dibayar.
   nominal_tagihan Decimal
@@ -240,7 +236,6 @@ model tagihan_iuran {
   @@index([jenis_iuran_id])
   @@index([peserta_id])
   @@index([status])
-  @@index([tanggal_jatuh_tempo])
   @@index([tahun, bulan])
 }
 

@@ -1,0 +1,619 @@
+[
+  {
+    "id": "dropColumn.jenis_iuran.tanggal_akhir",
+    "label": "Drop column \"tanggal_akhir\" from \"jenis_iuran\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "tanggal_akhir",
+        "table": "jenis_iuran"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"tanggal_akhir\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "jenis_iuran",
+          "tanggal_akhir"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"tanggal_akhir\"",
+        "sql": "ALTER TABLE \"public\".\"jenis_iuran\" DROP COLUMN \"tanggal_akhir\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"tanggal_akhir\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "jenis_iuran",
+          "tanggal_akhir"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.jenis_iuran.tanggal_awal",
+    "label": "Drop column \"tanggal_awal\" from \"jenis_iuran\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "tanggal_awal",
+        "table": "jenis_iuran"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"tanggal_awal\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "jenis_iuran",
+          "tanggal_awal"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"tanggal_awal\"",
+        "sql": "ALTER TABLE \"public\".\"jenis_iuran\" DROP COLUMN \"tanggal_awal\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"tanggal_awal\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "jenis_iuran",
+          "tanggal_awal"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropIndex.tagihan_iuran.tagihan_iuran_tanggal_jatuh_tempo_idx_f7559409",
+    "label": "Drop index \"tagihan_iuran_tanggal_jatuh_tempo_idx_f7559409\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "tagihan_iuran_tanggal_jatuh_tempo_idx_f7559409",
+        "table": "tagihan_iuran"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"tagihan_iuran_tanggal_jatuh_tempo_idx_f7559409\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tagihan_iuran_tanggal_jatuh_tempo_idx_f7559409\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop index \"tagihan_iuran_tanggal_jatuh_tempo_idx_f7559409\"",
+        "sql": "DROP INDEX \"public\".\"tagihan_iuran_tanggal_jatuh_tempo_idx_f7559409\"",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"tagihan_iuran_tanggal_jatuh_tempo_idx_f7559409\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"tagihan_iuran_tanggal_jatuh_tempo_idx_f7559409\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "dropColumn.tagihan_iuran.tanggal_jatuh_tempo",
+    "label": "Drop column \"tanggal_jatuh_tempo\" from \"tagihan_iuran\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "tanggal_jatuh_tempo",
+        "table": "tagihan_iuran"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"tanggal_jatuh_tempo\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "tagihan_iuran",
+          "tanggal_jatuh_tempo"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"tanggal_jatuh_tempo\"",
+        "sql": "ALTER TABLE \"public\".\"tagihan_iuran\" DROP COLUMN \"tanggal_jatuh_tempo\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"tanggal_jatuh_tempo\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "tagihan_iuran",
+          "tanggal_jatuh_tempo"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.tagihan_iuran.deletedAt",
+    "label": "Add column \"deletedAt\" to \"tagihan_iuran\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "deletedAt",
+        "table": "tagihan_iuran"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"deletedAt\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "tagihan_iuran",
+          "deletedAt"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"deletedAt\"",
+        "sql": "ALTER TABLE \"public\".\"tagihan_iuran\" ADD COLUMN \"deletedAt\" timestamptz"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"deletedAt\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "tagihan_iuran",
+          "deletedAt"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.tagihan_iuran.deletedBy",
+    "label": "Add column \"deletedBy\" to \"tagihan_iuran\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "deletedBy",
+        "table": "tagihan_iuran"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"deletedBy\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "tagihan_iuran",
+          "deletedBy"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"deletedBy\"",
+        "sql": "ALTER TABLE \"public\".\"tagihan_iuran\" ADD COLUMN \"deletedBy\" int4"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"deletedBy\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "tagihan_iuran",
+          "deletedBy"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.tagihan_iuran.deletedDescription",
+    "label": "Add column \"deletedDescription\" to \"tagihan_iuran\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "deletedDescription",
+        "table": "tagihan_iuran"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"deletedDescription\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "tagihan_iuran",
+          "deletedDescription"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"deletedDescription\"",
+        "sql": "ALTER TABLE \"public\".\"tagihan_iuran\" ADD COLUMN \"deletedDescription\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"deletedDescription\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "tagihan_iuran",
+          "deletedDescription"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.jenis_iuran.jenis_peserta",
+    "label": "Add column \"jenis_peserta\" to \"jenis_iuran\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "jenis_peserta",
+        "table": "jenis_iuran"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"jenis_peserta\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "jenis_iuran",
+          "jenis_peserta"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"jenis_peserta\"",
+        "sql": "ALTER TABLE \"public\".\"jenis_iuran\" ADD COLUMN \"jenis_peserta\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"jenis_peserta\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "jenis_iuran",
+          "jenis_peserta"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "data_migration.backfill-jenis_iuran-jenis_peserta",
+    "label": "Data transform: backfill-jenis_iuran-jenis_peserta",
+    "operationClass": "data",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [
+      {
+        "description": "Check backfill-jenis_iuran-jenis_peserta has work to do",
+        "sql": "SELECT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"jenis_iuran\" WHERE \"jenis_peserta\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "Run backfill-jenis_iuran-jenis_peserta",
+        "sql": "UPDATE \"public\".\"jenis_iuran\" SET \"jenis_peserta\" = $1 WHERE \"jenis_peserta\" IS NULL",
+        "params": [
+          "RUMAH"
+        ]
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "Verify backfill-jenis_iuran-jenis_peserta resolved all violations",
+        "sql": "SELECT NOT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"jenis_iuran\" WHERE \"jenis_peserta\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ]
+  },
+  {
+    "id": "alterNullability.setNotNull.jenis_iuran.jenis_peserta",
+    "label": "Set NOT NULL on \"jenis_iuran\".\"jenis_peserta\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "jenis_peserta",
+        "table": "jenis_iuran"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"jenis_peserta\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "jenis_iuran",
+          "jenis_peserta"
+        ]
+      },
+      {
+        "description": "ensure no NULL values in \"jenis_peserta\"",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"jenis_iuran\" WHERE \"jenis_peserta\" IS NULL) AS \"result\"",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "set NOT NULL on \"jenis_peserta\"",
+        "sql": "ALTER TABLE \"public\".\"jenis_iuran\" ALTER COLUMN \"jenis_peserta\" SET NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"jenis_peserta\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "jenis_iuran",
+          "jenis_peserta",
+          "NO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.peserta.jenis_peserta",
+    "label": "Add column \"jenis_peserta\" to \"peserta\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "jenis_peserta",
+        "table": "peserta"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"jenis_peserta\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "peserta",
+          "jenis_peserta"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"jenis_peserta\"",
+        "sql": "ALTER TABLE \"public\".\"peserta\" ADD COLUMN \"jenis_peserta\" text"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"jenis_peserta\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "peserta",
+          "jenis_peserta"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "data_migration.backfill-peserta-jenis_peserta",
+    "label": "Data transform: backfill-peserta-jenis_peserta",
+    "operationClass": "data",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [
+      {
+        "description": "Check backfill-peserta-jenis_peserta has work to do",
+        "sql": "SELECT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"peserta\" WHERE \"jenis_peserta\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "Run backfill-peserta-jenis_peserta",
+        "sql": "UPDATE \"public\".\"peserta\" SET \"jenis_peserta\" = $1 WHERE \"jenis_peserta\" IS NULL",
+        "params": [
+          "RUMAH"
+        ]
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "Verify backfill-peserta-jenis_peserta resolved all violations",
+        "sql": "SELECT NOT EXISTS (SELECT \"id\" AS \"id\" FROM \"public\".\"peserta\" WHERE \"jenis_peserta\" IS NULL LIMIT 1) AS ok",
+        "params": []
+      }
+    ]
+  },
+  {
+    "id": "alterNullability.setNotNull.peserta.jenis_peserta",
+    "label": "Set NOT NULL on \"peserta\".\"jenis_peserta\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "jenis_peserta",
+        "table": "peserta"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"jenis_peserta\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "peserta",
+          "jenis_peserta"
+        ]
+      },
+      {
+        "description": "ensure no NULL values in \"jenis_peserta\"",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"peserta\" WHERE \"jenis_peserta\" IS NULL) AS \"result\"",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "set NOT NULL on \"jenis_peserta\"",
+        "sql": "ALTER TABLE \"public\".\"peserta\" ALTER COLUMN \"jenis_peserta\" SET NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"jenis_peserta\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "peserta",
+          "jenis_peserta",
+          "NO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.jenis_iuran.jenis_iuran_jenis_peserta_check_f8e7b57b",
+    "label": "Add check constraint \"jenis_iuran_jenis_peserta_check_f8e7b57b\" on \"jenis_iuran\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "jenis_iuran_jenis_peserta_check_f8e7b57b",
+        "table": "jenis_iuran"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"jenis_iuran_jenis_peserta_check_f8e7b57b\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "jenis_iuran_jenis_peserta_check_f8e7b57b",
+          "public",
+          "\"public\".\"jenis_iuran\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"jenis_iuran_jenis_peserta_check_f8e7b57b\"",
+        "sql": "ALTER TABLE \"public\".\"jenis_iuran\" ADD CONSTRAINT \"jenis_iuran_jenis_peserta_check_f8e7b57b\" CHECK (\"jenis_peserta\" IN ('RUMAH', 'KOS', 'TEMPAT_USAHA', 'LAINNYA'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"jenis_iuran_jenis_peserta_check_f8e7b57b\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "jenis_iuran_jenis_peserta_check_f8e7b57b",
+          "public",
+          "\"public\".\"jenis_iuran\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.peserta.peserta_jenis_peserta_check_f8e7b57b",
+    "label": "Add check constraint \"peserta_jenis_peserta_check_f8e7b57b\" on \"peserta\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "peserta_jenis_peserta_check_f8e7b57b",
+        "table": "peserta"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"peserta_jenis_peserta_check_f8e7b57b\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "peserta_jenis_peserta_check_f8e7b57b",
+          "public",
+          "\"public\".\"peserta\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"peserta_jenis_peserta_check_f8e7b57b\"",
+        "sql": "ALTER TABLE \"public\".\"peserta\" ADD CONSTRAINT \"peserta_jenis_peserta_check_f8e7b57b\" CHECK (\"jenis_peserta\" IN ('RUMAH', 'KOS', 'TEMPAT_USAHA', 'LAINNYA'))"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"peserta_jenis_peserta_check_f8e7b57b\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "peserta_jenis_peserta_check_f8e7b57b",
+          "public",
+          "\"public\".\"peserta\""
+        ]
+      }
+    ]
+  }
+]

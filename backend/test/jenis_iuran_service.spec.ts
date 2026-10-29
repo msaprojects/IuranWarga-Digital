@@ -40,8 +40,6 @@ const existingJenisIuran = {
     judul: "Iuran Kebersihan",
     periode_iuran: "BULANAN",
     nominal: "50000",
-    tanggal_awal: now,
-    tanggal_akhir: end,
     isActive: true,
     organisasi_id: 1,
 }
@@ -61,21 +59,6 @@ afterEach(() => {
 
 describe("JenisIuranService", () => {
     describe("createJenisIuran", () => {
-        it("melempar 400 saat tanggal_akhir mendahului tanggal_awal, tanpa menyentuh db", async () => {
-            await expect(
-                jenisIuranService.createJenisIuran({
-                    judul: "Iuran Keamanan",
-                    periode_iuran: "BULANAN",
-                    nominal: "50000",
-                    tanggal_awal: end,
-                    tanggal_akhir: now,
-                    organisasi_id: 1,
-                    isActive: true,
-                }),
-            ).rejects.toThrow(HttpError)
-
-            expect(mockCreate).not.toHaveBeenCalled()
-        })
 
         it("meneruskan nominal sebagai string ke db setelah organisasi tervalidasi", async () => {
             mockFirst.mockResolvedValue({ id: 1 })
@@ -85,8 +68,6 @@ describe("JenisIuranService", () => {
                 judul: "Iuran Keamanan",
                 periode_iuran: "BULANAN" as const,
                 nominal: "75000",
-                tanggal_awal: now,
-                tanggal_akhir: end,
                 organisasi_id: 1,
                 isActive: true,
             }
@@ -104,8 +85,6 @@ describe("JenisIuranService", () => {
                     judul: "Iuran Keamanan",
                     periode_iuran: "BULANAN",
                     nominal: "75000",
-                    tanggal_awal: now,
-                    tanggal_akhir: end,
                     organisasi_id: 999,
                     isActive: true,
                 }),
@@ -164,8 +143,6 @@ describe("JenisIuranService", () => {
                 expect.objectContaining({
                     judul: "Iuran Sampah",
                     nominal: "50000",
-                    tanggal_awal: now,
-                    tanggal_akhir: end,
                     isActive: true,
                 }),
             )
