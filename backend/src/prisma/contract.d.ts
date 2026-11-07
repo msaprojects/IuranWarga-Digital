@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'be22093153160a087703378d87173869d825f5fcd6b7c4094810176f54c90ae3'>;
+  StorageHashBase<'f7376ffbe182d084c288251ce384a710f24de8ffb650284535581468e9ee8e15'>;
 export type ExecutionHash =
   ExecutionHashBase<'5a97b77418540dec627a48c686dafc19ce7d676c6c9525a2b3210d0b9992b995'>;
 export type ProfileHash =
@@ -329,7 +329,6 @@ export type FieldOutputTypes = {
       readonly jenis_iuran_id: CodecTypes['pg/int4@1']['output'];
       readonly keterangan: CodecTypes['pg/text@1']['output'] | null;
       readonly nominal_tagihan: CodecTypes['pg/numeric@1']['output'];
-      readonly nominal_terbayar: CodecTypes['pg/numeric@1']['output'];
       readonly nomor_tagihan: CodecTypes['pg/text@1']['output'];
       readonly organisasi_id: CodecTypes['pg/int4@1']['output'];
       readonly peserta_id: CodecTypes['pg/int4@1']['output'];
@@ -461,7 +460,6 @@ export type FieldInputTypes = {
       readonly jenis_iuran_id: CodecTypes['pg/int4@1']['input'];
       readonly keterangan: CodecTypes['pg/text@1']['input'] | null;
       readonly nominal_tagihan: CodecTypes['pg/numeric@1']['input'];
-      readonly nominal_terbayar: CodecTypes['pg/numeric@1']['input'];
       readonly nomor_tagihan: CodecTypes['pg/text@1']['input'];
       readonly organisasi_id: CodecTypes['pg/int4@1']['input'];
       readonly peserta_id: CodecTypes['pg/int4@1']['input'];
@@ -593,7 +591,6 @@ export type StorageColumnTypes = {
       readonly jenis_iuran_id: CodecTypes['pg/int4@1']['output'];
       readonly keterangan: CodecTypes['pg/text@1']['output'] | null;
       readonly nominal_tagihan: CodecTypes['pg/numeric@1']['output'];
-      readonly nominal_terbayar: CodecTypes['pg/numeric@1']['output'];
       readonly nomor_tagihan: CodecTypes['pg/text@1']['output'];
       readonly organisasi_id: CodecTypes['pg/int4@1']['output'];
       readonly peserta_id: CodecTypes['pg/int4@1']['output'];
@@ -725,7 +722,6 @@ export type StorageColumnInputTypes = {
       readonly jenis_iuran_id: CodecTypes['pg/int4@1']['input'];
       readonly keterangan: CodecTypes['pg/text@1']['input'] | null;
       readonly nominal_tagihan: CodecTypes['pg/numeric@1']['input'];
-      readonly nominal_terbayar: CodecTypes['pg/numeric@1']['input'];
       readonly nomor_tagihan: CodecTypes['pg/text@1']['input'];
       readonly organisasi_id: CodecTypes['pg/int4@1']['input'];
       readonly peserta_id: CodecTypes['pg/int4@1']['input'];
@@ -899,7 +895,6 @@ export namespace Models {
     jenis_iuran_id: CodecTypes['pg/int4@1']['output'];
     keterangan: CodecTypes['pg/text@1']['output'] | null;
     nominal_tagihan: CodecTypes['pg/numeric@1']['output'];
-    nominal_terbayar: CodecTypes['pg/numeric@1']['output'];
     nomor_tagihan: CodecTypes['pg/text@1']['output'];
     organisasi_id: CodecTypes['pg/int4@1']['output'];
     peserta_id: CodecTypes['pg/int4@1']['output'];
@@ -1886,12 +1881,6 @@ type ContractBase = Omit<
                   readonly many: false;
                 };
                 readonly nominal_tagihan: {
-                  readonly dataType: 'pg/numeric';
-                  readonly codecId: 'pg/numeric@1';
-                  readonly nullable: false;
-                  readonly many: false;
-                };
-                readonly nominal_terbayar: {
                   readonly dataType: 'pg/numeric';
                   readonly codecId: 'pg/numeric@1';
                   readonly nullable: false;
@@ -3171,10 +3160,6 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
               };
-              readonly nominal_terbayar: {
-                readonly nullable: false;
-                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
-              };
               readonly nomor_tagihan: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -3269,7 +3254,6 @@ type ContractBase = Omit<
                 readonly jenis_iuran_id: { readonly column: 'jenis_iuran_id' };
                 readonly keterangan: { readonly column: 'keterangan' };
                 readonly nominal_tagihan: { readonly column: 'nominal_tagihan' };
-                readonly nominal_terbayar: { readonly column: 'nominal_terbayar' };
                 readonly nomor_tagihan: { readonly column: 'nomor_tagihan' };
                 readonly organisasi_id: { readonly column: 'organisasi_id' };
                 readonly peserta_id: { readonly column: 'peserta_id' };

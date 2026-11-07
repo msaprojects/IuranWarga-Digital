@@ -2,13 +2,13 @@
  * Unit test untuk `errorHandler` — memastikan setiap kelas error dipetakan ke
  * status + machine-code + pesan Indonesia yang tidak ambigu.
  *
- * Kenapa unit (bukan integration supertest):
+ * Kenapa unit (bukan HTTP integration test):
  *   - Kami ingin memicu error spesifik (mis. SqlQueryError dengan sqlState 23505)
  *     tanpa harus menyiapkan DB constraint nyata.
  *   - Prisma 8 `SqlQueryError` di-duck-type via `{kind:"sql_query", sqlState}`;
  *     kita bangun fixture struktural dengan bentuk yang sama.
  */
-import { describe, expect, it, jest, beforeEach, afterEach } from "@jest/globals"
+import { describe, expect, it, jest, beforeEach, afterEach } from "bun:test"
 import type { Request, Response } from "express"
 import { z } from "zod"
 import { errorHandler } from "../src/utils/response_handler.ts"
@@ -81,11 +81,6 @@ const sqlConnectionError = (init: { message?: string; transient?: boolean } = {}
 
 // ---------- tests ----------
 describe("errorHandler", () => {
-    // Jest 30 + `@jest/globals` mengekspor `jest` sebagai NILAI (bukan namespace
-    // tipe), sehingga `jest.SpyInstance` tidak lagi tersedia → TS2694.
-    // Tipe spy canonical adalah `Mock` dari `jest-mock` (re-exported transitif
-    // oleh @jest/globals). Kami pakai `ReturnType<typeof jest.spyOn>` supaya
-    // tetap sinkron kalau Jest mengubah struktur internal spy-nya.
     let consoleErrorSpy: ReturnType<typeof jest.spyOn>
     beforeEach(() => {
         consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => undefined)

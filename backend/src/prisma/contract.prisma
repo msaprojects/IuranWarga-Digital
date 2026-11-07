@@ -213,9 +213,6 @@ model tagihan_iuran {
   // Nominal yang wajib dibayar.
   nominal_tagihan Decimal
 
-  // Total yang sudah dibayar.
-  nominal_terbayar Decimal
-
   status StatusTagihan
 
   keterangan String?

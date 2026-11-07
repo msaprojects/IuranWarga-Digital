@@ -1510,13 +1510,6 @@
                   "kind": "scalar"
                 }
               },
-              "nominal_terbayar": {
-                "nullable": false,
-                "type": {
-                  "codecId": "pg/numeric@1",
-                  "kind": "scalar"
-                }
-              },
               "nomor_tagihan": {
                 "nullable": false,
                 "type": {
@@ -1666,9 +1659,6 @@
                 },
                 "nominal_tagihan": {
                   "column": "nominal_tagihan"
-                },
-                "nominal_terbayar": {
-                  "column": "nominal_terbayar"
                 },
                 "nomor_tagihan": {
                   "column": "nomor_tagihan"
@@ -3171,11 +3161,6 @@
                   "dataType": "pg/numeric",
                   "nullable": false
                 },
-                "nominal_terbayar": {
-                  "codecId": "pg/numeric@1",
-                  "dataType": "pg/numeric",
-                  "nullable": false
-                },
                 "nomor_tagihan": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -3707,7 +3692,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "be22093153160a087703378d87173869d825f5fcd6b7c4094810176f54c90ae3"
+    "storageHash": "f7376ffbe182d084c288251ce384a710f24de8ffb650284535581468e9ee8e15"
   },
   "execution": {
     "executionHash": "5a97b77418540dec627a48c686dafc19ce7d676c6c9525a2b3210d0b9992b995",

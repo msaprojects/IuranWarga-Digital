@@ -8,19 +8,94 @@ POST {{URL_PATH}}organisasi
 Content-Type: application/json
 
 {
-    "organisasi": {
-        "kode": "ORG001",
-        "nama": "Warga01",
-        "alamat": "Jl. Melati No. 10",
-        "website": "https://wargaharmoni.example",
-        "email": "wargaharmoni@example.com",
-        "contact": "+6281234567890"
-    },
-    "user": {
-        "username": "admin01",
-        "name": "Admin Organisasi",
-        "password": "password1",
-        "email": "admin01@example.com",
-        "contact": "+6281234567890"
-    }
+  "organisasi": {
+    "kode": "ORG001",
+    "nama": "Warga01",
+    "alamat": "Jl. Melati No. 10",
+    "website": "https://wargaharmoni.example",
+    "email": "wargaharmoni@example.com",
+    "contact": "+6281234567890"
+  },
+  "user": {
+    "username": "admin01",
+    "name": "Admin Organisasi",
+    "password": "password1",
+    "email": "admin01@example.com",
+    "contact": "+6281234567890"
+  }
+}
+
+### POST PEMERIKSAAN
+POST http://192.168.1.218:9000/api/analisa/v1/pemeriksaan
+Content-Type: multipart/form-data
+
+{
+  "berkas_pemeriksaan": null,
+  "tanggal": "2026-11-02",
+  "jam": "12:12",
+  "idkaryawan": "8",
+  "keterangan": "-",
+  "loyang_kosong": "41.6",
+  "loyang_barang": "131.2",
+  "loyang_75": "231.1",
+  "loyang_32": "228.6",
+  "bruto": "559",
+  "shieve_475": "427.1",
+  "shieve_35": "360.3",
+  "shieve_123": "666.9",
+  "shieve_0612": "657.4",
+  "shieve_0306": "922.7",
+  "impuritis_atas": "9.17",
+  "berat_sample": "100",
+  "berat_sample_kadar_air": "100",
+  "impuritis": "9.17",
+  "ratarata": "9.17",
+  "clay": "0.6999999999999886",
+  "water": "10.400000000000006",
+  "idbarang": "1",
+  "status": "OKE",
+  "hasil_pemeriksaan": "Diterima",
+  "waste": "0.060000000000002274",
+  "saringan_35": "0.5800000000000012",
+  "saringan_123": "34.239999999999995",
+  "saringan_0612": "34.089999999999996",
+  "saringan_0306": "64.74000000000001",
+  "saringan_0003": "-33.710000000000015",
+  "total_shieve": "100",
+  "wet_density": "1.31",
+  "dry_density": "1.51",
+  "tipe": "INC",
+  "tipe_barang": "Silica Tuban",
+  "devisi": "AAC",
+  "no_kendaraan": "AE-8147-FF",
+  "supplier": "EXP. PUING",
+  "normalitas_hcl": "0",
+  "hasil_tritrasi": "0",
+  "shieve_90": "0",
+  "shieve_90_batubara": "0",
+  "loyang_kosong_b": "0",
+  "konstan_perhitungan": "0",
+  "konstan_persentase": "0",
+  "cao": "0",
+  "temperature": "0",
+  "residu": "0",
+  "tes_bakar": "-",
+  "visual": "-",
+  "so3": "0",
+  "gyp2h2o": "0",
+  "caso42h2o": "0",
+  "viscositas": "0",
+  "temperature_cao": "0",
+  "temperature_max": "0",
+  "tempat": "-",
+  "density": "0",
+  "density_atas": "0",
+  "kalori": "-",
+  "kadar_lumpur": "0",
+  "saringan_475": "0",
+  "viscositas_atas": "0",
+  "standart": "0",
+  "jenis_pemeriksaan": "PEMERIKSAAN PASIR",
+  "temperature2": "0",
+  "temperature3": "0"
 }

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, jest } from "@jest/globals"
+import { afterEach, describe, expect, it, jest } from "bun:test"
 import { decryptQRCodeString, encryptQRCodeString, generateRandomCode } from "../src/utils/helper"
 import { HttpError } from "../src/utils/http_error.ts"
 

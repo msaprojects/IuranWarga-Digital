@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals"
-import request from "supertest"
+import { afterEach, beforeEach, describe, expect, it, jest } from "bun:test"
+import { request } from "./http.ts"
 import app from "../src/app.ts"
 import { userService } from "../src/services/user.service"
 import { ConflictError, NotFoundError, UnauthorizedError } from "../src/utils/http_error.ts"

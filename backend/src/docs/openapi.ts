@@ -10,6 +10,8 @@ import detailPesertaPaths from "./openapi/detail_peserta.ts"
 import detailPesertaSchemas from "./openapi/schemas/detail_peserta.ts"
 import jenisIuranPaths from "./openapi/jenis_iuran.ts"
 import jenisIuranSchemas from "./openapi/schemas/jenis_iuran.ts"
+import tagihanIuranPaths from "./openapi/tagihan_iuran.ts"
+import tagihanIuranSchemas from "./openapi/schemas/tagihan_iuran.ts"
 
 const BEARER_SECURITY = [{ BearerAuth: [] }]
 const PUBLIC_SECURITY: Record<string, never>[] = []
@@ -64,6 +66,7 @@ const rawPaths = {
     ...pesertaPaths,
     ...detailPesertaPaths,
     ...jenisIuranPaths,
+    ...tagihanIuranPaths,
 } as unknown as OpenApiPaths
 
 const openApiSpec = {
@@ -102,6 +105,7 @@ const openApiSpec = {
             ...pesertaSchemas,
             ...detailPesertaSchemas,
             ...jenisIuranSchemas,
+            ...tagihanIuranSchemas,
         },
     },
 }

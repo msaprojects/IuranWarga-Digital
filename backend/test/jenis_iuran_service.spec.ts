@@ -1,8 +1,8 @@
-import { beforeEach, afterEach, describe, expect, it, jest } from "@jest/globals"
+import { beforeEach, afterEach, describe, expect, it, jest, mock } from "bun:test"
 import { HttpError } from "../src/utils/http_error.ts"
 
 // Rantai query `db.orm` dipalsukan. Nama variabel diawali `mock` agar boleh
-// direferensikan dari factory `jest.unstable_mockModule`.
+// direferensikan dari factory `mock.module`.
 // Tip eksplisit `(...args: any[]) => Promise<any>` diperlukan agar:
 //  - `mockResolvedValue` tidak menyempit ke `never` (return = Promise).
 //  - `toHaveBeenCalledWith(value)` tidak gagal TS2554 "Expected 0 arguments"
@@ -19,7 +19,7 @@ const mockWhere = jest.fn<(...args: any[]) => any>(() => ({
     delete: mockDelete,
 }))
 
-jest.unstable_mockModule("../src/prisma/db.ts", () => ({
+mock.module("../src/prisma/db.ts", () => ({
     db: {
         orm: {
             public: {

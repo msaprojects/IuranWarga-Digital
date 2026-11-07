@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "@jest/globals"
+import { afterEach, describe, expect, it } from "bun:test"
 import { unlink } from "node:fs/promises"
 import path from "node:path"
 import { tmpdir } from "node:os"

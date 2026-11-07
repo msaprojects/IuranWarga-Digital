@@ -38,6 +38,14 @@ import {
     updateJenisIuranSchema,
 } from "../../validator/jenis_iuran.validator.ts"
 import { jenisIuranController } from "../controllers/jenis_iuran.controller.ts"
+import {
+    createTagihanIuranSchema,
+    deleteTagihanIuranSchema,
+    getAllTagihanIuranSchema,
+    tagihanIuranIdSchema,
+    updateTagihanIuranSchema,
+} from "../../validator/tagihan_iuran.validator.ts"
+import { tagihanIuranController } from "../controllers/tagihan_iuran.controller.ts"
 
 export const router = Router()
 
@@ -57,6 +65,7 @@ router.use("/peserta", authenticateJWT)
 router.use("/detail-peserta-by-peserta/:peserta_id", authenticateJWT)
 router.use("/detail-peserta", authenticateJWT)
 router.use("/jenis-iuran", authenticateJWT)
+router.use("/tagihan-iuran", authenticateJWT)
 
 router.get(
     "/organisasi/:kode",
@@ -189,4 +198,28 @@ router.delete(
     "/jenis-iuran/:id",
     validate(detailJenisIuranIDSchema, "params"),
     jenisIuranController.deleteJenisIuran,
+)
+
+// TAGIHAN IURAN
+router.get(
+    "/tagihan-iuran/organisasi/:organisasi_id",
+    validate(getAllTagihanIuranSchema, "params"),
+    tagihanIuranController.getAllByOrganisasi,
+)
+router.post(
+    "/tagihan-iuran",
+    validate(createTagihanIuranSchema, "body"),
+    tagihanIuranController.createTagihanIuran,
+)
+router.patch(
+    "/tagihan-iuran/:id",
+    validate(tagihanIuranIdSchema, "params"),
+    validate(updateTagihanIuranSchema, "body"),
+    tagihanIuranController.updateTagihanIuran,
+)
+router.delete(
+    "/tagihan-iuran/:id",
+    validate(tagihanIuranIdSchema, "params"),
+    validate(deleteTagihanIuranSchema, "body"),
+    tagihanIuranController.deleteTagihanIuran,
 )

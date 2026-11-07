@@ -1,0 +1,44 @@
+[
+  {
+    "id": "dropColumn.tagihan_iuran.nominal_terbayar",
+    "label": "Drop column \"nominal_terbayar\" from \"tagihan_iuran\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "nominal_terbayar",
+        "table": "tagihan_iuran"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"nominal_terbayar\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "tagihan_iuran",
+          "nominal_terbayar"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "drop column \"nominal_terbayar\"",
+        "sql": "ALTER TABLE \"public\".\"tagihan_iuran\" DROP COLUMN \"nominal_terbayar\""
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"nominal_terbayar\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "tagihan_iuran",
+          "nominal_terbayar"
+        ]
+      }
+    ]
+  }
+]
