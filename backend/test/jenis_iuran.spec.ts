@@ -9,6 +9,7 @@ const jenisIuran = {
     id: 1,
     judul: "Iuran Kebersihan",
     periode_iuran: "BULANAN",
+    jenis_peserta: "RUMAH",
     nominal: "50000",
     isActive: true,
     organisasi_id: 1,
@@ -19,6 +20,7 @@ const jenisIuran = {
 const createPayload = {
     judul: "Iuran Keamanan",
     periode_iuran: "BULANAN",
+    jenis_peserta: "RUMAH",
     nominal: "75000",
     organisasi_id: 1,
 }
@@ -54,6 +56,7 @@ describe("Jenis Iuran API", () => {
         expect(response.body.components.schemas.CreateJenisIuranInput.required).toEqual([
             "judul",
             "periode_iuran",
+            "jenis_peserta",
             "nominal",
             "organisasi_id",
         ])
@@ -84,6 +87,16 @@ describe("Jenis Iuran API", () => {
             expect(jenisIuranService.getJenisIuranByKodeOrganisasi).toHaveBeenCalledWith("ORG001")
         })
 
+        it("menolak kode organisasi yang berbeda dari tenant token", async () => {
+            const response = await request(app)
+                .get("/api/jenis-iuran/organisasi/ORG999")
+                .set("Authorization", authorizationHeader())
+
+            expect(response.status).toBe(403)
+            expect(response.body.message).toBe("Akses lintas organisasi tidak diizinkan.")
+            expect(jenisIuranService.getJenisIuranByKodeOrganisasi).not.toHaveBeenCalled()
+        })
+
         it("mengembalikan 400 untuk kode yang tidak valid", async () => {
             const response = await request(app)
                 .get("/api/jenis-iuran/organisasi/!")
@@ -103,7 +116,7 @@ describe("Jenis Iuran API", () => {
 
             expect(response.status).toBe(200)
             expect(response.body.data).toEqual(expect.objectContaining({ id: 1 }))
-            expect(jenisIuranService.getJenisIuranByID).toHaveBeenCalledWith(1)
+            expect(jenisIuranService.getJenisIuranByID).toHaveBeenCalledWith(1, 1)
         })
 
         it("mengembalikan 400 untuk id yang bukan bilangan bulat positif", async () => {
@@ -149,11 +162,40 @@ describe("Jenis Iuran API", () => {
                 expect.objectContaining({
                     judul: "Iuran Keamanan",
                     periode_iuran: "BULANAN",
+                    jenis_peserta: "RUMAH",
                     nominal: "75000",
                     organisasi_id: 1,
                     isActive: true,
                 }),
             )
+        })
+
+        it("menolak organisasi_id pada body yang berbeda dari tenant token", async () => {
+            const response = await request(app)
+                .post("/api/jenis-iuran")
+                .set("Authorization", authorizationHeader())
+                .send({ ...createPayload, organisasi_id: 2 })
+
+            expect(response.status).toBe(403)
+            expect(response.body.message).toBe("Akses lintas organisasi tidak diizinkan.")
+            expect(jenisIuranService.createJenisIuran).not.toHaveBeenCalled()
+        })
+
+        it("menolak body tanpa jenis_peserta (wajib di contract)", async () => {
+            const { jenis_peserta: _tanpaJenisPeserta, ...bodyTanpaJenisPeserta } = createPayload
+            const response = await request(app)
+                .post("/api/jenis-iuran")
+                .set("Authorization", authorizationHeader())
+                .send(bodyTanpaJenisPeserta)
+
+            expect(response.status).toBe(400)
+            expect(response.body.message).toBe("Validation Error")
+            expect(response.body.errors).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({ field: "jenis_peserta" }),
+                ]),
+            )
+            expect(jenisIuranService.createJenisIuran).not.toHaveBeenCalled()
         })
 
         it("menolak body dengan periode_iuran tidak valid", async () => {
@@ -215,7 +257,7 @@ describe("Jenis Iuran API", () => {
 
             expect(response.status).toBe(200)
             expect(response.body.data).toEqual(expect.objectContaining({ id: 1 }))
-            expect(jenisIuranService.updateJenisIuran).toHaveBeenCalledWith(1, {
+            expect(jenisIuranService.updateJenisIuran).toHaveBeenCalledWith(1, 1, {
                 judul: "Iuran Sampah",
             })
         })
@@ -264,7 +306,7 @@ describe("Jenis Iuran API", () => {
 
             expect(response.status).toBe(200)
             expect(response.body.data).toEqual(expect.objectContaining({ id: 1 }))
-            expect(jenisIuranService.deleteJenisIuran).toHaveBeenCalledWith(1)
+            expect(jenisIuranService.deleteJenisIuran).toHaveBeenCalledWith(1, 1)
         })
 
         it("mengembalikan 400 untuk id yang tidak valid", async () => {

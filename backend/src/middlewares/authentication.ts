@@ -19,12 +19,15 @@ import { UnauthorizedError, ForbiddenError, InternalServerError } from "../utils
  * jadi kita lempar `HttpError` saja — tidak perlu `res.status(...).json(...)` manual,
  * sehingga envelope response konsisten dengan route lain.
  */
-interface JwtPayload {
+export interface JwtPayload {
     userId: number
     orgKode: string
     orgId: number
     username: string
 }
+
+/** Alias semantik untuk `res.locals.user` yang diisi middleware ini. */
+export type AuthenticatedUser = JwtPayload
 
 export const authenticateJWT = async (
     req: Request,

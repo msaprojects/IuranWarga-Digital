@@ -86,8 +86,10 @@ class UserService {
         return incoming !== undefined ? incoming : fallback
     }
 
+    // Hash plaintext APA ADANYA — harus simetris dengan `Bun.password.verify`
+    // di loginUser. Dijaga oleh test/login_integration.spec.ts.
     private async hashPassword(password: string): Promise<string> {
-        return await Bun.password.hash(password.repeat(3), {
+        return await Bun.password.hash(password, {
             algorithm: "bcrypt",
             cost: BCRYPT_SALT_ROUNDS,
         })

@@ -145,8 +145,11 @@ class OrganisasiService {
         }
     }
 
+    // Hash plaintext APA ADANYA. Sebelumnya password di-`repeat(3)` di sini
+    // sementara user.service memverifikasinya tanpa pengulangan → login selalu
+    // gagal. Hashing dan verifikasi wajib simetris.
     private async hashPassword(password: string): Promise<string> {
-        return await Bun.password.hash(password.repeat(3), {
+        return await Bun.password.hash(password, {
             algorithm: "bcrypt",
             cost: BCRYPT_SALT_ROUNDS,
         })

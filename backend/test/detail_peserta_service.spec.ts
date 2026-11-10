@@ -52,12 +52,23 @@ beforeEach(() => {
 describe("DetailPesertaService", () => {
     describe("listByPesertaId", () => {
         it("memfilter isActive: true saat query list", async () => {
+            mockFirst.mockResolvedValue({ id: 1 })
             mockAll.mockResolvedValue([existingDetailPeserta])
 
-            const result = await detailPesertaService.listByPesertaId(1)
+            const result = await detailPesertaService.listByPesertaId(1, 7)
 
             expect(result).toEqual([existingDetailPeserta])
+            expect(mockWhere).toHaveBeenCalledWith({ id: 1, organisasi_id: 7, isActive: true })
             expect(mockWhere).toHaveBeenCalledWith({ peserta_id: 1, isActive: true })
+        })
+
+        it("menolak peserta milik organisasi lain", async () => {
+            mockFirst.mockResolvedValue(null)
+
+            await expect(detailPesertaService.listByPesertaId(1, 7)).rejects.toThrow(
+                new HttpError(404, "Peserta tidak ditemukan / sudah tidak aktif."),
+            )
+            expect(mockAll).not.toHaveBeenCalled()
         })
     })
 
@@ -65,15 +76,24 @@ describe("DetailPesertaService", () => {
         it("mengembalikan baris saat ditemukan", async () => {
             mockFirst.mockResolvedValue(existingDetailPeserta)
 
-            await expect(detailPesertaService.getById(1)).resolves.toBe(existingDetailPeserta)
+            await expect(detailPesertaService.getById(1, 7)).resolves.toBe(existingDetailPeserta)
             expect(mockWhere).toHaveBeenCalledWith({ id: 1, isActive: true })
+            expect(mockWhere).toHaveBeenCalledWith({ id: 1, organisasi_id: 7, isActive: true })
         })
 
         it("melempar 404 saat tidak ditemukan", async () => {
             mockFirst.mockResolvedValue(null)
 
-            await expect(detailPesertaService.getById(99)).rejects.toThrow(
+            await expect(detailPesertaService.getById(99, 7)).rejects.toThrow(
                 new HttpError(404, "Detail peserta tidak ditemukan."),
+            )
+        })
+
+        it("melempar 404 saat peserta induk bukan milik tenant", async () => {
+            mockFirst.mockResolvedValueOnce(existingDetailPeserta).mockResolvedValue(null)
+
+            await expect(detailPesertaService.getById(1, 7)).rejects.toThrow(
+                new HttpError(404, "Peserta tidak ditemukan / sudah tidak aktif."),
             )
         })
     })
@@ -89,9 +109,9 @@ describe("DetailPesertaService", () => {
                 status_keluarga: "KEPALA_KELUARGA" as const,
                 isActive: true,
             }
-            await expect(detailPesertaService.create(input)).resolves.toBe(existingDetailPeserta)
+            await expect(detailPesertaService.create(input, 7)).resolves.toBe(existingDetailPeserta)
 
-            expect(mockWhere).toHaveBeenCalledWith({ id: 1, isActive: true })
+            expect(mockWhere).toHaveBeenCalledWith({ id: 1, organisasi_id: 7, isActive: true })
             expect(mockCreate).toHaveBeenCalledWith(input)
         })
 
@@ -99,11 +119,14 @@ describe("DetailPesertaService", () => {
             mockFirst.mockResolvedValue({ id: 1 })
             mockCreate.mockResolvedValue(existingDetailPeserta)
 
-            await detailPesertaService.create({
-                peserta_id: 1,
-                nama: "Budi",
-                status_keluarga: "KEPALA_KELUARGA",
-            })
+            await detailPesertaService.create(
+                {
+                    peserta_id: 1,
+                    nama: "Budi",
+                    status_keluarga: "KEPALA_KELUARGA",
+                },
+                7,
+            )
 
             expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({ isActive: true }))
         })
@@ -112,12 +135,15 @@ describe("DetailPesertaService", () => {
             mockFirst.mockResolvedValue(null)
 
             await expect(
-                detailPesertaService.create({
-                    peserta_id: 999,
-                    nama: "Budi",
-                    status_keluarga: "KEPALA_KELUARGA",
-                    isActive: true,
-                }),
+                detailPesertaService.create(
+                    {
+                        peserta_id: 999,
+                        nama: "Budi",
+                        status_keluarga: "KEPALA_KELUARGA",
+                        isActive: true,
+                    },
+                    7,
+                ),
             ).rejects.toThrow(new HttpError(404, "Peserta tidak ditemukan / sudah tidak aktif."))
 
             expect(mockCreate).not.toHaveBeenCalled()
@@ -129,8 +155,14 @@ describe("DetailPesertaService", () => {
             mockFirst.mockResolvedValue(existingDetailPeserta)
             mockUpdate.mockResolvedValue({ ...existingDetailPeserta, nama: "Siti" })
 
-            await detailPesertaService.update(1, { nama: "Siti" })
+            await detailPesertaService.update(1, 7, { nama: "Siti" })
 
+            // `.where()` #2 = verifikasi peserta induk terhadap tenant.
+            expect(mockWhere).toHaveBeenNthCalledWith(2, {
+                id: 1,
+                organisasi_id: 7,
+                isActive: true,
+            })
             expect(mockUpdate).toHaveBeenCalledWith(
                 expect.objectContaining({
                     nama: "Siti",
@@ -142,22 +174,28 @@ describe("DetailPesertaService", () => {
         })
 
         it("memvalidasi peserta tujuan saat memindah anggota keluarga", async () => {
-            // Panggilan `.first()` #1 → existing detail_peserta; #2 → peserta tujuan.
-            mockFirst.mockResolvedValueOnce(existingDetailPeserta).mockResolvedValueOnce({ id: 42 })
+            // `.first()` #1 → existing detail_peserta; #2 & #3 → peserta (induk
+            // dan tujuan) harus lolos verifikasi tenant.
+            mockFirst.mockResolvedValueOnce(existingDetailPeserta).mockResolvedValue({ id: 42 })
             mockUpdate.mockResolvedValue({ ...existingDetailPeserta, peserta_id: 42 })
 
-            await detailPesertaService.update(1, { peserta_id: 42 })
+            await detailPesertaService.update(1, 7, { peserta_id: 42 })
 
-            // urutan `.where()`: (1) find existing {id:1}, (2) cek peserta tujuan
-            // {id:42,isActive:true}, (3) update target {id:1}.
-            expect(mockWhere).toHaveBeenCalledWith({ id: 42, isActive: true })
-            expect(mockWhere).toHaveBeenNthCalledWith(3, { id: 1 })
+            // urutan `.where()`: (1) find existing {id:1}, (2) verifikasi peserta
+            // induk, (3) cek peserta tujuan, (4) update target {id:1}.
+            expect(mockWhere).toHaveBeenCalledWith({ id: 42, organisasi_id: 7, isActive: true })
+            expect(mockWhere).toHaveBeenNthCalledWith(4, { id: 1 })
         })
 
         it("melempar 404 saat peserta tujuan tidak aktif", async () => {
-            mockFirst.mockResolvedValueOnce(existingDetailPeserta).mockResolvedValueOnce(null)
+            mockFirst
+                .mockResolvedValueOnce(existingDetailPeserta)
+                .mockResolvedValueOnce({ id: 1 })
+                .mockResolvedValue(null)
 
-            await expect(detailPesertaService.update(1, { peserta_id: 999 })).rejects.toThrow(
+            await expect(
+                detailPesertaService.update(1, 7, { peserta_id: 999 }),
+            ).rejects.toThrow(
                 new HttpError(404, "Peserta tujuan tidak ditemukan / sudah tidak aktif."),
             )
             expect(mockUpdate).not.toHaveBeenCalled()
@@ -166,8 +204,17 @@ describe("DetailPesertaService", () => {
         it("melempar 404 saat detail peserta tidak ditemukan", async () => {
             mockFirst.mockResolvedValue(null)
 
-            await expect(detailPesertaService.update(99, { nama: "X" })).rejects.toThrow(
+            await expect(detailPesertaService.update(99, 7, { nama: "X" })).rejects.toThrow(
                 new HttpError(404, "Detail peserta tidak ditemukan."),
+            )
+            expect(mockUpdate).not.toHaveBeenCalled()
+        })
+
+        it("melempar 404 saat peserta induk bukan milik tenant", async () => {
+            mockFirst.mockResolvedValueOnce(existingDetailPeserta).mockResolvedValue(null)
+
+            await expect(detailPesertaService.update(1, 7, { nama: "X" })).rejects.toThrow(
+                new HttpError(404, "Peserta tidak ditemukan / sudah tidak aktif."),
             )
             expect(mockUpdate).not.toHaveBeenCalled()
         })
@@ -178,15 +225,25 @@ describe("DetailPesertaService", () => {
             mockFirst.mockResolvedValue(existingDetailPeserta)
             mockDelete.mockResolvedValue({ id: 1 })
 
-            await expect(detailPesertaService.delete(1)).resolves.toEqual({ id: 1 })
+            await expect(detailPesertaService.delete(1, 7)).resolves.toEqual({ id: 1 })
+            expect(mockWhere).toHaveBeenCalledWith({ id: 1, organisasi_id: 7, isActive: true })
             expect(mockDelete).toHaveBeenCalled()
         })
 
         it("melempar 404 saat data tidak ditemukan", async () => {
             mockFirst.mockResolvedValue(null)
 
-            await expect(detailPesertaService.delete(99)).rejects.toThrow(
+            await expect(detailPesertaService.delete(99, 7)).rejects.toThrow(
                 new HttpError(404, "Detail peserta tidak ditemukan."),
+            )
+            expect(mockDelete).not.toHaveBeenCalled()
+        })
+
+        it("melempar 404 saat peserta induk bukan milik tenant", async () => {
+            mockFirst.mockResolvedValueOnce(existingDetailPeserta).mockResolvedValue(null)
+
+            await expect(detailPesertaService.delete(1, 7)).rejects.toThrow(
+                new HttpError(404, "Peserta tidak ditemukan / sudah tidak aktif."),
             )
             expect(mockDelete).not.toHaveBeenCalled()
         })

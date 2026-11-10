@@ -44,10 +44,12 @@ class TagihanIuranService {
         if (!organisasi) {
             throw new NotFoundError("Organisasi Tidak Ditemukan")
         }
-        // check jenis_iuran
+        // check jenis_iuran — wajib milik organisasi yang sama dengan tagihan,
+        // kalau tidak, jenis iuran organisasi lain bisa dipakai lintas tenant.
         const jenisIuran = await db.orm.public.jenis_iuran
             .where({
                 id: input.jenis_iuran_id,
+                organisasi_id: input.organisasi_id,
                 isActive: true,
             })
             .first()
@@ -93,7 +95,6 @@ class TagihanIuranService {
             peserta_id: p.id,
             // Field wajib tanpa default di kolom: buat nomor unik per periode & peserta.
             nomor_tagihan: `TAG-${input.tahun}${input.bulan}-${p.id}${generateRandomCode(4, 4)}`,
-            nominal_terbayar: "0",
             status: "BELUM_BAYAR" as const,
             tanggal_terbit: tanggalTerbit,
         }))
@@ -101,18 +102,26 @@ class TagihanIuranService {
         return await db.orm.public.tagihan_iuran.createAll(dataTagihan)
     }
 
-    async update(id: number, input: UpdateTagihanIuranInput) {
-        const tagihan = await db.orm.public.tagihan_iuran
-            .where({
-                id: id,
-                deletedAt: null,
-            })
-            .first()
+    // `organisasi_id` berasal dari tenant token (bukan path/body) sehingga
+    // tagihan milik organisasi lain tidak bisa disentuh walau id-nya ditebak.
+    async update(id: number, organisasi_id: number, input: UpdateTagihanIuranInput) {
+        const scope = { id, organisasi_id, deletedAt: null }
+        const tagihan = await db.orm.public.tagihan_iuran.where(scope).first()
         if (!tagihan) {
             throw new NotFoundError("Tagihan Iuran Tidak Ditemukan")
         }
 
-        return await db.orm.public.tagihan_iuran.where({ id: id, deletedAt: null }).update({
+        // PATCH boleh memindah tagihan ke jenis iuran lain. Validasi FK saja
+        // tidak cukup: jenis iuran milik organisasi lain tetap valid secara
+        // global, jadi scope tenant wajib ikut dicek sebelum menyimpan.
+        const jenisIuran = await db.orm.public.jenis_iuran
+            .where({ id: input.jenis_iuran_id, organisasi_id })
+            .first()
+        if (!jenisIuran) {
+            throw new NotFoundError("Jenis Iuran Tidak Ditemukan")
+        }
+
+        return await db.orm.public.tagihan_iuran.where(scope).update({
             jenis_iuran_id: input.jenis_iuran_id,
             tahun: input.tahun,
             bulan: input.bulan,
@@ -120,17 +129,13 @@ class TagihanIuranService {
         })
     }
 
-    async delete(id: number, deletedBy: number, deletedReason: string) {
-        const tagihan = await db.orm.public.tagihan_iuran
-            .where({
-                id: id,
-                deletedAt: null,
-            })
-            .first()
+    async delete(id: number, organisasi_id: number, deletedBy: number, deletedReason: string) {
+        const scope = { id, organisasi_id, deletedAt: null }
+        const tagihan = await db.orm.public.tagihan_iuran.where(scope).first()
         if (!tagihan) {
             throw new NotFoundError("Tagihan Iuran Tidak Ditemukan")
         }
-        return await db.orm.public.tagihan_iuran.where({ id: id, deletedAt: null }).update({
+        return await db.orm.public.tagihan_iuran.where(scope).update({
             deletedAt: dayjs().toISOString(),
             deletedBy,
             deletedDescription: deletedReason,

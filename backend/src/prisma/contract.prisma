@@ -1,6 +1,20 @@
 // use prisma-8
 
 // ============================================================
+// ATURAN NORMALISASI
+// 1. organisasi = tenant root. Tabel transaksional menyimpan organisasi_id
+//    sebagai tenant key (denormalisasi sengaja) agar filter & isolasi data
+//    tidak perlu join berlapis.
+// 2. Setiap FK wajib punya index (PostgreSQL tidak membuat index FK otomatis).
+// 3. Model penghubung wajib punya @@unique atas pasangan FK-nya, agar relasi
+//    many-to-many tidak bisa duplikat.
+// 4. Riwayat pembayaran bersifat append-only: koreksi lewat pembayaran baru,
+//    bukan update nominal/status.
+// 5. updatedAt di-maintain di service layer; dialect contract ini tidak
+//    mendukung @updatedAt.
+// ============================================================
+
+// ============================================================
 // ORGANISASI
 // ============================================================
 
@@ -26,8 +40,111 @@ model organisasi {
   pembayaran         pembayaran_iuran[]
   keuangan           keuangan[]
   transaction_ledger transaction_ledger[]
+  sub_organisasi     sub_organisasi[]
 
   @@index([nama])
+}
+
+// ============================================================
+// SUB ORGANISASI
+// Tambahan 10-11-2026
+// Alasan: Dalam suatu organisasi kemasyarakatan, terkadang ada sub-organisasi yang terkait dengan organisasi utama, seperti:
+// PKK
+// Pengajian
+// ============================================================
+
+model sub_organisasi {
+  id            Int               @id @default(autoincrement())
+  nama          String
+  deskripsi     String?
+  isActive      Boolean           @default(true)
+  pisah_laporan Boolean           @default(false)
+
+  organisasi_id Int
+  organisasi    organisasi @relation(fields: [organisasi_id], references: [id])
+
+  createdAt TimestamptzString @default(now())
+  updatedAt TimestamptzString @default(now())
+
+  // Ketua / penanggung jawab TIDAK disimpan di sini: satu sumber kebenaran
+  // ada di pengurus_sub_organisasi lewat kolom jabatan.
+  anggota_sub_organisasi   anggota_sub_organisasi[]
+  pengurus_sub_organisasi  pengurus_sub_organisasi[]
+  komponen_sub_organisasi  komponen_sub_organisasi[]
+  tagihan_iuran            tagihan_iuran[]
+  transaction_ledger       transaction_ledger[]
+
+  @@unique([organisasi_id, nama])
+  @@index([organisasi_id])
+  @@index([isActive])
+}
+
+// ============================================================
+// Anggota sub_organisasi
+// ============================================================
+model anggota_sub_organisasi {
+  id                Int               @id @default(autoincrement())
+  sub_organisasi_id Int
+  sub_organisasi    sub_organisasi    @relation(fields: [sub_organisasi_id], references: [id])
+  peserta_id        Int
+  peserta           peserta           @relation(fields: [peserta_id], references: [id])
+  isActive          Boolean           @default(true)
+  createdAt         TimestamptzString @default(now())
+  updatedAt         TimestamptzString @default(now())
+
+  // Satu peserta hanya boleh terdaftar sekali per sub-organisasi.
+  @@unique([sub_organisasi_id, peserta_id])
+  @@index([sub_organisasi_id])
+  @@index([peserta_id])
+}
+
+// ============================================================
+// Pengurus Sub Organisasi
+// ============================================================
+
+model pengurus_sub_organisasi {
+  id                Int               @id @default(autoincrement())
+  sub_organisasi_id Int
+  sub_organisasi    sub_organisasi    @relation(fields: [sub_organisasi_id], references: [id])
+  user_id           Int
+  user              user              @relation(fields: [user_id], references: [id])
+  // Jabatan dalam sub-organisasi, mis. KETUA / SEKRETARIS / BENDAHARA.
+  jabatan           String
+  isActive          Boolean           @default(true)
+  createdAt         TimestamptzString @default(now())
+  updatedAt         TimestamptzString @default(now())
+
+  // Satu user hanya punya satu jabatan aktif per sub-organisasi.
+  @@unique([sub_organisasi_id, user_id])
+  @@index([sub_organisasi_id])
+  @@index([user_id])
+}
+
+// ============================================================
+// KOMPONEN IURAN SUB ORGANISASI
+//
+// Override tarif jenis_iuran khusus sub-organisasi.
+// Nama model sengaja dipendekkan (bukan komponen_tagihan_sub_organisasi)
+// agar nama constraint unik (sub_organisasi_id, jenis_iuran_id) tetap
+// di bawah batas 63 byte identifier PostgreSQL.
+// ============================================================
+model komponen_sub_organisasi {
+  id                  Int               @id @default(autoincrement())
+  sub_organisasi_id   Int
+  sub_organisasi      sub_organisasi    @relation(fields: [sub_organisasi_id], references: [id])
+  jenis_iuran_id      Int
+  jenis_iuran         jenis_iuran       @relation(fields: [jenis_iuran_id], references: [id])
+  // Override tarif jenis_iuran khusus sub-organisasi ini.
+  // Bukan salinan jenis_iuran.nominal; simpan hanya bila berbeda.
+  nominal             Decimal
+  isActive            Boolean           @default(true)
+  createdAt           TimestamptzString @default(now())
+  updatedAt           TimestamptzString @default(now())
+
+  // Satu jenis iuran hanya boleh dikonfigurasi sekali per sub-organisasi.
+  @@unique([sub_organisasi_id, jenis_iuran_id])
+  @@index([sub_organisasi_id])
+  @@index([jenis_iuran_id])
 }
 
 // ============================================================
@@ -55,10 +172,13 @@ model user {
   updatedAt TimestamptzString @default(now())
 
   // Relations
-  peserta            peserta[]
-  pembayaran_iuran   pembayaran_iuran[]
-  keuangan           keuangan[]
-  transaction_ledger transaction_ledger[]
+  peserta                 peserta[]
+  pembayaran_iuran        pembayaran_iuran[]
+  keuangan                keuangan[]
+  transaction_ledger      transaction_ledger[]
+  pengurus_sub_organisasi pengurus_sub_organisasi[]
+  // Tagihan yang di-soft-delete oleh user ini (audit trail).
+  tagihan_iuran_dihapus tagihan_iuran[]
 
   @@index([organisasi_id])
   @@index([role])
@@ -104,9 +224,10 @@ model peserta {
   updatedAt TimestamptzString @default(now())
 
   // Relations
-  anggota_keluarga detail_peserta[]
-  tagihan_iuran    tagihan_iuran[]
-  pembayaran       pembayaran_iuran[]
+  anggota_keluarga       detail_peserta[]
+  tagihan_iuran          tagihan_iuran[]
+  pembayaran             pembayaran_iuran[]
+  anggota_sub_organisasi anggota_sub_organisasi[]
 
   @@unique([organisasi_id, kode])
   @@index([organisasi_id])
@@ -150,6 +271,10 @@ model detail_peserta {
 model jenis_iuran {
   id Int @id @default(autoincrement())
 
+  // Master tarif selalu milik satu organisasi (tidak boleh lintas tenant).
+  organisasi_id Int
+  organisasi    organisasi @relation(fields: [organisasi_id], references: [id])
+
   judul         String
   periode_iuran PeriodeIuran
 
@@ -159,15 +284,15 @@ model jenis_iuran {
 
   isActive Boolean @default(true)
 
-  organisasi_id Int
-  organisasi    organisasi @relation(fields: [organisasi_id], references: [id])
-
   createdAt TimestamptzString @default(now())
   updatedAt TimestamptzString @default(now())
 
   // Relations
-  tagihan_iuran tagihan_iuran[]
+  tagihan_iuran           tagihan_iuran[]
+  komponen_sub_organisasi komponen_sub_organisasi[]
 
+  // Nama iuran unik di dalam satu organisasi.
+  @@unique([organisasi_id, judul])
   @@index([organisasi_id])
   @@index([isActive])
   @@index([periode_iuran])
@@ -195,16 +320,24 @@ model tagihan_iuran {
   // Nomor tagihan yang bisa ditampilkan kepada user.
   nomor_tagihan String @unique
 
+  // Tenant key: denormalisasi sengaja dari peserta agar filter per
+  // organisasi tidak perlu join berlapis.
   organisasi_id Int
   organisasi    organisasi @relation(fields: [organisasi_id], references: [id])
 
+  // Iuran yang ditagihkan pada periode ini.
   jenis_iuran_id Int
   jenis_iuran    jenis_iuran @relation(fields: [jenis_iuran_id], references: [id])
+
+  // Opsional: tagihan khusus sub-organisasi (mis. PKK / pengajian).
+  sub_organisasi_id Int?
+  sub_organisasi    sub_organisasi? @relation(fields: [sub_organisasi_id], references: [id])
 
   peserta_id Int
   peserta    peserta @relation(fields: [peserta_id], references: [id])
 
   // Periode tagihan.
+  // bulan null hanya valid untuk periode non-bulanan (HARIAN/MINGGUAN/TAHUNAN).
   tahun Int
   bulan Int?
 
@@ -223,17 +356,19 @@ model tagihan_iuran {
   // misal: peserta pindah rumah, tagihan dibatalkan atau alasan lainnya.
   deletedAt          TimestamptzString?
   deletedBy          Int?
+  deleted_by         user? @relation(fields: [deletedBy], references: [id])
   deletedDescription String?
 
   // Relations
   pembayaran pembayaran_iuran[]
 
   @@unique([peserta_id, jenis_iuran_id, tahun, bulan])
-  @@index([organisasi_id])
+  @@index([organisasi_id, tahun, bulan])
+  @@index([organisasi_id, status])
   @@index([jenis_iuran_id])
   @@index([peserta_id])
-  @@index([status])
-  @@index([tahun, bulan])
+  @@index([sub_organisasi_id])
+  @@index([deletedAt])
 }
 
 // ============================================================
@@ -251,6 +386,8 @@ model pembayaran_iuran {
 
   nomor_transaksi String @unique
 
+  // Tenant key, disalin dari tagihan agar laporan kas per organisasi
+  // tidak perlu join berlapis.
   organisasi_id Int
   organisasi    organisasi @relation(fields: [organisasi_id], references: [id])
 
@@ -371,22 +508,34 @@ model keuangan_detail {
 }
 
 // ============================================================
-// TRANSACACTION LEDGER
+// TRANSACTION LEDGER
+//
+// Satu baris = satu kaki (debit/kredit) dari satu jurnal keuangan.
+// Baris ledger bersifat append-only: koreksi dilakukan dengan baris balik
+// (reversal), bukan update / delete.
 // ============================================================
 model transaction_ledger {
-  id            String     @id @default(uuid(7))
-  keuangan_id   Int
-  keuangan      keuangan   @relation(fields: [keuangan_id], references: [id])
-  organisasi_id Int
-  organisasi    organisasi @relation(fields: [organisasi_id], references: [id])
-  user_id       Int
-  user          user       @relation(fields: [user_id], references: [id])
+  id                String          @id @default(uuid(7))
+  keuangan_id       Int
+  keuangan          keuangan        @relation(fields: [keuangan_id], references: [id])
+  organisasi_id     Int
+  organisasi        organisasi      @relation(fields: [organisasi_id], references: [id])
+  // Nullable: entri otomatis oleh sistem tidak punya aktor user.
+  user_id           Int?
+  user              user?           @relation(fields: [user_id], references: [id])
+  sub_organisasi_id Int?
+  sub_organisasi    sub_organisasi? @relation(fields: [sub_organisasi_id], references: [id])
 
   nominal        Decimal
   tipe           LedgerSign
   system_details String?
 
   createdAt TimestamptzString @default(now())
+
+  @@index([keuangan_id])
+  @@index([organisasi_id, createdAt])
+  @@index([user_id])
+  @@index([sub_organisasi_id])
 }
 
 // ============================================================

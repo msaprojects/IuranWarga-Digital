@@ -4,6 +4,10 @@
   "target": "postgres",
   "profileHash": "3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2",
   "roots": {
+    "anggota_sub_organisasi": {
+      "model": "anggota_sub_organisasi",
+      "namespace": "public"
+    },
     "detail_peserta": {
       "model": "detail_peserta",
       "namespace": "public"
@@ -20,6 +24,10 @@
       "model": "keuangan_detail",
       "namespace": "public"
     },
+    "komponen_sub_organisasi": {
+      "model": "komponen_sub_organisasi",
+      "namespace": "public"
+    },
     "organisasi": {
       "model": "organisasi",
       "namespace": "public"
@@ -28,8 +36,16 @@
       "model": "pembayaran_iuran",
       "namespace": "public"
     },
+    "pengurus_sub_organisasi": {
+      "model": "pengurus_sub_organisasi",
+      "namespace": "public"
+    },
     "peserta": {
       "model": "peserta",
+      "namespace": "public"
+    },
+    "sub_organisasi": {
+      "model": "sub_organisasi",
       "namespace": "public"
     },
     "tagihan_iuran": {
@@ -207,6 +223,110 @@
           }
         },
         "models": {
+          "anggota_sub_organisasi": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "isActive": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "peserta_id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "sub_organisasi_id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "peserta": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "peserta_id"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "peserta",
+                  "namespace": "public"
+                }
+              },
+              "sub_organisasi": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "sub_organisasi_id"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "sub_organisasi",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "isActive": {
+                  "column": "isActive"
+                },
+                "peserta_id": {
+                  "column": "peserta_id"
+                },
+                "sub_organisasi_id": {
+                  "column": "sub_organisasi_id"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "anggota_sub_organisasi"
+            }
+          },
           "detail_peserta": {
             "fields": {
               "createdAt": {
@@ -390,6 +510,21 @@
               }
             },
             "relations": {
+              "komponen_sub_organisasi": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "jenis_iuran_id"
+                  ]
+                },
+                "to": {
+                  "model": "komponen_sub_organisasi",
+                  "namespace": "public"
+                }
+              },
               "organisasi": {
                 "cardinality": "N:1",
                 "nullable": false,
@@ -740,6 +875,120 @@
               "table": "keuangan_detail"
             }
           },
+          "komponen_sub_organisasi": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "isActive": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "jenis_iuran_id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "nominal": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/numeric@1",
+                  "kind": "scalar"
+                }
+              },
+              "sub_organisasi_id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "jenis_iuran": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "jenis_iuran_id"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "jenis_iuran",
+                  "namespace": "public"
+                }
+              },
+              "sub_organisasi": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "sub_organisasi_id"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "sub_organisasi",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "isActive": {
+                  "column": "isActive"
+                },
+                "jenis_iuran_id": {
+                  "column": "jenis_iuran_id"
+                },
+                "nominal": {
+                  "column": "nominal"
+                },
+                "sub_organisasi_id": {
+                  "column": "sub_organisasi_id"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "komponen_sub_organisasi"
+            }
+          },
           "organisasi": {
             "fields": {
               "activeAt": {
@@ -878,6 +1127,21 @@
                 },
                 "to": {
                   "model": "peserta",
+                  "namespace": "public"
+                }
+              },
+              "sub_organisasi": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "organisasi_id"
+                  ]
+                },
+                "to": {
+                  "model": "sub_organisasi",
                   "namespace": "public"
                 }
               },
@@ -1210,6 +1474,120 @@
               "table": "pembayaran_iuran"
             }
           },
+          "pengurus_sub_organisasi": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "isActive": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "jabatan": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "sub_organisasi_id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "user_id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "sub_organisasi": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "sub_organisasi_id"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "sub_organisasi",
+                  "namespace": "public"
+                }
+              },
+              "user": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "user_id"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "user",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "isActive": {
+                  "column": "isActive"
+                },
+                "jabatan": {
+                  "column": "jabatan"
+                },
+                "sub_organisasi_id": {
+                  "column": "sub_organisasi_id"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "user_id": {
+                  "column": "user_id"
+                }
+              },
+              "namespaceId": "public",
+              "table": "pengurus_sub_organisasi"
+            }
+          },
           "peserta": {
             "fields": {
               "alamat": {
@@ -1333,6 +1711,21 @@
                   "namespace": "public"
                 }
               },
+              "anggota_sub_organisasi": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "peserta_id"
+                  ]
+                },
+                "to": {
+                  "model": "anggota_sub_organisasi",
+                  "namespace": "public"
+                }
+              },
               "organisasi": {
                 "cardinality": "N:1",
                 "nullable": false,
@@ -1445,6 +1838,189 @@
               "table": "peserta"
             }
           },
+          "sub_organisasi": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "deskripsi": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "isActive": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "nama": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "organisasi_id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "pisah_laporan": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "anggota_sub_organisasi": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "sub_organisasi_id"
+                  ]
+                },
+                "to": {
+                  "model": "anggota_sub_organisasi",
+                  "namespace": "public"
+                }
+              },
+              "komponen_sub_organisasi": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "sub_organisasi_id"
+                  ]
+                },
+                "to": {
+                  "model": "komponen_sub_organisasi",
+                  "namespace": "public"
+                }
+              },
+              "organisasi": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "organisasi_id"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "organisasi",
+                  "namespace": "public"
+                }
+              },
+              "pengurus_sub_organisasi": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "sub_organisasi_id"
+                  ]
+                },
+                "to": {
+                  "model": "pengurus_sub_organisasi",
+                  "namespace": "public"
+                }
+              },
+              "tagihan_iuran": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "sub_organisasi_id"
+                  ]
+                },
+                "to": {
+                  "model": "tagihan_iuran",
+                  "namespace": "public"
+                }
+              },
+              "transaction_ledger": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "sub_organisasi_id"
+                  ]
+                },
+                "to": {
+                  "model": "transaction_ledger",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "deskripsi": {
+                  "column": "deskripsi"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "isActive": {
+                  "column": "isActive"
+                },
+                "nama": {
+                  "column": "nama"
+                },
+                "organisasi_id": {
+                  "column": "organisasi_id"
+                },
+                "pisah_laporan": {
+                  "column": "pisah_laporan"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "sub_organisasi"
+            }
+          },
           "tagihan_iuran": {
             "fields": {
               "bulan": {
@@ -1544,6 +2120,13 @@
                   "plane": "domain"
                 }
               },
+              "sub_organisasi_id": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "tahun": {
                 "nullable": false,
                 "type": {
@@ -1567,6 +2150,22 @@
               }
             },
             "relations": {
+              "deleted_by": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "deletedBy"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "user",
+                  "namespace": "public"
+                }
+              },
               "jenis_iuran": {
                 "cardinality": "N:1",
                 "nullable": false,
@@ -1629,6 +2228,22 @@
                   "model": "peserta",
                   "namespace": "public"
                 }
+              },
+              "sub_organisasi": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "sub_organisasi_id"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "sub_organisasi",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -1671,6 +2286,9 @@
                 },
                 "status": {
                   "column": "status"
+                },
+                "sub_organisasi_id": {
+                  "column": "sub_organisasi_id"
                 },
                 "tahun": {
                   "column": "tahun"
@@ -1723,6 +2341,13 @@
                   "kind": "scalar"
                 }
               },
+              "sub_organisasi_id": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
               "system_details": {
                 "nullable": true,
                 "type": {
@@ -1744,7 +2369,7 @@
                 }
               },
               "user_id": {
-                "nullable": false,
+                "nullable": true,
                 "type": {
                   "codecId": "pg/int4@1",
                   "kind": "scalar"
@@ -1784,9 +2409,25 @@
                   "namespace": "public"
                 }
               },
+              "sub_organisasi": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "sub_organisasi_id"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "sub_organisasi",
+                  "namespace": "public"
+                }
+              },
               "user": {
                 "cardinality": "N:1",
-                "nullable": false,
+                "nullable": true,
                 "on": {
                   "localFields": [
                     "user_id"
@@ -1817,6 +2458,9 @@
                 },
                 "organisasi_id": {
                   "column": "organisasi_id"
+                },
+                "sub_organisasi_id": {
+                  "column": "sub_organisasi_id"
                 },
                 "system_details": {
                   "column": "system_details"
@@ -1972,6 +2616,21 @@
                   "namespace": "public"
                 }
               },
+              "pengurus_sub_organisasi": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "user_id"
+                  ]
+                },
+                "to": {
+                  "model": "pengurus_sub_organisasi",
+                  "namespace": "public"
+                }
+              },
               "peserta": {
                 "cardinality": "1:N",
                 "on": {
@@ -1984,6 +2643,21 @@
                 },
                 "to": {
                   "model": "peserta",
+                  "namespace": "public"
+                }
+              },
+              "tagihan_iuran_dihapus": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "deletedBy"
+                  ]
+                },
+                "to": {
+                  "model": "tagihan_iuran",
                   "namespace": "public"
                 }
               },
@@ -2055,6 +2729,121 @@
       "public": {
         "entries": {
           "table": {
+            "anggota_sub_organisasi": {
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "isActive": {
+                  "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
+                  "default": {
+                    "kind": "literal",
+                    "value": true
+                  },
+                  "nullable": false
+                },
+                "peserta_id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "sub_organisasi_id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "sub_organisasi_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "anggota_sub_organisasi"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "sub_organisasi"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "peserta_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "anggota_sub_organisasi"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "peserta"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "peserta_id"
+                  ],
+                  "name": "anggota_sub_organisasi_peserta_id_idx_52c9abf0",
+                  "prefix": "anggota_sub_organisasi_peserta_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "sub_organisasi_id"
+                  ],
+                  "name": "anggota_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e",
+                  "prefix": "anggota_sub_organisasi_sub_organisasi_id_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "sub_organisasi_id",
+                    "peserta_id"
+                  ]
+                }
+              ]
+            },
             "detail_peserta": {
               "checks": [
                 {
@@ -2302,7 +3091,14 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "organisasi_id",
+                    "judul"
+                  ]
+                }
+              ]
             },
             "keuangan": {
               "checks": [
@@ -2560,6 +3356,126 @@
                 ]
               },
               "uniques": []
+            },
+            "komponen_sub_organisasi": {
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "isActive": {
+                  "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
+                  "default": {
+                    "kind": "literal",
+                    "value": true
+                  },
+                  "nullable": false
+                },
+                "jenis_iuran_id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "nominal": {
+                  "codecId": "pg/numeric@1",
+                  "dataType": "pg/numeric",
+                  "nullable": false
+                },
+                "sub_organisasi_id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "sub_organisasi_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "komponen_sub_organisasi"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "sub_organisasi"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "jenis_iuran_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "komponen_sub_organisasi"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "jenis_iuran"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "jenis_iuran_id"
+                  ],
+                  "name": "komponen_sub_organisasi_jenis_iuran_id_idx_3ca5ef71",
+                  "prefix": "komponen_sub_organisasi_jenis_iuran_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "sub_organisasi_id"
+                  ],
+                  "name": "komponen_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e",
+                  "prefix": "komponen_sub_organisasi_sub_organisasi_id_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "sub_organisasi_id",
+                    "jenis_iuran_id"
+                  ]
+                }
+              ]
             },
             "organisasi": {
               "columns": {
@@ -2910,6 +3826,126 @@
                 }
               ]
             },
+            "pengurus_sub_organisasi": {
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "isActive": {
+                  "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
+                  "default": {
+                    "kind": "literal",
+                    "value": true
+                  },
+                  "nullable": false
+                },
+                "jabatan": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "sub_organisasi_id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "user_id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "sub_organisasi_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "pengurus_sub_organisasi"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "sub_organisasi"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "user_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "pengurus_sub_organisasi"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "sub_organisasi_id"
+                  ],
+                  "name": "pengurus_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e",
+                  "prefix": "pengurus_sub_organisasi_sub_organisasi_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "user_id"
+                  ],
+                  "name": "pengurus_sub_organisasi_user_id_idx_6c952402",
+                  "prefix": "pengurus_sub_organisasi_user_id_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "sub_organisasi_id",
+                    "user_id"
+                  ]
+                }
+              ]
+            },
             "peserta": {
               "checks": [
                 {
@@ -3099,6 +4135,119 @@
                 }
               ]
             },
+            "sub_organisasi": {
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "deskripsi": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "isActive": {
+                  "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
+                  "default": {
+                    "kind": "literal",
+                    "value": true
+                  },
+                  "nullable": false
+                },
+                "nama": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "organisasi_id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": false
+                },
+                "pisah_laporan": {
+                  "codecId": "pg/bool@1",
+                  "dataType": "pg/bool",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "organisasi_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "sub_organisasi"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "organisasi"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "isActive"
+                  ],
+                  "name": "sub_organisasi_isActive_idx_77fe3ba1",
+                  "prefix": "sub_organisasi_isActive_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organisasi_id"
+                  ],
+                  "name": "sub_organisasi_organisasi_id_idx_2f5facc4",
+                  "prefix": "sub_organisasi_organisasi_id_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "organisasi_id",
+                    "nama"
+                  ]
+                }
+              ]
+            },
             "tagihan_iuran": {
               "checks": [
                 {
@@ -3187,6 +4336,11 @@
                     "plane": "storage"
                   }
                 },
+                "sub_organisasi_id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                },
                 "tahun": {
                   "codecId": "pg/int4@1",
                   "dataType": "pg/int4",
@@ -3243,6 +4397,22 @@
                 {
                   "source": {
                     "columns": [
+                      "sub_organisasi_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "tagihan_iuran"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "sub_organisasi"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
                       "peserta_id"
                     ],
                     "namespaceId": "public",
@@ -3255,9 +4425,41 @@
                     "namespaceId": "public",
                     "tableName": "peserta"
                   }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "deletedBy"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "tagihan_iuran"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
                 }
               ],
               "indexes": [
+                {
+                  "columns": [
+                    "deletedAt"
+                  ],
+                  "name": "tagihan_iuran_deletedAt_idx_a39f721c",
+                  "prefix": "tagihan_iuran_deletedAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "deletedBy"
+                  ],
+                  "name": "tagihan_iuran_deletedBy_idx_4d24a1c3",
+                  "prefix": "tagihan_iuran_deletedBy_idx",
+                  "unique": false
+                },
                 {
                   "columns": [
                     "jenis_iuran_id"
@@ -3276,6 +4478,25 @@
                 },
                 {
                   "columns": [
+                    "organisasi_id",
+                    "status"
+                  ],
+                  "name": "tagihan_iuran_organisasi_id_status_idx_6301355e",
+                  "prefix": "tagihan_iuran_organisasi_id_status_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "organisasi_id",
+                    "tahun",
+                    "bulan"
+                  ],
+                  "name": "tagihan_iuran_organisasi_id_tahun_bulan_idx_2e715dee",
+                  "prefix": "tagihan_iuran_organisasi_id_tahun_bulan_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
                     "peserta_id"
                   ],
                   "name": "tagihan_iuran_peserta_id_idx_52c9abf0",
@@ -3284,19 +4505,10 @@
                 },
                 {
                   "columns": [
-                    "status"
+                    "sub_organisasi_id"
                   ],
-                  "name": "tagihan_iuran_status_idx_e98638ab",
-                  "prefix": "tagihan_iuran_status_idx",
-                  "unique": false
-                },
-                {
-                  "columns": [
-                    "tahun",
-                    "bulan"
-                  ],
-                  "name": "tagihan_iuran_tahun_bulan_idx_bc66ba83",
-                  "prefix": "tagihan_iuran_tahun_bulan_idx",
+                  "name": "tagihan_iuran_sub_organisasi_id_idx_8f7c5a0e",
+                  "prefix": "tagihan_iuran_sub_organisasi_id_idx",
                   "unique": false
                 }
               ],
@@ -3359,6 +4571,11 @@
                   "dataType": "pg/int4",
                   "nullable": false
                 },
+                "sub_organisasi_id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                },
                 "system_details": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -3378,7 +4595,7 @@
                 "user_id": {
                   "codecId": "pg/int4@1",
                   "dataType": "pg/int4",
-                  "nullable": false
+                  "nullable": true
                 }
               },
               "foreignKeys": [
@@ -3429,6 +4646,22 @@
                     "namespaceId": "public",
                     "tableName": "user"
                   }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "sub_organisasi_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "transaction_ledger"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "sub_organisasi"
+                  }
                 }
               ],
               "indexes": [
@@ -3442,10 +4675,27 @@
                 },
                 {
                   "columns": [
+                    "organisasi_id",
+                    "createdAt"
+                  ],
+                  "name": "transaction_ledger_organisasi_id_createdAt_idx_7da82646",
+                  "prefix": "transaction_ledger_organisasi_id_createdAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
                     "organisasi_id"
                   ],
                   "name": "transaction_ledger_organisasi_id_idx_2f5facc4",
                   "prefix": "transaction_ledger_organisasi_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "sub_organisasi_id"
+                  ],
+                  "name": "transaction_ledger_sub_organisasi_id_idx_8f7c5a0e",
+                  "prefix": "transaction_ledger_sub_organisasi_id_idx",
                   "unique": false
                 },
                 {
@@ -3692,7 +4942,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "f7376ffbe182d084c288251ce384a710f24de8ffb650284535581468e9ee8e15"
+    "storageHash": "03d85652ff884714f996711ae377ed90f053d506fc8dd95d19fbdc2d1b582dd9"
   },
   "execution": {
     "executionHash": "5a97b77418540dec627a48c686dafc19ce7d676c6c9525a2b3210d0b9992b995",

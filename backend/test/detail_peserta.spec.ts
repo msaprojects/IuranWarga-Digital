@@ -46,7 +46,7 @@ describe("Detail Peserta API", () => {
                 message: "Success",
                 data: [expect.objectContaining({ id: 1, peserta_id: 10, nama: "Andi Santoso" })],
             })
-            expect(detailPesertaService.listByPesertaId).toHaveBeenCalledWith(10)
+            expect(detailPesertaService.listByPesertaId).toHaveBeenCalledWith(10, 1)
         })
 
         it("mengembalikan 400 untuk peserta_id yang tidak valid", async () => {
@@ -106,7 +106,7 @@ describe("Detail Peserta API", () => {
             expect(response.body.data).toEqual(
                 expect.objectContaining({ id: 1, nama: "Andi Santoso" }),
             )
-            expect(detailPesertaService.getById).toHaveBeenCalledWith(1)
+            expect(detailPesertaService.getById).toHaveBeenCalledWith(1, 1)
         })
 
         it("mengembalikan 400 untuk id yang bukan bilangan bulat positif", async () => {
@@ -148,10 +148,13 @@ describe("Detail Peserta API", () => {
                 message: "Detail peserta berhasil dibuat",
                 data: expect.objectContaining({ id: 1, peserta_id: 10 }),
             })
-            expect(detailPesertaService.create).toHaveBeenCalledWith({
-                ...createPayload,
-                isActive: true,
-            })
+            expect(detailPesertaService.create).toHaveBeenCalledWith(
+                {
+                    ...createPayload,
+                    isActive: true,
+                },
+                1,
+            )
         })
 
         it("menolak body dengan status_keluarga tidak valid", async () => {
@@ -208,7 +211,7 @@ describe("Detail Peserta API", () => {
             })
             // isActive sengaja TIDAK di-default pada PATCH; hanya field yang
             // dikirim klien yang diteruskan ke service.
-            expect(detailPesertaService.update).toHaveBeenCalledWith(1, { nama: "Andi Baru" })
+            expect(detailPesertaService.update).toHaveBeenCalledWith(1, 1, { nama: "Andi Baru" })
         })
 
         it("mengembalikan 400 untuk id path yang tidak valid", async () => {
@@ -262,7 +265,7 @@ describe("Detail Peserta API", () => {
                 message: "Detail peserta berhasil dihapus",
                 data: expect.objectContaining({ id: 1 }),
             })
-            expect(detailPesertaService.delete).toHaveBeenCalledWith(1)
+            expect(detailPesertaService.delete).toHaveBeenCalledWith(1, 1)
         })
 
         it("mengembalikan 400 untuk id yang tidak valid", async () => {

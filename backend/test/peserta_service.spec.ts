@@ -150,6 +150,21 @@ describe("PesertaService", () => {
             expect(mockCreate).not.toHaveBeenCalled()
         })
 
+        it("membatasi user_id ke organisasi peserta (lintas tenant ditolak)", async () => {
+            mockFirst.mockResolvedValueOnce({ id: 1 }).mockResolvedValueOnce(null)
+
+            await expect(
+                pesertaService.createPeserta({ nama: "Budi", organisasi_id: 1, user_id: 99 }),
+            ).rejects.toThrow(new HttpError(404, "User tidak ditemukan / sudah tidak aktif."))
+
+            // Query user wajib menyertakan organisasi_id peserta, bukan hanya id.
+            expect(mockWhere).toHaveBeenNthCalledWith(2, {
+                id: 99,
+                organisasi_id: 1,
+                isActive: true,
+            })
+        })
+
         it("melempar 409 saat qr_token sudah dipakai", async () => {
             mockFirst.mockResolvedValueOnce({ id: 1 }).mockResolvedValueOnce(existingPeserta)
 
@@ -183,9 +198,21 @@ describe("PesertaService", () => {
         it("melempar 404 saat peserta tidak ditemukan", async () => {
             mockFirst.mockResolvedValue(null)
 
-            await expect(pesertaService.updatePeserta(99, { nama: "X" })).rejects.toThrow(
+            await expect(pesertaService.updatePeserta(99, 1, { nama: "X" })).rejects.toThrow(
                 new HttpError(404, "Peserta tidak ditemukan."),
             )
+            expect(mockUpdate).not.toHaveBeenCalled()
+        })
+
+        it("membatasi lookup peserta ke organisasi tenant (lintas tenant ditolak)", async () => {
+            mockFirst.mockResolvedValue(null)
+
+            await expect(pesertaService.updatePeserta(1, 7, { nama: "X" })).rejects.toThrow(
+                new HttpError(404, "Peserta tidak ditemukan."),
+            )
+
+            // Scope wajib memuat organisasi_id tenant, bukan hanya id.
+            expect(mockWhere).toHaveBeenCalledWith({ id: 1, organisasi_id: 7 })
             expect(mockUpdate).not.toHaveBeenCalled()
         })
 
@@ -193,7 +220,7 @@ describe("PesertaService", () => {
             mockFirst.mockResolvedValue(existingPeserta)
             mockUpdate.mockResolvedValue({ ...existingPeserta, nomor_rumah: null })
 
-            await pesertaService.updatePeserta(1, { nomor_rumah: null })
+            await pesertaService.updatePeserta(1, 1, { nomor_rumah: null })
 
             // PATCH semantics: hanya `nomor_rumah` yang berubah; field lain
             // tetap memakai nilai existing karena tidak dikirim (undefined).
@@ -214,7 +241,7 @@ describe("PesertaService", () => {
             mockFirst.mockResolvedValueOnce(existingPeserta).mockResolvedValue(null)
             mockUpdate.mockResolvedValue(existingPeserta)
 
-            await pesertaService.updatePeserta(1, { qr_token: "berbeda" })
+            await pesertaService.updatePeserta(1, 1, { qr_token: "berbeda" })
 
             // Dipanggil 2x: (1) find peserta, (2) cek qr_token bebas.
             expect(mockFirst).toHaveBeenCalledTimes(2)
@@ -224,10 +251,24 @@ describe("PesertaService", () => {
             mockFirst.mockResolvedValue(existingPeserta)
             mockUpdate.mockResolvedValue(existingPeserta)
 
-            await pesertaService.updatePeserta(1, { qr_token: existingPeserta.qr_token })
+            await pesertaService.updatePeserta(1, 1, { qr_token: existingPeserta.qr_token })
 
             // Dipanggil 1x saja (hanya find peserta).
             expect(mockFirst).toHaveBeenCalledTimes(1)
+        })
+
+        it("memakai organisasi peserta saat memvalidasi user_id", async () => {
+            // (1) peserta lama → (2) user valid pada organisasi peserta.
+            mockFirst.mockResolvedValueOnce(existingPeserta).mockResolvedValueOnce({ id: 2 })
+            mockUpdate.mockResolvedValue(existingPeserta)
+
+            await pesertaService.updatePeserta(1, 1, { user_id: 2 })
+
+            expect(mockWhere).toHaveBeenNthCalledWith(2, {
+                id: 2,
+                organisasi_id: existingPeserta.organisasi_id,
+                isActive: true,
+            })
         })
     })
 

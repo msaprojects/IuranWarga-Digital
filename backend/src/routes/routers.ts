@@ -46,6 +46,7 @@ import {
     updateTagihanIuranSchema,
 } from "../../validator/tagihan_iuran.validator.ts"
 import { tagihanIuranController } from "../controllers/tagihan_iuran.controller.ts"
+import { requireTenant } from "../middlewares/tenant.ts"
 
 export const router = Router()
 
@@ -116,11 +117,17 @@ router.get(
     validate(getDetailPesertaByIdAndKodeOrganisasiSchema, "params"),
     pesertaController.getDetailPesertaByOrganizationCode,
 )
-router.post("/peserta", validate(createPesertaSchema, "body"), pesertaController.createPeserta)
+router.post(
+    "/peserta",
+    validate(createPesertaSchema, "body"),
+    requireTenant(),
+    pesertaController.createPeserta,
+)
 router.patch(
     "/peserta/:id",
     validate(pesertaIdSchema, "params"),
     validate(updatePesertaSchema, "body"),
+    requireTenant(),
     pesertaController.updatePeserta,
 )
 router.get(
@@ -145,58 +152,73 @@ router.get(
 )
 
 // DETAIL PESERTA
+// `detail_peserta` tidak punya kolom `organisasi_id`; guard tetap dipasang
+// supaya tenant terverifikasi tersedia di `res.locals.tenant` untuk dipakai
+// service saat menelusuri peserta induk.
 router.get(
     "/detail-peserta-by-peserta/:peserta_id",
     validate(getDetailPesertaByPesertaIdSchema, "params"),
+    requireTenant(),
     DetailPesertaController.listByPeserta,
 )
 router.get(
     "/detail-peserta/:id",
     validate(detailPesertaIdSchema, "params"),
+    requireTenant(),
     DetailPesertaController.getById,
 )
 router.post(
     "/detail-peserta",
     validate(createDetailPesertaSchema, "body"),
+    requireTenant(),
     DetailPesertaController.create,
 )
 router.patch(
     "/detail-peserta/:id",
     validate(detailPesertaIdSchema, "params"),
     validate(updateDetailPesertaSchema, "body"),
+    requireTenant(),
     DetailPesertaController.update,
 )
 router.delete(
     "/detail-peserta/:id",
     validate(detailPesertaIdSchema, "params"),
+    requireTenant(),
     DetailPesertaController.delete,
 )
 
 // JENIS IURAN
+// Route berbasis kode mencocokkan `:kode` dengan `orgKode` di token; route
+// berbasis id/scoped lewat `organisasi_id` token seperti grup lainnya.
 router.get(
     "/jenis-iuran/organisasi/:kode",
     validate(organisasiByKodeParamsSchema, "params"),
+    requireTenant({ kode: "kode" }),
     jenisIuranController.getJenisIuranByOrganisasi,
 )
 router.get(
     "/jenis-iuran/:id",
     validate(detailJenisIuranIDSchema, "params"),
+    requireTenant(),
     jenisIuranController.getDetailJenisIuranByID,
 )
 router.post(
     "/jenis-iuran",
     validate(createJenisIuranSchema, "body"),
+    requireTenant(),
     jenisIuranController.createJenisIuran,
 )
 router.patch(
     "/jenis-iuran/:id",
     validate(detailJenisIuranIDSchema, "params"),
     validate(updateJenisIuranSchema, "body"),
+    requireTenant(),
     jenisIuranController.updateJenisIuran,
 )
 router.delete(
     "/jenis-iuran/:id",
     validate(detailJenisIuranIDSchema, "params"),
+    requireTenant(),
     jenisIuranController.deleteJenisIuran,
 )
 
@@ -204,22 +226,26 @@ router.delete(
 router.get(
     "/tagihan-iuran/organisasi/:organisasi_id",
     validate(getAllTagihanIuranSchema, "params"),
+    requireTenant(),
     tagihanIuranController.getAllByOrganisasi,
 )
 router.post(
     "/tagihan-iuran",
     validate(createTagihanIuranSchema, "body"),
+    requireTenant(),
     tagihanIuranController.createTagihanIuran,
 )
 router.patch(
     "/tagihan-iuran/:id",
     validate(tagihanIuranIdSchema, "params"),
     validate(updateTagihanIuranSchema, "body"),
+    requireTenant(),
     tagihanIuranController.updateTagihanIuran,
 )
 router.delete(
     "/tagihan-iuran/:id",
     validate(tagihanIuranIdSchema, "params"),
     validate(deleteTagihanIuranSchema, "body"),
+    requireTenant(),
     tagihanIuranController.deleteTagihanIuran,
 )

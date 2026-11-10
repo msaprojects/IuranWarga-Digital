@@ -94,7 +94,6 @@ const tagihanIuranSchemas = {
             bulan: { type: "integer", nullable: true, example: 10 },
             tanggal_terbit: { type: "string", format: "date", example: "2026-10-31" },
             nominal_tagihan: { type: "string", example: "50000" },
-            nominal_terbayar: { type: "string", example: "0" },
             status: { type: "string", enum: [...STATUS_TAGIHAN], example: "BELUM_BAYAR" },
             keterangan: { type: "string", nullable: true },
             createdAt: { type: "string", format: "date-time" },

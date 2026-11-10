@@ -1,4 +1,4 @@
-import { PERIODE_IURAN } from "../../../utils/constanta.ts"
+import { JENIS_PESERTA, PERIODE_IURAN } from "../../../utils/constanta.ts"
 
 const jenisIuranSchemas = {
     CreateJenisIuranInput: {
@@ -7,12 +7,19 @@ const jenisIuranSchemas = {
         required: [
             "judul",
             "periode_iuran",
+            "jenis_peserta",
             "nominal",
             "organisasi_id",
         ],
         properties: {
             judul: { type: "string", minLength: 3, maxLength: 45, example: "Iuran Kebersihan" },
             periode_iuran: { type: "string", enum: [...PERIODE_IURAN], example: "BULANAN" },
+            jenis_peserta: {
+                type: "string",
+                enum: [...JENIS_PESERTA],
+                description: "Tipe peserta yang dikenai tarif ini.",
+                example: "RUMAH",
+            },
             nominal: {
                 type: "string",
                 pattern: "^\\d+(\\.\\d{1,2})?$",
@@ -30,6 +37,7 @@ const jenisIuranSchemas = {
         example: {
             judul: "Iuran Kebersihan",
             periode_iuran: "BULANAN",
+            jenis_peserta: "RUMAH",
             nominal: "50000",
             organisasi_id: 1,
         },
@@ -40,6 +48,7 @@ const jenisIuranSchemas = {
         properties: {
             judul: { type: "string", minLength: 3, maxLength: 45 },
             periode_iuran: { type: "string", enum: [...PERIODE_IURAN] },
+            jenis_peserta: { type: "string", enum: [...JENIS_PESERTA] },
             nominal: { type: "string", pattern: "^\\d+(\\.\\d{1,2})?$" },
             organisasi_id: { type: "integer", minimum: 1 },
             isActive: { type: "boolean" },
@@ -52,6 +61,7 @@ const jenisIuranSchemas = {
             id: { type: "integer", example: 1 },
             judul: { type: "string", example: "Iuran Kebersihan" },
             periode_iuran: { type: "string", enum: [...PERIODE_IURAN], example: "BULANAN" },
+            jenis_peserta: { type: "string", enum: [...JENIS_PESERTA], example: "RUMAH" },
             nominal: { type: "string", example: "50000" },
             isActive: { type: "boolean", example: true },
             organisasi_id: { type: "integer", example: 1 },

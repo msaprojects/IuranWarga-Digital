@@ -79,7 +79,7 @@ class PesertaService {
 
     async createPeserta(input: CreatePesertaInput) {
         const organization = await this.assertOrganisasiAktif(input.organisasi_id)
-        if (input.user_id != null) await this.assertUserAktif(input.user_id)
+        if (input.user_id != null) await this.assertUserAktif(input.user_id, organization.id)
         if (input.qr_token) await this.assertQrTokenBebas(input.qr_token)
 
         const kode = await this.ensureUniqueKode(organization.id, input.kode)
@@ -98,8 +98,11 @@ class PesertaService {
         })
     }
 
-    async updatePeserta(id: number, input: UpdatePesertaInput) {
-        const existing = await db.orm.public.peserta.where({ id }).first()
+    // `organisasi_id` berasal dari tenant token (bukan path/body) sehingga
+    // peserta milik organisasi lain tidak bisa diubah walau id-nya ditebak.
+    async updatePeserta(id: number, organisasi_id: number, input: UpdatePesertaInput) {
+        const scope = { id, organisasi_id }
+        const existing = await db.orm.public.peserta.where(scope).first()
         if (!existing) {
             throw new HttpError(404, "Peserta tidak ditemukan.")
         }
@@ -108,9 +111,9 @@ class PesertaService {
         if (input.qr_token && input.qr_token !== existing.qr_token) {
             await this.assertQrTokenBebas(input.qr_token)
         }
-        if (input.user_id != null) await this.assertUserAktif(input.user_id)
+        if (input.user_id != null) await this.assertUserAktif(input.user_id, existing.organisasi_id)
 
-        return db.orm.public.peserta.where({ id }).update({
+        return db.orm.public.peserta.where(scope).update({
             nama: this.pick(input.nama, existing.nama),
             nomor_rumah: this.pick(input.nomor_rumah, existing.nomor_rumah),
             alamat: this.pick(input.alamat, existing.alamat),
@@ -278,9 +281,15 @@ class PesertaService {
         return org
     }
 
-    private async assertUserAktif(user_id: number) {
+    /**
+     * User yang ditautkan harus aktif DAN satu organisasi dengan peserta.
+     * Tanpa filter `organisasi_id`, user organisasi lain bisa ditautkan lintas
+     * tenant hanya dengan menebak id. 404 dipakai (bukan 403) agar keberadaan
+     * user di organisasi lain tidak bocor.
+     */
+    private async assertUserAktif(user_id: number, organisasi_id: number) {
         const u = await db.orm.public.user
-            .where({ id: user_id, isActive: true })
+            .where({ id: user_id, organisasi_id, isActive: true })
             .select("id")
             .first()
         if (!u) throw new HttpError(404, "User tidak ditemukan / sudah tidak aktif.")

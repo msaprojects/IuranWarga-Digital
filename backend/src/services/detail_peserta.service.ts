@@ -17,25 +17,39 @@ export type UpdateDetailPesertaInput = {
 }
 
 class DetailPesertaService {
-    async listByPesertaId(peserta_id: number) {
+    // `detail_peserta` tidak punya kolom `organisasi_id` — tenancy-nya warisan
+    // dari `peserta`. Semua method di bawah wajib memverifikasi peserta induk
+    // lebih dulu agar id tebakan tidak menembus organisasi lain.
+    private async assertPesertaDalamTenant(
+        peserta_id: number,
+        organisasi_id: number,
+        message = "Peserta tidak ditemukan / sudah tidak aktif.",
+    ) {
+        const peserta = await db.orm.public.peserta
+            .where({ id: peserta_id, organisasi_id, isActive: true })
+            .first()
+        if (!peserta) {
+            throw new HttpError(404, message)
+        }
+        return peserta
+    }
+
+    async listByPesertaId(peserta_id: number, organisasi_id: number) {
+        await this.assertPesertaDalamTenant(peserta_id, organisasi_id)
         return db.orm.public.detail_peserta.where({ peserta_id, isActive: true }).all()
     }
 
-    async getById(id: number) {
+    async getById(id: number, organisasi_id: number) {
         const row = await db.orm.public.detail_peserta.where({ id, isActive: true }).first()
         if (!row) {
             throw new HttpError(404, "Detail peserta tidak ditemukan.")
         }
+        await this.assertPesertaDalamTenant(row.peserta_id, organisasi_id)
         return row
     }
 
-    async create(input: CreateDetailPesertaInput) {
-        const peserta = await db.orm.public.peserta
-            .where({ id: input.peserta_id, isActive: true })
-            .first()
-        if (!peserta) {
-            throw new HttpError(404, "Peserta tidak ditemukan / sudah tidak aktif.")
-        }
+    async create(input: CreateDetailPesertaInput, organisasi_id: number) {
+        await this.assertPesertaDalamTenant(input.peserta_id, organisasi_id)
 
         return db.orm.public.detail_peserta.create({
             peserta_id: input.peserta_id,
@@ -45,21 +59,23 @@ class DetailPesertaService {
         })
     }
 
-    async update(id: number, input: UpdateDetailPesertaInput) {
+    async update(id: number, organisasi_id: number, input: UpdateDetailPesertaInput) {
         const existing = await db.orm.public.detail_peserta.where({ id }).first()
         if (!existing) {
             throw new HttpError(404, "Detail peserta tidak ditemukan.")
         }
 
-        // Kalau anggota keluarga dipindah ke peserta lain, pastikan peserta
-        // tujuan memang ada dan masih aktif.
+        // Baris yang diubah harus milik tenant pemanggil.
+        await this.assertPesertaDalamTenant(existing.peserta_id, organisasi_id)
+
+        // Kalau anggota keluarga dipindah ke peserta lain, peserta tujuan juga
+        // harus berada di tenant yang sama dan masih aktif.
         if (input.peserta_id !== undefined && input.peserta_id !== existing.peserta_id) {
-            const target = await db.orm.public.peserta
-                .where({ id: input.peserta_id, isActive: true })
-                .first()
-            if (!target) {
-                throw new HttpError(404, "Peserta tujuan tidak ditemukan / sudah tidak aktif.")
-            }
+            await this.assertPesertaDalamTenant(
+                input.peserta_id,
+                organisasi_id,
+                "Peserta tujuan tidak ditemukan / sudah tidak aktif.",
+            )
         }
 
         return db.orm.public.detail_peserta.where({ id }).update({
@@ -70,11 +86,12 @@ class DetailPesertaService {
         })
     }
 
-    async delete(id: number) {
+    async delete(id: number, organisasi_id: number) {
         const existing = await db.orm.public.detail_peserta.where({ id }).first()
         if (!existing) {
             throw new HttpError(404, "Detail peserta tidak ditemukan.")
         }
+        await this.assertPesertaDalamTenant(existing.peserta_id, organisasi_id)
         return db.orm.public.detail_peserta.where({ id }).delete()
     }
 }

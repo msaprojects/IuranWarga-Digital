@@ -39,6 +39,7 @@ const existingJenisIuran = {
     id: 1,
     judul: "Iuran Kebersihan",
     periode_iuran: "BULANAN",
+    jenis_peserta: "RUMAH",
     nominal: "50000",
     isActive: true,
     organisasi_id: 1,
@@ -67,6 +68,7 @@ describe("JenisIuranService", () => {
             const input = {
                 judul: "Iuran Keamanan",
                 periode_iuran: "BULANAN" as const,
+                jenis_peserta: "RUMAH" as const,
                 nominal: "75000",
                 organisasi_id: 1,
                 isActive: true,
@@ -84,6 +86,7 @@ describe("JenisIuranService", () => {
                 jenisIuranService.createJenisIuran({
                     judul: "Iuran Keamanan",
                     periode_iuran: "BULANAN",
+                    jenis_peserta: "RUMAH",
                     nominal: "75000",
                     organisasi_id: 999,
                     isActive: true,
@@ -95,18 +98,37 @@ describe("JenisIuranService", () => {
     })
 
     describe("getJenisIuranByID", () => {
+        it("membatasi lookup ke organisasi tenant", async () => {
+            mockFirst.mockResolvedValue(existingJenisIuran)
+
+            await jenisIuranService.getJenisIuranByID(1, 1)
+
+            expect(mockWhere).toHaveBeenCalledWith({ id: 1, organisasi_id: 1 })
+        })
+
         it("melempar 404 saat tidak ditemukan", async () => {
             mockFirst.mockResolvedValue(null)
 
-            await expect(jenisIuranService.getJenisIuranByID(99)).rejects.toThrow(
+            await expect(jenisIuranService.getJenisIuranByID(99, 1)).rejects.toThrow(
                 new HttpError(404, "Jenis iuran tidak ditemukan."),
             )
+        })
+
+        it("melempar 404 saat jenis iuran milik organisasi lain", async () => {
+            mockFirst.mockResolvedValue(null)
+
+            await expect(jenisIuranService.getJenisIuranByID(1, 7)).rejects.toThrow(
+                new HttpError(404, "Jenis iuran tidak ditemukan."),
+            )
+            expect(mockWhere).toHaveBeenCalledWith({ id: 1, organisasi_id: 7 })
         })
 
         it("mengembalikan baris saat ditemukan", async () => {
             mockFirst.mockResolvedValue(existingJenisIuran)
 
-            await expect(jenisIuranService.getJenisIuranByID(1)).resolves.toBe(existingJenisIuran)
+            await expect(jenisIuranService.getJenisIuranByID(1, 1)).resolves.toBe(
+                existingJenisIuran,
+            )
         })
     })
 
@@ -137,11 +159,14 @@ describe("JenisIuranService", () => {
             mockFirst.mockResolvedValue(existingJenisIuran)
             mockUpdate.mockResolvedValue({ ...existingJenisIuran, judul: "Iuran Sampah" })
 
-            await jenisIuranService.updateJenisIuran(1, { judul: "Iuran Sampah" })
+            await jenisIuranService.updateJenisIuran(1, 1, { judul: "Iuran Sampah" })
 
+            expect(mockWhere).toHaveBeenNthCalledWith(1, { id: 1, organisasi_id: 1 })
+            expect(mockWhere).toHaveBeenNthCalledWith(2, { id: 1, organisasi_id: 1 })
             expect(mockUpdate).toHaveBeenCalledWith(
                 expect.objectContaining({
                     judul: "Iuran Sampah",
+                    jenis_peserta: "RUMAH",
                     nominal: "50000",
                     isActive: true,
                 }),
@@ -151,9 +176,19 @@ describe("JenisIuranService", () => {
         it("melempar 404 saat jenis iuran tidak ditemukan", async () => {
             mockFirst.mockResolvedValue(null)
 
-            await expect(jenisIuranService.updateJenisIuran(99, { judul: "X" })).rejects.toThrow(
-                new HttpError(404, "Jenis iuran tidak ditemukan."),
-            )
+            await expect(
+                jenisIuranService.updateJenisIuran(99, 1, { judul: "X" }),
+            ).rejects.toThrow(new HttpError(404, "Jenis iuran tidak ditemukan."))
+            expect(mockUpdate).not.toHaveBeenCalled()
+        })
+
+        it("melempar 404 saat jenis iuran milik organisasi lain", async () => {
+            mockFirst.mockResolvedValue(null)
+
+            await expect(
+                jenisIuranService.updateJenisIuran(1, 7, { judul: "X" }),
+            ).rejects.toThrow(new HttpError(404, "Jenis iuran tidak ditemukan."))
+            expect(mockWhere).toHaveBeenCalledWith({ id: 1, organisasi_id: 7 })
             expect(mockUpdate).not.toHaveBeenCalled()
         })
     })
@@ -163,16 +198,27 @@ describe("JenisIuranService", () => {
             mockFirst.mockResolvedValue(existingJenisIuran)
             mockDelete.mockResolvedValue({ id: 1 })
 
-            await expect(jenisIuranService.deleteJenisIuran(1)).resolves.toEqual({ id: 1 })
+            await expect(jenisIuranService.deleteJenisIuran(1, 1)).resolves.toEqual({ id: 1 })
+            expect(mockWhere).toHaveBeenCalledWith({ id: 1, organisasi_id: 1 })
             expect(mockDelete).toHaveBeenCalled()
         })
 
         it("melempar 404 saat data tidak ditemukan", async () => {
             mockFirst.mockResolvedValue(null)
 
-            await expect(jenisIuranService.deleteJenisIuran(99)).rejects.toThrow(
+            await expect(jenisIuranService.deleteJenisIuran(99, 1)).rejects.toThrow(
                 new HttpError(404, "Jenis iuran tidak ditemukan."),
             )
+            expect(mockDelete).not.toHaveBeenCalled()
+        })
+
+        it("melempar 404 saat jenis iuran milik organisasi lain", async () => {
+            mockFirst.mockResolvedValue(null)
+
+            await expect(jenisIuranService.deleteJenisIuran(1, 7)).rejects.toThrow(
+                new HttpError(404, "Jenis iuran tidak ditemukan."),
+            )
+            expect(mockWhere).toHaveBeenCalledWith({ id: 1, organisasi_id: 7 })
             expect(mockDelete).not.toHaveBeenCalled()
         })
     })

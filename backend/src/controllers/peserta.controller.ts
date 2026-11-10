@@ -10,14 +10,15 @@ import type {
     UpdatePesertaBody,
 } from "../../validator/peserta.validator.ts"
 import type { OrganisasiByKodeParams } from "../../validator/organisasi.validator.ts"
+import type { TenantScopedLocal } from "../middlewares/tenant.ts"
 import type { Request, Response } from "express"
 
 type KodeOrgParamsLocals = { validated: { params: OrganisasiByKodeParams } }
 type DetailPesertaByOrgLocals = {
     validated: { params: GetDetailPesertaByIdAndKodeOrganisasiParams }
 }
-type CreatePesertaLocals = { validated: { body: CreatePesertaBody } }
-type UpdatePesertaLocals = {
+type CreatePesertaLocals = TenantScopedLocal & { validated: { body: CreatePesertaBody } }
+type UpdatePesertaLocals = TenantScopedLocal & {
     validated: { params: PesertaIdParams; body: UpdatePesertaBody }
 }
 type DecryptQrLocals = { validated: { params: DecryptQRCodeStringBody } }
@@ -46,13 +47,17 @@ export const pesertaController = {
     },
 
     async createPeserta(_req: Request, res: Response<unknown, CreatePesertaLocals>): Promise<void> {
-        const data = await pesertaService.createPeserta(res.locals.validated.body)
+        // Tenant dari token, bukan dari body.
+        const { organisasi_id } = res.locals.tenant
+        const { body } = res.locals.validated
+        const data = await pesertaService.createPeserta({ ...body, organisasi_id })
         resHandler.success(res, 201, "Peserta berhasil dibuat", data)
     },
 
     async updatePeserta(_req: Request, res: Response<unknown, UpdatePesertaLocals>): Promise<void> {
-        const { id } = res.locals.validated.params
-        const data = await pesertaService.updatePeserta(id, res.locals.validated.body)
+        const { organisasi_id } = res.locals.tenant
+        const { params, body } = res.locals.validated
+        const data = await pesertaService.updatePeserta(params.id, organisasi_id, body)
         resHandler.success(res, 200, "Peserta berhasil diperbarui", data)
     },
 

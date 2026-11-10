@@ -18,7 +18,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'f7376ffbe182d084c288251ce384a710f24de8ffb650284535581468e9ee8e15'>;
+  StorageHashBase<'03d85652ff884714f996711ae377ed90f053d506fc8dd95d19fbdc2d1b582dd9'>;
 export type ExecutionHash =
   ExecutionHashBase<'5a97b77418540dec627a48c686dafc19ce7d676c6c9525a2b3210d0b9992b995'>;
 export type ProfileHash =
@@ -234,6 +234,14 @@ type DefaultLiteralValue<CodecId extends string, Encoded> = CodecId extends keyo
 
 export type FieldOutputTypes = {
   readonly public: {
+    readonly anggota_sub_organisasi: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly isActive: CodecTypes['pg/bool@1']['output'];
+      readonly peserta_id: CodecTypes['pg/int4@1']['output'];
+      readonly sub_organisasi_id: CodecTypes['pg/int4@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
     readonly detail_peserta: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
@@ -275,6 +283,15 @@ export type FieldOutputTypes = {
       readonly pembayaran_iuran_id: CodecTypes['pg/int4@1']['output'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
+    readonly komponen_sub_organisasi: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly isActive: CodecTypes['pg/bool@1']['output'];
+      readonly jenis_iuran_id: CodecTypes['pg/int4@1']['output'];
+      readonly nominal: CodecTypes['pg/numeric@1']['output'];
+      readonly sub_organisasi_id: CodecTypes['pg/int4@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
     readonly organisasi: {
       readonly activeAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
       readonly alamat: CodecTypes['pg/text@1']['output'] | null;
@@ -303,6 +320,15 @@ export type FieldOutputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly user_id: CodecTypes['pg/int4@1']['output'] | null;
     };
+    readonly pengurus_sub_organisasi: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly isActive: CodecTypes['pg/bool@1']['output'];
+      readonly jabatan: CodecTypes['pg/text@1']['output'];
+      readonly sub_organisasi_id: CodecTypes['pg/int4@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly user_id: CodecTypes['pg/int4@1']['output'];
+    };
     readonly peserta: {
       readonly alamat: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -319,6 +345,16 @@ export type FieldOutputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly user_id: CodecTypes['pg/int4@1']['output'] | null;
     };
+    readonly sub_organisasi: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly deskripsi: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly isActive: CodecTypes['pg/bool@1']['output'];
+      readonly nama: CodecTypes['pg/text@1']['output'];
+      readonly organisasi_id: CodecTypes['pg/int4@1']['output'];
+      readonly pisah_laporan: CodecTypes['pg/bool@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
     readonly tagihan_iuran: {
       readonly bulan: CodecTypes['pg/int4@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -333,6 +369,7 @@ export type FieldOutputTypes = {
       readonly organisasi_id: CodecTypes['pg/int4@1']['output'];
       readonly peserta_id: CodecTypes['pg/int4@1']['output'];
       readonly status: 'BELUM_BAYAR' | 'PARTIAL' | 'SUDAH_BAYAR' | 'OVERDUE' | 'CANCELLED';
+      readonly sub_organisasi_id: CodecTypes['pg/int4@1']['output'] | null;
       readonly tahun: CodecTypes['pg/int4@1']['output'];
       readonly tanggal_terbit: CodecTypes['pg/date-temporal@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -343,9 +380,10 @@ export type FieldOutputTypes = {
       readonly keuangan_id: CodecTypes['pg/int4@1']['output'];
       readonly nominal: CodecTypes['pg/numeric@1']['output'];
       readonly organisasi_id: CodecTypes['pg/int4@1']['output'];
+      readonly sub_organisasi_id: CodecTypes['pg/int4@1']['output'] | null;
       readonly system_details: CodecTypes['pg/text@1']['output'] | null;
       readonly tipe: 'DEBIT' | 'KREDIT';
-      readonly user_id: CodecTypes['pg/int4@1']['output'];
+      readonly user_id: CodecTypes['pg/int4@1']['output'] | null;
     };
     readonly user: {
       readonly contact: CodecTypes['pg/text@1']['output'] | null;
@@ -365,6 +403,14 @@ export type FieldOutputTypes = {
 };
 export type FieldInputTypes = {
   readonly public: {
+    readonly anggota_sub_organisasi: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly isActive: CodecTypes['pg/bool@1']['input'];
+      readonly peserta_id: CodecTypes['pg/int4@1']['input'];
+      readonly sub_organisasi_id: CodecTypes['pg/int4@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
     readonly detail_peserta: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
@@ -406,6 +452,15 @@ export type FieldInputTypes = {
       readonly pembayaran_iuran_id: CodecTypes['pg/int4@1']['input'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
+    readonly komponen_sub_organisasi: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly isActive: CodecTypes['pg/bool@1']['input'];
+      readonly jenis_iuran_id: CodecTypes['pg/int4@1']['input'];
+      readonly nominal: CodecTypes['pg/numeric@1']['input'];
+      readonly sub_organisasi_id: CodecTypes['pg/int4@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
     readonly organisasi: {
       readonly activeAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
       readonly alamat: CodecTypes['pg/text@1']['input'] | null;
@@ -434,6 +489,15 @@ export type FieldInputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly user_id: CodecTypes['pg/int4@1']['input'] | null;
     };
+    readonly pengurus_sub_organisasi: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly isActive: CodecTypes['pg/bool@1']['input'];
+      readonly jabatan: CodecTypes['pg/text@1']['input'];
+      readonly sub_organisasi_id: CodecTypes['pg/int4@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly user_id: CodecTypes['pg/int4@1']['input'];
+    };
     readonly peserta: {
       readonly alamat: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
@@ -450,6 +514,16 @@ export type FieldInputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly user_id: CodecTypes['pg/int4@1']['input'] | null;
     };
+    readonly sub_organisasi: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly deskripsi: CodecTypes['pg/text@1']['input'] | null;
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly isActive: CodecTypes['pg/bool@1']['input'];
+      readonly nama: CodecTypes['pg/text@1']['input'];
+      readonly organisasi_id: CodecTypes['pg/int4@1']['input'];
+      readonly pisah_laporan: CodecTypes['pg/bool@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
     readonly tagihan_iuran: {
       readonly bulan: CodecTypes['pg/int4@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
@@ -464,6 +538,7 @@ export type FieldInputTypes = {
       readonly organisasi_id: CodecTypes['pg/int4@1']['input'];
       readonly peserta_id: CodecTypes['pg/int4@1']['input'];
       readonly status: 'BELUM_BAYAR' | 'PARTIAL' | 'SUDAH_BAYAR' | 'OVERDUE' | 'CANCELLED';
+      readonly sub_organisasi_id: CodecTypes['pg/int4@1']['input'] | null;
       readonly tahun: CodecTypes['pg/int4@1']['input'];
       readonly tanggal_terbit: CodecTypes['pg/date-temporal@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
@@ -474,9 +549,10 @@ export type FieldInputTypes = {
       readonly keuangan_id: CodecTypes['pg/int4@1']['input'];
       readonly nominal: CodecTypes['pg/numeric@1']['input'];
       readonly organisasi_id: CodecTypes['pg/int4@1']['input'];
+      readonly sub_organisasi_id: CodecTypes['pg/int4@1']['input'] | null;
       readonly system_details: CodecTypes['pg/text@1']['input'] | null;
       readonly tipe: 'DEBIT' | 'KREDIT';
-      readonly user_id: CodecTypes['pg/int4@1']['input'];
+      readonly user_id: CodecTypes['pg/int4@1']['input'] | null;
     };
     readonly user: {
       readonly contact: CodecTypes['pg/text@1']['input'] | null;
@@ -496,6 +572,14 @@ export type FieldInputTypes = {
 };
 export type StorageColumnTypes = {
   readonly public: {
+    readonly anggota_sub_organisasi: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly isActive: CodecTypes['pg/bool@1']['output'];
+      readonly peserta_id: CodecTypes['pg/int4@1']['output'];
+      readonly sub_organisasi_id: CodecTypes['pg/int4@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
     readonly detail_peserta: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly id: CodecTypes['pg/int4@1']['output'];
@@ -537,6 +621,15 @@ export type StorageColumnTypes = {
       readonly pembayaran_iuran_id: CodecTypes['pg/int4@1']['output'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     };
+    readonly komponen_sub_organisasi: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly isActive: CodecTypes['pg/bool@1']['output'];
+      readonly jenis_iuran_id: CodecTypes['pg/int4@1']['output'];
+      readonly nominal: CodecTypes['pg/numeric@1']['output'];
+      readonly sub_organisasi_id: CodecTypes['pg/int4@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
     readonly organisasi: {
       readonly activeAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
       readonly alamat: CodecTypes['pg/text@1']['output'] | null;
@@ -565,6 +658,15 @@ export type StorageColumnTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly user_id: CodecTypes['pg/int4@1']['output'] | null;
     };
+    readonly pengurus_sub_organisasi: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly isActive: CodecTypes['pg/bool@1']['output'];
+      readonly jabatan: CodecTypes['pg/text@1']['output'];
+      readonly sub_organisasi_id: CodecTypes['pg/int4@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly user_id: CodecTypes['pg/int4@1']['output'];
+    };
     readonly peserta: {
       readonly alamat: CodecTypes['pg/text@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -581,6 +683,16 @@ export type StorageColumnTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly user_id: CodecTypes['pg/int4@1']['output'] | null;
     };
+    readonly sub_organisasi: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly deskripsi: CodecTypes['pg/text@1']['output'] | null;
+      readonly id: CodecTypes['pg/int4@1']['output'];
+      readonly isActive: CodecTypes['pg/bool@1']['output'];
+      readonly nama: CodecTypes['pg/text@1']['output'];
+      readonly organisasi_id: CodecTypes['pg/int4@1']['output'];
+      readonly pisah_laporan: CodecTypes['pg/bool@1']['output'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
     readonly tagihan_iuran: {
       readonly bulan: CodecTypes['pg/int4@1']['output'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -595,6 +707,7 @@ export type StorageColumnTypes = {
       readonly organisasi_id: CodecTypes['pg/int4@1']['output'];
       readonly peserta_id: CodecTypes['pg/int4@1']['output'];
       readonly status: 'BELUM_BAYAR' | 'PARTIAL' | 'SUDAH_BAYAR' | 'OVERDUE' | 'CANCELLED';
+      readonly sub_organisasi_id: CodecTypes['pg/int4@1']['output'] | null;
       readonly tahun: CodecTypes['pg/int4@1']['output'];
       readonly tanggal_terbit: CodecTypes['pg/date-temporal@1']['output'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -605,9 +718,10 @@ export type StorageColumnTypes = {
       readonly keuangan_id: CodecTypes['pg/int4@1']['output'];
       readonly nominal: CodecTypes['pg/numeric@1']['output'];
       readonly organisasi_id: CodecTypes['pg/int4@1']['output'];
+      readonly sub_organisasi_id: CodecTypes['pg/int4@1']['output'] | null;
       readonly system_details: CodecTypes['pg/text@1']['output'] | null;
       readonly tipe: 'DEBIT' | 'KREDIT';
-      readonly user_id: CodecTypes['pg/int4@1']['output'];
+      readonly user_id: CodecTypes['pg/int4@1']['output'] | null;
     };
     readonly user: {
       readonly contact: CodecTypes['pg/text@1']['output'] | null;
@@ -627,6 +741,14 @@ export type StorageColumnTypes = {
 };
 export type StorageColumnInputTypes = {
   readonly public: {
+    readonly anggota_sub_organisasi: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly isActive: CodecTypes['pg/bool@1']['input'];
+      readonly peserta_id: CodecTypes['pg/int4@1']['input'];
+      readonly sub_organisasi_id: CodecTypes['pg/int4@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
     readonly detail_peserta: {
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly id: CodecTypes['pg/int4@1']['input'];
@@ -668,6 +790,15 @@ export type StorageColumnInputTypes = {
       readonly pembayaran_iuran_id: CodecTypes['pg/int4@1']['input'] | null;
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
+    readonly komponen_sub_organisasi: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly isActive: CodecTypes['pg/bool@1']['input'];
+      readonly jenis_iuran_id: CodecTypes['pg/int4@1']['input'];
+      readonly nominal: CodecTypes['pg/numeric@1']['input'];
+      readonly sub_organisasi_id: CodecTypes['pg/int4@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
     readonly organisasi: {
       readonly activeAt: CodecTypes['pg/timestamptz-string@1']['input'] | null;
       readonly alamat: CodecTypes['pg/text@1']['input'] | null;
@@ -696,6 +827,15 @@ export type StorageColumnInputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly user_id: CodecTypes['pg/int4@1']['input'] | null;
     };
+    readonly pengurus_sub_organisasi: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly isActive: CodecTypes['pg/bool@1']['input'];
+      readonly jabatan: CodecTypes['pg/text@1']['input'];
+      readonly sub_organisasi_id: CodecTypes['pg/int4@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly user_id: CodecTypes['pg/int4@1']['input'];
+    };
     readonly peserta: {
       readonly alamat: CodecTypes['pg/text@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
@@ -712,6 +852,16 @@ export type StorageColumnInputTypes = {
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly user_id: CodecTypes['pg/int4@1']['input'] | null;
     };
+    readonly sub_organisasi: {
+      readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly deskripsi: CodecTypes['pg/text@1']['input'] | null;
+      readonly id: CodecTypes['pg/int4@1']['input'];
+      readonly isActive: CodecTypes['pg/bool@1']['input'];
+      readonly nama: CodecTypes['pg/text@1']['input'];
+      readonly organisasi_id: CodecTypes['pg/int4@1']['input'];
+      readonly pisah_laporan: CodecTypes['pg/bool@1']['input'];
+      readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
     readonly tagihan_iuran: {
       readonly bulan: CodecTypes['pg/int4@1']['input'] | null;
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['input'];
@@ -726,6 +876,7 @@ export type StorageColumnInputTypes = {
       readonly organisasi_id: CodecTypes['pg/int4@1']['input'];
       readonly peserta_id: CodecTypes['pg/int4@1']['input'];
       readonly status: 'BELUM_BAYAR' | 'PARTIAL' | 'SUDAH_BAYAR' | 'OVERDUE' | 'CANCELLED';
+      readonly sub_organisasi_id: CodecTypes['pg/int4@1']['input'] | null;
       readonly tahun: CodecTypes['pg/int4@1']['input'];
       readonly tanggal_terbit: CodecTypes['pg/date-temporal@1']['input'];
       readonly updatedAt: CodecTypes['pg/timestamptz-string@1']['input'];
@@ -736,9 +887,10 @@ export type StorageColumnInputTypes = {
       readonly keuangan_id: CodecTypes['pg/int4@1']['input'];
       readonly nominal: CodecTypes['pg/numeric@1']['input'];
       readonly organisasi_id: CodecTypes['pg/int4@1']['input'];
+      readonly sub_organisasi_id: CodecTypes['pg/int4@1']['input'] | null;
       readonly system_details: CodecTypes['pg/text@1']['input'] | null;
       readonly tipe: 'DEBIT' | 'KREDIT';
-      readonly user_id: CodecTypes['pg/int4@1']['input'];
+      readonly user_id: CodecTypes['pg/int4@1']['input'] | null;
     };
     readonly user: {
       readonly contact: CodecTypes['pg/text@1']['input'] | null;
@@ -758,6 +910,17 @@ export type StorageColumnInputTypes = {
 };
 
 export namespace Models {
+  export type public_anggota_sub_organisasi = {
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    id: CodecTypes['pg/int4@1']['output'];
+    isActive: CodecTypes['pg/bool@1']['output'];
+    peserta_id: CodecTypes['pg/int4@1']['output'];
+    sub_organisasi_id: CodecTypes['pg/int4@1']['output'];
+    updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    peserta: public_peserta;
+    sub_organisasi: public_sub_organisasi;
+    readonly [RelationKeys]?: 'peserta' | 'sub_organisasi';
+  };
   export type public_detail_peserta = {
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
     id: CodecTypes['pg/int4@1']['output'];
@@ -779,9 +942,10 @@ export namespace Models {
     organisasi_id: CodecTypes['pg/int4@1']['output'];
     periode_iuran: 'HARIAN' | 'MINGGUAN' | 'BULANAN' | 'TAHUNAN';
     updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    komponen_sub_organisasi: public_komponen_sub_organisasi[];
     organisasi: public_organisasi;
     tagihan_iuran: public_tagihan_iuran[];
-    readonly [RelationKeys]?: 'organisasi' | 'tagihan_iuran';
+    readonly [RelationKeys]?: 'komponen_sub_organisasi' | 'organisasi' | 'tagihan_iuran';
   };
   export type public_keuangan = {
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -811,6 +975,18 @@ export namespace Models {
     pembayaran_iuran: public_pembayaran_iuran | null;
     readonly [RelationKeys]?: 'keuangan' | 'pembayaran_iuran';
   };
+  export type public_komponen_sub_organisasi = {
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    id: CodecTypes['pg/int4@1']['output'];
+    isActive: CodecTypes['pg/bool@1']['output'];
+    jenis_iuran_id: CodecTypes['pg/int4@1']['output'];
+    nominal: CodecTypes['pg/numeric@1']['output'];
+    sub_organisasi_id: CodecTypes['pg/int4@1']['output'];
+    updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    jenis_iuran: public_jenis_iuran;
+    sub_organisasi: public_sub_organisasi;
+    readonly [RelationKeys]?: 'jenis_iuran' | 'sub_organisasi';
+  };
   export type public_organisasi = {
     activeAt: CodecTypes['pg/timestamptz-string@1']['output'] | null;
     alamat: CodecTypes['pg/text@1']['output'] | null;
@@ -827,6 +1003,7 @@ export namespace Models {
     keuangan: public_keuangan[];
     pembayaran: public_pembayaran_iuran[];
     peserta: public_peserta[];
+    sub_organisasi: public_sub_organisasi[];
     tagihan_iuran: public_tagihan_iuran[];
     transaction_ledger: public_transaction_ledger[];
     users: public_user[];
@@ -835,6 +1012,7 @@ export namespace Models {
       | 'keuangan'
       | 'pembayaran'
       | 'peserta'
+      | 'sub_organisasi'
       | 'tagihan_iuran'
       | 'transaction_ledger'
       | 'users';
@@ -862,6 +1040,18 @@ export namespace Models {
     readonly [RelationKeys]?:
       'jenis_iuran' | 'keuangan_detail' | 'organisasi' | 'peserta' | 'tagihan_iuran' | 'user';
   };
+  export type public_pengurus_sub_organisasi = {
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    id: CodecTypes['pg/int4@1']['output'];
+    isActive: CodecTypes['pg/bool@1']['output'];
+    jabatan: CodecTypes['pg/text@1']['output'];
+    sub_organisasi_id: CodecTypes['pg/int4@1']['output'];
+    updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    user_id: CodecTypes['pg/int4@1']['output'];
+    sub_organisasi: public_sub_organisasi;
+    user: public_user;
+    readonly [RelationKeys]?: 'sub_organisasi' | 'user';
+  };
   export type public_peserta = {
     alamat: CodecTypes['pg/text@1']['output'] | null;
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -878,12 +1068,41 @@ export namespace Models {
     updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
     user_id: CodecTypes['pg/int4@1']['output'] | null;
     anggota_keluarga: public_detail_peserta[];
+    anggota_sub_organisasi: public_anggota_sub_organisasi[];
     organisasi: public_organisasi;
     pembayaran: public_pembayaran_iuran[];
     tagihan_iuran: public_tagihan_iuran[];
     user: public_user | null;
     readonly [RelationKeys]?:
-      'anggota_keluarga' | 'organisasi' | 'pembayaran' | 'tagihan_iuran' | 'user';
+      | 'anggota_keluarga'
+      | 'anggota_sub_organisasi'
+      | 'organisasi'
+      | 'pembayaran'
+      | 'tagihan_iuran'
+      | 'user';
+  };
+  export type public_sub_organisasi = {
+    createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    deskripsi: CodecTypes['pg/text@1']['output'] | null;
+    id: CodecTypes['pg/int4@1']['output'];
+    isActive: CodecTypes['pg/bool@1']['output'];
+    nama: CodecTypes['pg/text@1']['output'];
+    organisasi_id: CodecTypes['pg/int4@1']['output'];
+    pisah_laporan: CodecTypes['pg/bool@1']['output'];
+    updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    anggota_sub_organisasi: public_anggota_sub_organisasi[];
+    komponen_sub_organisasi: public_komponen_sub_organisasi[];
+    organisasi: public_organisasi;
+    pengurus_sub_organisasi: public_pengurus_sub_organisasi[];
+    tagihan_iuran: public_tagihan_iuran[];
+    transaction_ledger: public_transaction_ledger[];
+    readonly [RelationKeys]?:
+      | 'anggota_sub_organisasi'
+      | 'komponen_sub_organisasi'
+      | 'organisasi'
+      | 'pengurus_sub_organisasi'
+      | 'tagihan_iuran'
+      | 'transaction_ledger';
   };
   export type public_tagihan_iuran = {
     bulan: CodecTypes['pg/int4@1']['output'] | null;
@@ -899,14 +1118,18 @@ export namespace Models {
     organisasi_id: CodecTypes['pg/int4@1']['output'];
     peserta_id: CodecTypes['pg/int4@1']['output'];
     status: 'BELUM_BAYAR' | 'PARTIAL' | 'SUDAH_BAYAR' | 'OVERDUE' | 'CANCELLED';
+    sub_organisasi_id: CodecTypes['pg/int4@1']['output'] | null;
     tahun: CodecTypes['pg/int4@1']['output'];
     tanggal_terbit: CodecTypes['pg/date-temporal@1']['output'];
     updatedAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    deleted_by: public_user | null;
     jenis_iuran: public_jenis_iuran;
     organisasi: public_organisasi;
     pembayaran: public_pembayaran_iuran[];
     peserta: public_peserta;
-    readonly [RelationKeys]?: 'jenis_iuran' | 'organisasi' | 'pembayaran' | 'peserta';
+    sub_organisasi: public_sub_organisasi | null;
+    readonly [RelationKeys]?:
+      'deleted_by' | 'jenis_iuran' | 'organisasi' | 'pembayaran' | 'peserta' | 'sub_organisasi';
   };
   export type public_transaction_ledger = {
     createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -914,13 +1137,15 @@ export namespace Models {
     keuangan_id: CodecTypes['pg/int4@1']['output'];
     nominal: CodecTypes['pg/numeric@1']['output'];
     organisasi_id: CodecTypes['pg/int4@1']['output'];
+    sub_organisasi_id: CodecTypes['pg/int4@1']['output'] | null;
     system_details: CodecTypes['pg/text@1']['output'] | null;
     tipe: 'DEBIT' | 'KREDIT';
-    user_id: CodecTypes['pg/int4@1']['output'];
+    user_id: CodecTypes['pg/int4@1']['output'] | null;
     keuangan: public_keuangan;
     organisasi: public_organisasi;
-    user: public_user;
-    readonly [RelationKeys]?: 'keuangan' | 'organisasi' | 'user';
+    sub_organisasi: public_sub_organisasi | null;
+    user: public_user | null;
+    readonly [RelationKeys]?: 'keuangan' | 'organisasi' | 'sub_organisasi' | 'user';
   };
   export type public_user = {
     contact: CodecTypes['pg/text@1']['output'] | null;
@@ -938,22 +1163,34 @@ export namespace Models {
     keuangan: public_keuangan[];
     organisasi: public_organisasi | null;
     pembayaran_iuran: public_pembayaran_iuran[];
+    pengurus_sub_organisasi: public_pengurus_sub_organisasi[];
     peserta: public_peserta[];
+    tagihan_iuran_dihapus: public_tagihan_iuran[];
     transaction_ledger: public_transaction_ledger[];
     readonly [RelationKeys]?:
-      'keuangan' | 'organisasi' | 'pembayaran_iuran' | 'peserta' | 'transaction_ledger';
+      | 'keuangan'
+      | 'organisasi'
+      | 'pembayaran_iuran'
+      | 'pengurus_sub_organisasi'
+      | 'peserta'
+      | 'tagihan_iuran_dihapus'
+      | 'transaction_ledger';
   };
 }
 
 export declare const models: {
   public: {
+    anggota_sub_organisasi: Models.public_anggota_sub_organisasi;
     detail_peserta: Models.public_detail_peserta;
     jenis_iuran: Models.public_jenis_iuran;
     keuangan: Models.public_keuangan;
     keuangan_detail: Models.public_keuangan_detail;
+    komponen_sub_organisasi: Models.public_komponen_sub_organisasi;
     organisasi: Models.public_organisasi;
     pembayaran_iuran: Models.public_pembayaran_iuran;
+    pengurus_sub_organisasi: Models.public_pengurus_sub_organisasi;
     peserta: Models.public_peserta;
+    sub_organisasi: Models.public_sub_organisasi;
     tagihan_iuran: Models.public_tagihan_iuran;
     transaction_ledger: Models.public_transaction_ledger;
     user: Models.public_user;
@@ -978,6 +1215,100 @@ type ContractBase = Omit<
         readonly kind: 'postgres-schema';
         readonly entries: {
           readonly table: {
+            readonly anggota_sub_organisasi: {
+              columns: {
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly isActive: {
+                  readonly dataType: 'pg/bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', true>;
+                  };
+                  readonly many: false;
+                };
+                readonly peserta_id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly sub_organisasi_id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                { readonly columns: readonly ['sub_organisasi_id', 'peserta_id'] },
+              ];
+              indexes: readonly [
+                {
+                  readonly name: 'anggota_sub_organisasi_peserta_id_idx_52c9abf0';
+                  readonly prefix: 'anggota_sub_organisasi_peserta_id_idx';
+                  readonly columns: readonly ['peserta_id'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'anggota_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e';
+                  readonly prefix: 'anggota_sub_organisasi_sub_organisasi_id_idx';
+                  readonly columns: readonly ['sub_organisasi_id'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'anggota_sub_organisasi';
+                    readonly columns: readonly ['sub_organisasi_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'sub_organisasi';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'anggota_sub_organisasi';
+                    readonly columns: readonly ['peserta_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'peserta';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
             readonly detail_peserta: {
               columns: {
                 readonly createdAt: {
@@ -1132,7 +1463,7 @@ type ContractBase = Omit<
                 };
               };
               primaryKey: { readonly columns: readonly ['id'] };
-              uniques: readonly [];
+              uniques: readonly [{ readonly columns: readonly ['organisasi_id', 'judul'] }];
               indexes: readonly [
                 {
                   readonly name: 'jenis_iuran_isActive_idx_77fe3ba1';
@@ -1375,6 +1706,106 @@ type ContractBase = Omit<
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'pembayaran_iuran';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly komponen_sub_organisasi: {
+              columns: {
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly isActive: {
+                  readonly dataType: 'pg/bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', true>;
+                  };
+                  readonly many: false;
+                };
+                readonly jenis_iuran_id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly nominal: {
+                  readonly dataType: 'pg/numeric';
+                  readonly codecId: 'pg/numeric@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly sub_organisasi_id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                { readonly columns: readonly ['sub_organisasi_id', 'jenis_iuran_id'] },
+              ];
+              indexes: readonly [
+                {
+                  readonly name: 'komponen_sub_organisasi_jenis_iuran_id_idx_3ca5ef71';
+                  readonly prefix: 'komponen_sub_organisasi_jenis_iuran_id_idx';
+                  readonly columns: readonly ['jenis_iuran_id'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'komponen_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e';
+                  readonly prefix: 'komponen_sub_organisasi_sub_organisasi_id_idx';
+                  readonly columns: readonly ['sub_organisasi_id'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'komponen_sub_organisasi';
+                    readonly columns: readonly ['sub_organisasi_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'sub_organisasi';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'komponen_sub_organisasi';
+                    readonly columns: readonly ['jenis_iuran_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'jenis_iuran';
                     readonly columns: readonly ['id'];
                   };
                 },
@@ -1670,6 +2101,104 @@ type ContractBase = Omit<
                 },
               ];
             };
+            readonly pengurus_sub_organisasi: {
+              columns: {
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly isActive: {
+                  readonly dataType: 'pg/bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', true>;
+                  };
+                  readonly many: false;
+                };
+                readonly jabatan: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly sub_organisasi_id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly user_id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['sub_organisasi_id', 'user_id'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'pengurus_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e';
+                  readonly prefix: 'pengurus_sub_organisasi_sub_organisasi_id_idx';
+                  readonly columns: readonly ['sub_organisasi_id'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'pengurus_sub_organisasi_user_id_idx_6c952402';
+                  readonly prefix: 'pengurus_sub_organisasi_user_id_idx';
+                  readonly columns: readonly ['user_id'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'pengurus_sub_organisasi';
+                    readonly columns: readonly ['sub_organisasi_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'sub_organisasi';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'pengurus_sub_organisasi';
+                    readonly columns: readonly ['user_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'user';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
             readonly peserta: {
               columns: {
                 readonly alamat: {
@@ -1825,6 +2354,102 @@ type ContractBase = Omit<
                 },
               ];
             };
+            readonly sub_organisasi: {
+              columns: {
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly deskripsi: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly isActive: {
+                  readonly dataType: 'pg/bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', true>;
+                  };
+                  readonly many: false;
+                };
+                readonly nama: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly organisasi_id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly pisah_laporan: {
+                  readonly dataType: 'pg/bool';
+                  readonly codecId: 'pg/bool@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/bool@1', false>;
+                  };
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['organisasi_id', 'nama'] }];
+              indexes: readonly [
+                {
+                  readonly name: 'sub_organisasi_isActive_idx_77fe3ba1';
+                  readonly prefix: 'sub_organisasi_isActive_idx';
+                  readonly columns: readonly ['isActive'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'sub_organisasi_organisasi_id_idx_2f5facc4';
+                  readonly prefix: 'sub_organisasi_organisasi_id_idx';
+                  readonly columns: readonly ['organisasi_id'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'sub_organisasi';
+                    readonly columns: readonly ['organisasi_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'organisasi';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
             readonly tagihan_iuran: {
               columns: {
                 readonly bulan: {
@@ -1910,6 +2535,12 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly many: false;
                 };
+                readonly sub_organisasi_id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly tahun: {
                   readonly dataType: 'pg/int4';
                   readonly codecId: 'pg/int4@1';
@@ -1937,6 +2568,18 @@ type ContractBase = Omit<
               ];
               indexes: readonly [
                 {
+                  readonly name: 'tagihan_iuran_deletedAt_idx_a39f721c';
+                  readonly prefix: 'tagihan_iuran_deletedAt_idx';
+                  readonly columns: readonly ['deletedAt'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'tagihan_iuran_deletedBy_idx_4d24a1c3';
+                  readonly prefix: 'tagihan_iuran_deletedBy_idx';
+                  readonly columns: readonly ['deletedBy'];
+                  readonly unique: false;
+                },
+                {
                   readonly name: 'tagihan_iuran_jenis_iuran_id_idx_3ca5ef71';
                   readonly prefix: 'tagihan_iuran_jenis_iuran_id_idx';
                   readonly columns: readonly ['jenis_iuran_id'];
@@ -1949,21 +2592,27 @@ type ContractBase = Omit<
                   readonly unique: false;
                 },
                 {
+                  readonly name: 'tagihan_iuran_organisasi_id_status_idx_6301355e';
+                  readonly prefix: 'tagihan_iuran_organisasi_id_status_idx';
+                  readonly columns: readonly ['organisasi_id', 'status'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'tagihan_iuran_organisasi_id_tahun_bulan_idx_2e715dee';
+                  readonly prefix: 'tagihan_iuran_organisasi_id_tahun_bulan_idx';
+                  readonly columns: readonly ['organisasi_id', 'tahun', 'bulan'];
+                  readonly unique: false;
+                },
+                {
                   readonly name: 'tagihan_iuran_peserta_id_idx_52c9abf0';
                   readonly prefix: 'tagihan_iuran_peserta_id_idx';
                   readonly columns: readonly ['peserta_id'];
                   readonly unique: false;
                 },
                 {
-                  readonly name: 'tagihan_iuran_status_idx_e98638ab';
-                  readonly prefix: 'tagihan_iuran_status_idx';
-                  readonly columns: readonly ['status'];
-                  readonly unique: false;
-                },
-                {
-                  readonly name: 'tagihan_iuran_tahun_bulan_idx_bc66ba83';
-                  readonly prefix: 'tagihan_iuran_tahun_bulan_idx';
-                  readonly columns: readonly ['tahun', 'bulan'];
+                  readonly name: 'tagihan_iuran_sub_organisasi_id_idx_8f7c5a0e';
+                  readonly prefix: 'tagihan_iuran_sub_organisasi_id_idx';
+                  readonly columns: readonly ['sub_organisasi_id'];
                   readonly unique: false;
                 },
               ];
@@ -1996,11 +2645,35 @@ type ContractBase = Omit<
                   readonly source: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'tagihan_iuran';
+                    readonly columns: readonly ['sub_organisasi_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'sub_organisasi';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'tagihan_iuran';
                     readonly columns: readonly ['peserta_id'];
                   };
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'peserta';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'tagihan_iuran';
+                    readonly columns: readonly ['deletedBy'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'user';
                     readonly columns: readonly ['id'];
                   };
                 },
@@ -2039,6 +2712,12 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly many: false;
                 };
+                readonly sub_organisasi_id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly system_details: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
@@ -2054,7 +2733,7 @@ type ContractBase = Omit<
                 readonly user_id: {
                   readonly dataType: 'pg/int4';
                   readonly codecId: 'pg/int4@1';
-                  readonly nullable: false;
+                  readonly nullable: true;
                   readonly many: false;
                 };
               };
@@ -2068,9 +2747,21 @@ type ContractBase = Omit<
                   readonly unique: false;
                 },
                 {
+                  readonly name: 'transaction_ledger_organisasi_id_createdAt_idx_7da82646';
+                  readonly prefix: 'transaction_ledger_organisasi_id_createdAt_idx';
+                  readonly columns: readonly ['organisasi_id', 'createdAt'];
+                  readonly unique: false;
+                },
+                {
                   readonly name: 'transaction_ledger_organisasi_id_idx_2f5facc4';
                   readonly prefix: 'transaction_ledger_organisasi_id_idx';
                   readonly columns: readonly ['organisasi_id'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'transaction_ledger_sub_organisasi_id_idx_8f7c5a0e';
+                  readonly prefix: 'transaction_ledger_sub_organisasi_id_idx';
+                  readonly columns: readonly ['sub_organisasi_id'];
                   readonly unique: false;
                 },
                 {
@@ -2114,6 +2805,18 @@ type ContractBase = Omit<
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'user';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'transaction_ledger';
+                    readonly columns: readonly ['sub_organisasi_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'sub_organisasi';
                     readonly columns: readonly ['id'];
                   };
                 },
@@ -2297,6 +3000,10 @@ type ContractBase = Omit<
   readonly target: 'postgres';
   readonly targetFamily: 'sql';
   readonly roots: {
+    readonly anggota_sub_organisasi: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'anggota_sub_organisasi';
+    };
     readonly detail_peserta: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'detail_peserta';
@@ -2310,6 +3017,10 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'keuangan_detail';
     };
+    readonly komponen_sub_organisasi: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'komponen_sub_organisasi';
+    };
     readonly organisasi: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'organisasi';
@@ -2318,7 +3029,15 @@ type ContractBase = Omit<
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'pembayaran_iuran';
     };
+    readonly pengurus_sub_organisasi: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'pengurus_sub_organisasi';
+    };
     readonly peserta: { readonly namespace: 'public' & NamespaceId; readonly model: 'peserta' };
+    readonly sub_organisasi: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'sub_organisasi';
+    };
     readonly tagihan_iuran: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'tagihan_iuran';
@@ -2333,6 +3052,78 @@ type ContractBase = Omit<
     readonly namespaces: {
       readonly public: {
         readonly models: {
+          readonly anggota_sub_organisasi: {
+            readonly fields: {
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly isActive: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly peserta_id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly sub_organisasi_id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+            };
+            readonly relations: {
+              readonly peserta: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'peserta';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['peserta_id'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly sub_organisasi: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'sub_organisasi';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['sub_organisasi_id'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'anggota_sub_organisasi';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly id: { readonly column: 'id' };
+                readonly isActive: { readonly column: 'isActive' };
+                readonly peserta_id: { readonly column: 'peserta_id' };
+                readonly sub_organisasi_id: { readonly column: 'sub_organisasi_id' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
           readonly detail_peserta: {
             readonly fields: {
               readonly createdAt: {
@@ -2444,6 +3235,17 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly komponen_sub_organisasi: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'komponen_sub_organisasi';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['jenis_iuran_id'];
+                };
+              };
               readonly organisasi: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -2670,6 +3472,83 @@ type ContractBase = Omit<
               };
             };
           };
+          readonly komponen_sub_organisasi: {
+            readonly fields: {
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly isActive: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly jenis_iuran_id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly nominal: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/numeric@1' };
+              };
+              readonly sub_organisasi_id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+            };
+            readonly relations: {
+              readonly jenis_iuran: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'jenis_iuran';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['jenis_iuran_id'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly sub_organisasi: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'sub_organisasi';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['sub_organisasi_id'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'komponen_sub_organisasi';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly id: { readonly column: 'id' };
+                readonly isActive: { readonly column: 'isActive' };
+                readonly jenis_iuran_id: { readonly column: 'jenis_iuran_id' };
+                readonly nominal: { readonly column: 'nominal' };
+                readonly sub_organisasi_id: { readonly column: 'sub_organisasi_id' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
           readonly organisasi: {
             readonly fields: {
               readonly activeAt: {
@@ -2764,6 +3643,17 @@ type ContractBase = Omit<
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
                   readonly model: 'peserta';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['organisasi_id'];
+                };
+              };
+              readonly sub_organisasi: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'sub_organisasi';
                 };
                 readonly cardinality: '1:N';
                 readonly on: {
@@ -2974,6 +3864,80 @@ type ContractBase = Omit<
               };
             };
           };
+          readonly pengurus_sub_organisasi: {
+            readonly fields: {
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly isActive: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly jabatan: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly sub_organisasi_id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly user_id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly sub_organisasi: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'sub_organisasi';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['sub_organisasi_id'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly user: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'user' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['user_id'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'pengurus_sub_organisasi';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly id: { readonly column: 'id' };
+                readonly isActive: { readonly column: 'isActive' };
+                readonly jabatan: { readonly column: 'jabatan' };
+                readonly sub_organisasi_id: { readonly column: 'sub_organisasi_id' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly user_id: { readonly column: 'user_id' };
+              };
+            };
+          };
           readonly peserta: {
             readonly fields: {
               readonly alamat: {
@@ -3051,6 +4015,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['peserta_id'];
                 };
               };
+              readonly anggota_sub_organisasi: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'anggota_sub_organisasi';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['peserta_id'];
+                };
+              };
               readonly organisasi: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -3116,6 +4091,131 @@ type ContractBase = Omit<
               };
             };
           };
+          readonly sub_organisasi: {
+            readonly fields: {
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly deskripsi: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly isActive: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly nama: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly organisasi_id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly pisah_laporan: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/bool@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+            };
+            readonly relations: {
+              readonly anggota_sub_organisasi: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'anggota_sub_organisasi';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['sub_organisasi_id'];
+                };
+              };
+              readonly komponen_sub_organisasi: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'komponen_sub_organisasi';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['sub_organisasi_id'];
+                };
+              };
+              readonly organisasi: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'organisasi';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['organisasi_id'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly pengurus_sub_organisasi: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'pengurus_sub_organisasi';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['sub_organisasi_id'];
+                };
+              };
+              readonly tagihan_iuran: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'tagihan_iuran';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['sub_organisasi_id'];
+                };
+              };
+              readonly transaction_ledger: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'transaction_ledger';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['sub_organisasi_id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'sub_organisasi';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly deskripsi: { readonly column: 'deskripsi' };
+                readonly id: { readonly column: 'id' };
+                readonly isActive: { readonly column: 'isActive' };
+                readonly nama: { readonly column: 'nama' };
+                readonly organisasi_id: { readonly column: 'organisasi_id' };
+                readonly pisah_laporan: { readonly column: 'pisah_laporan' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
           readonly tagihan_iuran: {
             readonly fields: {
               readonly bulan: {
@@ -3176,6 +4276,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly sub_organisasi_id: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
               readonly tahun: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
@@ -3193,6 +4297,15 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly deleted_by: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'user' };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['deletedBy'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
               readonly jenis_iuran: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -3240,6 +4353,18 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['id'];
                 };
               };
+              readonly sub_organisasi: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'sub_organisasi';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['sub_organisasi_id'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
             };
             readonly storage: {
               readonly table: 'tagihan_iuran';
@@ -3258,6 +4383,7 @@ type ContractBase = Omit<
                 readonly organisasi_id: { readonly column: 'organisasi_id' };
                 readonly peserta_id: { readonly column: 'peserta_id' };
                 readonly status: { readonly column: 'status' };
+                readonly sub_organisasi_id: { readonly column: 'sub_organisasi_id' };
                 readonly tahun: { readonly column: 'tahun' };
                 readonly tanggal_terbit: { readonly column: 'tanggal_terbit' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
@@ -3289,6 +4415,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly sub_organisasi_id: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
               readonly system_details: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -3298,7 +4428,7 @@ type ContractBase = Omit<
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
               readonly user_id: {
-                readonly nullable: false;
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
             };
@@ -3327,10 +4457,22 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['id'];
                 };
               };
+              readonly sub_organisasi: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'sub_organisasi';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['sub_organisasi_id'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
               readonly user: {
                 readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'user' };
                 readonly cardinality: 'N:1';
-                readonly nullable: false;
+                readonly nullable: true;
                 readonly on: {
                   readonly localFields: readonly ['user_id'];
                   readonly targetFields: readonly ['id'];
@@ -3346,6 +4488,7 @@ type ContractBase = Omit<
                 readonly keuangan_id: { readonly column: 'keuangan_id' };
                 readonly nominal: { readonly column: 'nominal' };
                 readonly organisasi_id: { readonly column: 'organisasi_id' };
+                readonly sub_organisasi_id: { readonly column: 'sub_organisasi_id' };
                 readonly system_details: { readonly column: 'system_details' };
                 readonly tipe: { readonly column: 'tipe' };
                 readonly user_id: { readonly column: 'user_id' };
@@ -3447,6 +4590,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['user_id'];
                 };
               };
+              readonly pengurus_sub_organisasi: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'pengurus_sub_organisasi';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['user_id'];
+                };
+              };
               readonly peserta: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -3456,6 +4610,17 @@ type ContractBase = Omit<
                 readonly on: {
                   readonly localFields: readonly ['id'];
                   readonly targetFields: readonly ['user_id'];
+                };
+              };
+              readonly tagihan_iuran_dihapus: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'tagihan_iuran';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['deletedBy'];
                 };
               };
               readonly transaction_ledger: {

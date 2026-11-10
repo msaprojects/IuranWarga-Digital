@@ -15,7 +15,6 @@ const tagihan = {
     bulan: 10,
     tanggal_terbit: "2026-10-31",
     nominal_tagihan: "50000",
-    nominal_terbayar: "0",
     status: "BELUM_BAYAR",
     createdAt: "2026-10-31T00:00:00.000Z",
     updatedAt: "2026-10-31T00:00:00.000Z",
@@ -104,6 +103,19 @@ describe("Tagihan Iuran API", () => {
             expect(response.body.message).toBe("Validation Error")
             expect(tagihanIuranService.getAll).not.toHaveBeenCalled()
         })
+
+        it("menolak path organisasi yang berbeda dari token", async () => {
+            // Token uji ber-orgId 1; path meminta org 2.
+            const response = await request(app)
+                .get("/api/tagihan-iuran/organisasi/2")
+                .set("Authorization", authorizationHeader())
+
+            expect(response.status).toBe(403)
+            expect(response.body).toEqual(
+                expect.objectContaining({ message: "Akses lintas organisasi tidak diizinkan." }),
+            )
+            expect(tagihanIuranService.getAll).not.toHaveBeenCalled()
+        })
     })
 
     describe("POST /tagihan-iuran", () => {
@@ -162,6 +174,16 @@ describe("Tagihan Iuran API", () => {
             expect(tagihanIuranService.create).not.toHaveBeenCalled()
         })
 
+        it("menolak body organisasi_id yang berbeda dari token", async () => {
+            const response = await request(app)
+                .post("/api/tagihan-iuran")
+                .set("Authorization", authorizationHeader())
+                .send({ ...createPayload, organisasi_id: 2 })
+
+            expect(response.status).toBe(403)
+            expect(tagihanIuranService.create).not.toHaveBeenCalled()
+        })
+
         it("mengembalikan 404 jika tidak ada peserta aktif", async () => {
             jest.spyOn(tagihanIuranService, "create").mockRejectedValue(
                 new HttpError(404, "Tidak ada peserta aktif dalam organisasi ini"),
@@ -190,6 +212,7 @@ describe("Tagihan Iuran API", () => {
             expect(response.status).toBe(200)
             expect(response.body.data).toEqual(expect.objectContaining({ id: 1 }))
             expect(tagihanIuranService.update).toHaveBeenCalledWith(
+                1,
                 1,
                 expect.objectContaining({ bulan: 11, nominal_tagihan: "60000" }),
             )
@@ -233,8 +256,9 @@ describe("Tagihan Iuran API", () => {
 
             expect(response.status).toBe(200)
             expect(response.body.data).toEqual(expect.objectContaining({ id: 1 }))
-            // userId = 1 dari token uji (test/auth.ts).
+            // id = 1, organisasi_id = 1 dan userId = 1 dari token uji (test/auth.ts).
             expect(tagihanIuranService.delete).toHaveBeenCalledWith(
+                1,
                 1,
                 1,
                 "Peserta pindah rumah",

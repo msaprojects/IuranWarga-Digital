@@ -194,6 +194,19 @@ describe("Peserta API", () => {
         expect(pesertaService.createPeserta).not.toHaveBeenCalled()
     })
 
+    it("menolak pembuatan peserta untuk organisasi yang berbeda dari token", async () => {
+        const response = await request(app)
+            .post("/api/peserta")
+            .set("Authorization", authorizationHeader())
+            .send({ ...createPayload, organisasi_id: 2 })
+
+        expect(response.status).toBe(403)
+        expect(response.body).toEqual(
+            expect.objectContaining({ message: "Akses lintas organisasi tidak diizinkan." }),
+        )
+        expect(pesertaService.createPeserta).not.toHaveBeenCalled()
+    })
+
     it("memperbarui peserta berdasarkan ID", async () => {
         const response = await request(app)
             .patch("/api/peserta/1")
@@ -207,7 +220,7 @@ describe("Peserta API", () => {
             data: expect.objectContaining({ id: 1 }),
         })
         // PATCH: service hanya menerima field yang benar-benar dikirim.
-        expect(pesertaService.updatePeserta).toHaveBeenCalledWith(1, {
+        expect(pesertaService.updatePeserta).toHaveBeenCalledWith(1, 1, {
             nama: "Budi Santoso Baru",
             user_id: 2,
         })
@@ -221,7 +234,7 @@ describe("Peserta API", () => {
 
         // Setelah refactor, `nama` & `user_id` tidak wajib lagi di body PATCH.
         expect(response.status).toBe(200)
-        expect(pesertaService.updatePeserta).toHaveBeenCalledWith(1, {
+        expect(pesertaService.updatePeserta).toHaveBeenCalledWith(1, 1, {
             alamat: "Alamat baru",
         })
     })
@@ -232,7 +245,7 @@ describe("Peserta API", () => {
             .set("Authorization", authorizationHeader())
             .send({ nomor_rumah: null, user_id: null })
         expect(response.status).toBe(200)
-        expect(pesertaService.updatePeserta).toHaveBeenCalledWith(1, {
+        expect(pesertaService.updatePeserta).toHaveBeenCalledWith(1, 1, {
             nomor_rumah: null,
             user_id: null,
         })
