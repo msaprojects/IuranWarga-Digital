@@ -1,22 +1,28 @@
 @startuml
-'https://plantuml.com/use-case-diagram
 
-:Main Admin: as Admin
-(Use the application) as (Use)
+:Petugas: as Petugas
+(Sub Organisasi) as (org)
+(Tagihan)
+(Pembayaran)
+(Keuangan Org)
+(Anggota Org)
 
-User -> (Start)
-User --> (Use)
+Petugas --> (Organisasi)
+Petugas --> (org)
+Petugas --> (Tagihan)
+Petugas --> (Pembayaran)
+Petugas --> (Keuangan Org)
+Petugas --> (Anggota Org)
 
-Admin ---> (Use)
+Warga --> (org)
+Warga --> (Tagihan)
+Warga --> (Keuangan Org)
 
-note right of Admin : This is an example.
 
-note right of (Use)
-A note can also
-be on several lines
+note right of (Petugas)
+Petugas dapat
+Mengakses dan Membuat
+Tagihan (Sub Organisasi)
 end note
 
-note "This note is connected\nto several objects." as N2
-(Start) .. N2
-N2 .. (Use)
 @enduml

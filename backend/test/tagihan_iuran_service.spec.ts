@@ -195,18 +195,23 @@ describe("TagihanIuranService", () => {
             nominal_tagihan: "60000",
         }
         const scope = { id: 5, organisasi_id: 1, deletedAt: null }
+        // `tagihanLama` mewarisi `jenis_iuran_id` dari `input` (= 2), yang justru
+        // sama dengan `updateInput.jenis_iuran_id`. Jalur "pindah jenis iuran"
+        // hanya terpicu kalau tagihan lama menunjuk jenis iuran lain.
+        const tagihanJenisLain = { ...tagihanLama(1), jenis_iuran_id: 1 }
 
-        it("membatasi lookup & update ke organisasi tenant", async () => {
-            mockFirst.mockResolvedValue(tagihanLama(1))
+        it("memvalidasi jenis iuran tujuan saat tagihan dipindah jenis iurannya", async () => {
+            mockFirst.mockResolvedValue(tagihanJenisLain)
             mockUpdate.mockResolvedValue(tagihanLama(1))
 
             await tagihanIuranService.update(5, 1, updateInput)
 
             expect(mockWhere).toHaveBeenNthCalledWith(1, scope)
-            // Jenis iuran tujuan juga wajib berada di organisasi yang sama.
+            // Jenis iuran tujuan wajib aktif dan berada di organisasi yang sama.
             expect(mockWhere).toHaveBeenNthCalledWith(2, {
                 id: updateInput.jenis_iuran_id,
                 organisasi_id: 1,
+                isActive: true,
             })
             expect(mockWhere).toHaveBeenNthCalledWith(3, scope)
             expect(mockUpdate).toHaveBeenCalledWith(updateInput)
@@ -214,7 +219,7 @@ describe("TagihanIuranService", () => {
 
         it("menolak jenis_iuran_id milik organisasi lain", async () => {
             // Lookup tagihan lolos, lookup jenis iuran tidak.
-            mockFirst.mockResolvedValueOnce(tagihanLama(1)).mockResolvedValue(null)
+            mockFirst.mockResolvedValueOnce(tagihanJenisLain).mockResolvedValue(null)
 
             await expect(tagihanIuranService.update(5, 1, updateInput)).rejects.toThrow(
                 new NotFoundError("Jenis Iuran Tidak Ditemukan"),
@@ -222,8 +227,37 @@ describe("TagihanIuranService", () => {
             expect(mockWhere).toHaveBeenCalledWith({
                 id: updateInput.jenis_iuran_id,
                 organisasi_id: 1,
+                isActive: true,
             })
             expect(mockUpdate).not.toHaveBeenCalled()
+        })
+
+        it("menolak pindah ke jenis_iuran_id yang sudah tidak aktif", async () => {
+            mockFirst.mockResolvedValueOnce(tagihanJenisLain).mockResolvedValue(null)
+
+            await expect(tagihanIuranService.update(5, 1, updateInput)).rejects.toThrow(
+                new NotFoundError("Jenis Iuran Tidak Ditemukan"),
+            )
+            expect(mockWhere).toHaveBeenNthCalledWith(2, {
+                id: updateInput.jenis_iuran_id,
+                organisasi_id: 1,
+                isActive: true,
+            })
+            expect(mockUpdate).not.toHaveBeenCalled()
+        })
+
+        it("meloloskan PATCH nominal saja walau jenis iurannya sudah tidak aktif", async () => {
+            // jenis_iuran_id tidak berubah → lookup jenis iuran dilewati total,
+            // sehingga tarif yang dinonaktifkan tidak memblokir koreksi nominal.
+            mockFirst.mockResolvedValue(tagihanLama(1))
+            mockUpdate.mockResolvedValue(tagihanLama(1))
+
+            await tagihanIuranService.update(5, 1, updateInput)
+
+            expect(mockWhere).toHaveBeenCalledTimes(2)
+            expect(mockWhere).toHaveBeenNthCalledWith(1, scope)
+            expect(mockWhere).toHaveBeenNthCalledWith(2, scope)
+            expect(mockUpdate).toHaveBeenCalledWith(updateInput)
         })
 
         it("melempar 404 saat tagihan bukan milik organisasi tenant", async () => {

@@ -3,13 +3,20 @@
 
 autonumber
 
-== Initialization ==
+== Pendafataran Warga Pada Sub Organisasi Sebelum Penerbitan Tagihan ==
 
-Alice -> Bob: Authentication Request
-Bob --> Alice: Authentication Response
+Petugas --> Org: Menambahkan data Warga Pada Sub Org
+Warga --> Org:Bergabung Ke Sub Org
+Petugas ---> Tagihan: Membuat Tagihan
+Tagihan ---> Petugas: Berhasil Membuat Tagihan
+Petugas ---> Warga: Scan Kode QR Tagihan
+Warga ---> Petugas: Membayar Tagihan
+Petugas ---> Tagihan: Konfirmasi Pembayaran
+Tagihan --> Pembayaran: Memproses Pembayaran
+Pembayaran ---> Keuangan: Kalkulasi dan Validasi Pembayaran
+Keuangan --> Tagihan: Memperbarui Status Tagihan
+Tagihan ---> Petugas: Berhasil Dibayar
+Petugas ---> Warga: Berhasil Dibayar
+Warga ---> Tagihan: Cek Tagihan
 
-== Repetition ==
-
-Alice -> Bob: Another authentication Request
-Alice <-- Bob: another authentication Response
 @enduml

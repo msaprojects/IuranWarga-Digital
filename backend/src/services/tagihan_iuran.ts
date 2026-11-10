@@ -111,14 +111,17 @@ class TagihanIuranService {
             throw new NotFoundError("Tagihan Iuran Tidak Ditemukan")
         }
 
-        // PATCH boleh memindah tagihan ke jenis iuran lain. Validasi FK saja
-        // tidak cukup: jenis iuran milik organisasi lain tetap valid secara
-        // global, jadi scope tenant wajib ikut dicek sebelum menyimpan.
-        const jenisIuran = await db.orm.public.jenis_iuran
-            .where({ id: input.jenis_iuran_id, organisasi_id })
-            .first()
-        if (!jenisIuran) {
-            throw new NotFoundError("Jenis Iuran Tidak Ditemukan")
+        // Pindah jenis iuran baru divalidasi saat nilainya benar-benar berubah:
+        // target wajib aktif dan berada di organisasi yang sama. PATCH yang
+        // hanya mengoreksi nominal tetap jalan walau jenis iuran yang sudah
+        // menempel di tagihan itu belakangan dinonaktifkan.
+        if (input.jenis_iuran_id !== tagihan.jenis_iuran_id) {
+            const jenisIuran = await db.orm.public.jenis_iuran
+                .where({ id: input.jenis_iuran_id, organisasi_id, isActive: true })
+                .first()
+            if (!jenisIuran) {
+                throw new NotFoundError("Jenis Iuran Tidak Ditemukan")
+            }
         }
 
         return await db.orm.public.tagihan_iuran.where(scope).update({

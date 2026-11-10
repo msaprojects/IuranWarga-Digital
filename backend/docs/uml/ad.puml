@@ -2,36 +2,33 @@
 'https://plantuml.com/activity-diagram-beta
 
 start
-:ClickServlet.handleRequest();
-:new page;
-if (Page.onSecurityCheck) then (true)
-  :Page.onInit();
-  if (isForward?) then (no)
-    :Process controls;
-    if (continue processing?) then (no)
-      stop
-    endif
-
-    if (isPost?) then (yes)
-      :Page.onPost();
-    else (no)
-      :Page.onGet();
-    endif
-    :Page.onRender();
-  endif
-else (false)
+:Petugas Register Organisasi;
+if (Cek Kode Organisasi ) then (yes)
+  :Organisasi Berhasil Dibuat;
+else (no)
+  stop
 endif
-
-if (do redirect?) then (yes)
-  :redirect process;
-else
-  if (do forward?) then (yes)
-    :Forward request;
+:Petugas Menambahkan Data Warga/Rumah Tangga;
+:Petugas Menambahkan Data User;
+:Petugas Membuat Sub-Org;
+:Petugas Menambahkan Anggota Sub-Org;
+:Petugas Menentukan Anggota Petugas;
+:Petugas Membuat Tagihan;
+:Petugas Scan Kode Anggota;
+if(Ada Tagihan?) then (yes)
+  :Kalkulasi Tagihan;
+  if(Nominal Sama?) then (yes)
+    :Pembayaran Berhasil;
   else (no)
-    :Render page template;
+    if(Lebih Besar?) then(yes)
+      :Buat Deposit Untuk Tagihan Selanjutnya;
+    else (no)
+      :Pembayaran Kurang, Ditambahkan Di Tagihan Selanjutnya;
+    endif
   endif
+else (no)
+  stop
 endif
-
 stop
 
 @enduml
