@@ -20,6 +20,12 @@ import pengurusSubOrganisasiPaths from "./openapi/pengurus_sub_organisasi.ts"
 import pengurusSubOrganisasiSchemas from "./openapi/schemas/pengurus_sub_organisasi.ts"
 import komponenSubOrganisasiPaths from "./openapi/komponen_sub_organisasi.ts"
 import komponenSubOrganisasiSchemas from "./openapi/schemas/komponen_sub_organisasi.ts"
+import pembayaranIuranPaths from "./openapi/pembayaran_iuran.ts"
+import pembayaranIuranSchemas from "./openapi/schemas/pembayaran_iuran.ts"
+import keuanganPaths from "./openapi/keuangan.ts"
+import keuanganSchemas from "./openapi/schemas/keuangan.ts"
+import transactionLedgerPaths from "./openapi/transaction_ledger.ts"
+import transactionLedgerSchemas from "./openapi/schemas/transaction_ledger.ts"
 
 const BEARER_SECURITY = [{ BearerAuth: [] }]
 const PUBLIC_SECURITY: Record<string, never>[] = []
@@ -79,6 +85,9 @@ const rawPaths = {
     ...anggotaSubOrganisasiPaths,
     ...pengurusSubOrganisasiPaths,
     ...komponenSubOrganisasiPaths,
+    ...pembayaranIuranPaths,
+    ...keuanganPaths,
+    ...transactionLedgerPaths,
 } as unknown as OpenApiPaths
 
 const openApiSpec = {
@@ -122,6 +131,9 @@ const openApiSpec = {
             ...anggotaSubOrganisasiSchemas,
             ...pengurusSubOrganisasiSchemas,
             ...komponenSubOrganisasiSchemas,
+            ...pembayaranIuranSchemas,
+            ...keuanganSchemas,
+            ...transactionLedgerSchemas,
         },
     },
 }

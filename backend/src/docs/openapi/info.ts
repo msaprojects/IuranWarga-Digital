@@ -41,6 +41,21 @@ const apiInfo = {
             description:
                 "Override tarif jenis iuran yang berlaku khusus untuk satu sub organisasi.",
         },
+        {
+            name: "Pembayaran Iuran",
+            description:
+                "Pencatatan pembayaran tagihan, pembatalan sebelum posting, dan posting ke buku keuangan.",
+        },
+        {
+            name: "Keuangan",
+            description:
+                "Jurnal pemasukan/pengeluaran beserta rinciannya; setiap jurnal menghasilkan sepasang kaki ledger.",
+        },
+        {
+            name: "Transaction Ledger",
+            description:
+                "Log buku besar append-only yang bersifat read-only, disaring per jurnal, sub organisasi, atau waktu pencatatan.",
+        },
     ],
 } as const
 

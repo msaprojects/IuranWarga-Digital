@@ -4,9 +4,15 @@ export const ASSIGNABLE_USER_ROLES = ["USER", "ADMIN"] as const
 
 export const PERIODE_IURAN = ["HARIAN", "MINGGUAN", "BULANAN", "TAHUNAN"] as const
 
-export const STATUS_TAGIHAN = ["BELUM_BAYAR", "PARTIAL", "SUDAH_BAYAR", "OVERDUE", "CANCELLED"]
+export const STATUS_TAGIHAN = [
+    "BELUM_BAYAR",
+    "PARTIAL",
+    "SUDAH_BAYAR",
+    "OVERDUE",
+    "CANCELLED",
+] as const
 
-export const STATUS_PEMBAYARAN = ["BERHASIL", "CANCELLED", "REFUNDED"]
+export const STATUS_PEMBAYARAN = ["BERHASIL", "CANCELLED", "REFUNDED"] as const
 
 export const STATUS_KELUARGA = [
     "KEPALA_KELUARGA",
@@ -19,6 +25,9 @@ export const STATUS_KELUARGA = [
 
 export const JENIS_KEUANGAN = ["PEMASUKAN", "PENGELUARAN"] as const
 
+// Kaki jurnal: setiap entri keuangan ditulis sebagai pasangan DEBIT + KREDIT.
+export const LEDGER_SIGN = ["DEBIT", "KREDIT"] as const
+
 export const JENIS_PESERTA = ["RUMAH", "KOS", "TEMPAT_USAHA", "LAINNYA"] as const
 
 export type StatusKeluarga = (typeof STATUS_KELUARGA)[number]
@@ -28,4 +37,5 @@ export type PeriodeIuran = (typeof PERIODE_IURAN)[number]
 export type StatusTagihan = (typeof STATUS_TAGIHAN)[number]
 export type StatusPembayaran = (typeof STATUS_PEMBAYARAN)[number]
 export type JenisKeuangan = (typeof JENIS_KEUANGAN)[number]
+export type LedgerSign = (typeof LEDGER_SIGN)[number]
 export type JenisPeserta = (typeof JENIS_PESERTA)[number]

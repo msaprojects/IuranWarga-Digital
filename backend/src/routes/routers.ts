@@ -71,6 +71,24 @@ import {
     updateKomponenSubOrganisasiSchema,
 } from "../../validator/komponen_sub_organisasi.validator.ts"
 import { komponenSubOrganisasiController } from "../controllers/komponen_sub_organisasi.controller.ts"
+import {
+    createPembayaranIuranSchema,
+    listPembayaranIuranSchema,
+    pembayaranIuranIdSchema,
+    postingPembayaranIuranSchema,
+} from "../../validator/pembayaran_iuran.validator.ts"
+import { pembayaranIuranController } from "../controllers/pembayaran_iuran.controller.ts"
+import {
+    createKeuanganSchema,
+    keuanganIdSchema,
+    listKeuanganSchema,
+} from "../../validator/keuangan.validator.ts"
+import { keuanganController } from "../controllers/keuangan.controller.ts"
+import {
+    listTransactionLedgerSchema,
+    transactionLedgerIdSchema,
+} from "../../validator/transaction_ledger.validator.ts"
+import { transactionLedgerController } from "../controllers/transaction_ledger.controller.ts"
 import { requireTenant } from "../middlewares/tenant.ts"
 
 export const router = Router()
@@ -96,6 +114,9 @@ router.use("/sub-organisasi", authenticateJWT)
 router.use("/sub-anggota", authenticateJWT)
 router.use("/sub-panitia", authenticateJWT)
 router.use("/sub-komponen", authenticateJWT)
+router.use("/pembayaran-iuran", authenticateJWT)
+router.use("/keuangan", authenticateJWT)
+router.use("/transaction-ledger", authenticateJWT)
 
 router.get(
     "/organisasi/:kode",
@@ -392,4 +413,75 @@ router.delete(
     validate(komponenSubOrganisasiIdSchema, "params"),
     requireTenant(),
     komponenSubOrganisasiController.delete,
+)
+
+// PEMBAYARAN IURAN
+// Histori pembayaran append-only: tidak ada PATCH/DELETE. Koreksi dilakukan
+// lewat pembatalan (selama belum diposting) atau jurnal balik.
+router.get(
+    "/pembayaran-iuran",
+    validate(listPembayaranIuranSchema, "query"),
+    requireTenant(),
+    pembayaranIuranController.getAll,
+)
+router.post(
+    "/pembayaran-iuran",
+    validate(createPembayaranIuranSchema, "body"),
+    requireTenant(),
+    pembayaranIuranController.create,
+)
+router.get(
+    "/pembayaran-iuran/:id",
+    validate(pembayaranIuranIdSchema, "params"),
+    requireTenant(),
+    pembayaranIuranController.getById,
+)
+router.post(
+    "/pembayaran-iuran/:id/cancel",
+    validate(pembayaranIuranIdSchema, "params"),
+    requireTenant(),
+    pembayaranIuranController.cancel,
+)
+router.post(
+    "/pembayaran-iuran/:id/posting",
+    validate(pembayaranIuranIdSchema, "params"),
+    validate(postingPembayaranIuranSchema, "body"),
+    requireTenant(),
+    pembayaranIuranController.posting,
+)
+
+// KEUANGAN (JURNAL)
+// Jurnal umum saja: pemasukan dari pembayaran iuran hanya lewat endpoint posting.
+router.get(
+    "/keuangan",
+    validate(listKeuanganSchema, "query"),
+    requireTenant(),
+    keuanganController.getAll,
+)
+router.post(
+    "/keuangan",
+    validate(createKeuanganSchema, "body"),
+    requireTenant(),
+    keuanganController.create,
+)
+router.get(
+    "/keuangan/:id",
+    validate(keuanganIdSchema, "params"),
+    requireTenant(),
+    keuanganController.getById,
+)
+
+// LOG TRANSAKSI
+// Read-only: baris ledger hanya lahir dari penulisan jurnal keuangan.
+router.get(
+    "/transaction-ledger",
+    validate(listTransactionLedgerSchema, "query"),
+    requireTenant(),
+    transactionLedgerController.getAll,
+)
+router.get(
+    "/transaction-ledger/:id",
+    validate(transactionLedgerIdSchema, "params"),
+    requireTenant(),
+    transactionLedgerController.getById,
 )
