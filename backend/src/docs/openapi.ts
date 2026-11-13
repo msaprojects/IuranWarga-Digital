@@ -12,6 +12,14 @@ import jenisIuranPaths from "./openapi/jenis_iuran.ts"
 import jenisIuranSchemas from "./openapi/schemas/jenis_iuran.ts"
 import tagihanIuranPaths from "./openapi/tagihan_iuran.ts"
 import tagihanIuranSchemas from "./openapi/schemas/tagihan_iuran.ts"
+import subOrganisasiPaths from "./openapi/sub_organisasi.ts"
+import subOrganisasiSchemas from "./openapi/schemas/sub_organisasi.ts"
+import anggotaSubOrganisasiPaths from "./openapi/anggota_sub_organisasi.ts"
+import anggotaSubOrganisasiSchemas from "./openapi/schemas/anggota_sub_organisasi.ts"
+import pengurusSubOrganisasiPaths from "./openapi/pengurus_sub_organisasi.ts"
+import pengurusSubOrganisasiSchemas from "./openapi/schemas/pengurus_sub_organisasi.ts"
+import komponenSubOrganisasiPaths from "./openapi/komponen_sub_organisasi.ts"
+import komponenSubOrganisasiSchemas from "./openapi/schemas/komponen_sub_organisasi.ts"
 
 const BEARER_SECURITY = [{ BearerAuth: [] }]
 const PUBLIC_SECURITY: Record<string, never>[] = []
@@ -67,6 +75,10 @@ const rawPaths = {
     ...detailPesertaPaths,
     ...jenisIuranPaths,
     ...tagihanIuranPaths,
+    ...subOrganisasiPaths,
+    ...anggotaSubOrganisasiPaths,
+    ...pengurusSubOrganisasiPaths,
+    ...komponenSubOrganisasiPaths,
 } as unknown as OpenApiPaths
 
 const openApiSpec = {
@@ -106,6 +118,10 @@ const openApiSpec = {
             ...detailPesertaSchemas,
             ...jenisIuranSchemas,
             ...tagihanIuranSchemas,
+            ...subOrganisasiSchemas,
+            ...anggotaSubOrganisasiSchemas,
+            ...pengurusSubOrganisasiSchemas,
+            ...komponenSubOrganisasiSchemas,
         },
     },
 }

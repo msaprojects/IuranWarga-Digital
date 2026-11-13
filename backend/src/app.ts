@@ -38,12 +38,32 @@ app.use(cors())
 app.use(express.json({ limit: "1mb" }))
 app.use(express.urlencoded({ extended: true, limit: "1mb" }))
 
+// CSP khusus halaman dokumentasi.
+//
+// `helmet()` di atas memasang `script-src 'self'`. Halaman ReDoc dari
+// `redoc-express` melanggar aturan itu dua kali: bundle-nya dimuat dari
+// `https://unpkg.com`, lalu bootstrap `Redoc.init(...)` ditulis sebagai
+// `<script>` inline tanpa nonce (opsi `nonce` redoc-express hanya menempel ke
+// tag eksternal). Catatan CSP: begitu sebuah direktif memuat nonce/hash,
+// `'unsafe-inline'` diabaikan browser — jadi jangan dicampur.
+//
+// Pelonggaran ini sengaja dibatasi pada rute dokumentasi; seluruh `/api` tetap
+// memakai CSP ketat bawaan helmet.
+const docsCsp = helmet({
+    contentSecurityPolicy: {
+        directives: {
+            "script-src": ["'self'", "'unsafe-inline'", "https://unpkg.com"],
+        },
+    },
+})
+
 app.get("/api-docs.json", (_req, res) => {
     res.json(openApiSpec)
 })
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiSpec))
+app.use("/api-docs", docsCsp, swaggerUi.serve, swaggerUi.setup(openApiSpec))
 app.get(
     "/redoc",
+    docsCsp,
     redoc({
         title: "Iuran Warga API Documentation",
         specUrl: "/api-docs.json",

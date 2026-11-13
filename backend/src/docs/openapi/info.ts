@@ -22,6 +22,25 @@ const apiInfo = {
             description:
                 "Pengelolaan anggota keluarga (detail peserta) yang terkait dengan satu peserta.",
         },
+        {
+            name: "Sub Organisasi",
+            description:
+                "Pengelolaan sub organisasi (mis. PKK, pengajian) di dalam satu organisasi.",
+        },
+        {
+            name: "Anggota Sub Organisasi",
+            description: "Pendaftaran dan status keanggotaan peserta pada sub organisasi.",
+        },
+        {
+            name: "Pengurus Sub Organisasi",
+            description:
+                "Pengangkatan pengurus/panitia sub organisasi beserta jabatannya.",
+        },
+        {
+            name: "Komponen Sub Organisasi",
+            description:
+                "Override tarif jenis iuran yang berlaku khusus untuk satu sub organisasi.",
+        },
     ],
 } as const
 

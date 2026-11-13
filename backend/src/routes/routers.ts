@@ -46,6 +46,31 @@ import {
     updateTagihanIuranSchema,
 } from "../../validator/tagihan_iuran.validator.ts"
 import { tagihanIuranController } from "../controllers/tagihan_iuran.controller.ts"
+import {
+    createSubOrganisasiSchema,
+    subOrganisasiIdSchema,
+    subOrganisasiParentParamsSchema,
+    updateSubOrganisasiSchema,
+} from "../../validator/sub_organisasi.validator.ts"
+import { subOrganisasiController } from "../controllers/sub_organisasi.controller.ts"
+import {
+    anggotaSubOrganisasiIdSchema,
+    createAnggotaSubOrganisasiSchema,
+    updateAnggotaSubOrganisasiSchema,
+} from "../../validator/anggota_sub_organisasi.validator.ts"
+import { anggotaSubOrganisasiController } from "../controllers/anggota_sub_organisasi.controller.ts"
+import {
+    createPengurusSubOrganisasiSchema,
+    pengurusSubOrganisasiIdSchema,
+    updatePengurusSubOrganisasiSchema,
+} from "../../validator/pengurus_sub_organisasi.validator.ts"
+import { pengurusSubOrganisasiController } from "../controllers/pengurus_sub_organisasi.controller.ts"
+import {
+    createKomponenSubOrganisasiSchema,
+    komponenSubOrganisasiIdSchema,
+    updateKomponenSubOrganisasiSchema,
+} from "../../validator/komponen_sub_organisasi.validator.ts"
+import { komponenSubOrganisasiController } from "../controllers/komponen_sub_organisasi.controller.ts"
 import { requireTenant } from "../middlewares/tenant.ts"
 
 export const router = Router()
@@ -67,6 +92,10 @@ router.use("/detail-peserta-by-peserta/:peserta_id", authenticateJWT)
 router.use("/detail-peserta", authenticateJWT)
 router.use("/jenis-iuran", authenticateJWT)
 router.use("/tagihan-iuran", authenticateJWT)
+router.use("/sub-organisasi", authenticateJWT)
+router.use("/sub-anggota", authenticateJWT)
+router.use("/sub-panitia", authenticateJWT)
+router.use("/sub-komponen", authenticateJWT)
 
 router.get(
     "/organisasi/:kode",
@@ -248,4 +277,119 @@ router.delete(
     validate(deleteTagihanIuranSchema, "body"),
     requireTenant(),
     tagihanIuranController.deleteTagihanIuran,
+)
+
+// SUB ORGANISASI
+// `organisasi_id` sub-organisasi selalu dari token; body tidak menerimanya.
+router.get("/sub-organisasi", requireTenant(), subOrganisasiController.getAll)
+router.post(
+    "/sub-organisasi",
+    validate(createSubOrganisasiSchema, "body"),
+    requireTenant(),
+    subOrganisasiController.create,
+)
+router.get(
+    "/sub-organisasi/:id",
+    validate(subOrganisasiIdSchema, "params"),
+    requireTenant(),
+    subOrganisasiController.getById,
+)
+router.patch(
+    "/sub-organisasi/:id",
+    validate(subOrganisasiIdSchema, "params"),
+    validate(updateSubOrganisasiSchema, "body"),
+    requireTenant(),
+    subOrganisasiController.update,
+)
+router.delete(
+    "/sub-organisasi/:id",
+    validate(subOrganisasiIdSchema, "params"),
+    requireTenant(),
+    subOrganisasiController.deactivate,
+)
+
+// ANGGOTA SUB ORGANISASI
+// Tabel anak tidak punya `organisasi_id`; service menelusuri tenant lewat
+// sub-organisasi induk, jadi `requireTenant()` tetap wajib dipasang.
+router.get(
+    "/sub-organisasi/:sub_organisasi_id/anggota",
+    validate(subOrganisasiParentParamsSchema, "params"),
+    requireTenant(),
+    anggotaSubOrganisasiController.list,
+)
+router.post(
+    "/sub-organisasi/:sub_organisasi_id/anggota",
+    validate(subOrganisasiParentParamsSchema, "params"),
+    validate(createAnggotaSubOrganisasiSchema, "body"),
+    requireTenant(),
+    anggotaSubOrganisasiController.create,
+)
+router.patch(
+    "/sub-anggota/:id",
+    validate(anggotaSubOrganisasiIdSchema, "params"),
+    validate(updateAnggotaSubOrganisasiSchema, "body"),
+    requireTenant(),
+    anggotaSubOrganisasiController.update,
+)
+router.delete(
+    "/sub-anggota/:id",
+    validate(anggotaSubOrganisasiIdSchema, "params"),
+    requireTenant(),
+    anggotaSubOrganisasiController.delete,
+)
+
+// PENGURUS (PANITIA) SUB ORGANISASI
+router.get(
+    "/sub-organisasi/:sub_organisasi_id/pengurus",
+    validate(subOrganisasiParentParamsSchema, "params"),
+    requireTenant(),
+    pengurusSubOrganisasiController.list,
+)
+router.post(
+    "/sub-organisasi/:sub_organisasi_id/pengurus",
+    validate(subOrganisasiParentParamsSchema, "params"),
+    validate(createPengurusSubOrganisasiSchema, "body"),
+    requireTenant(),
+    pengurusSubOrganisasiController.create,
+)
+router.patch(
+    "/sub-panitia/:id",
+    validate(pengurusSubOrganisasiIdSchema, "params"),
+    validate(updatePengurusSubOrganisasiSchema, "body"),
+    requireTenant(),
+    pengurusSubOrganisasiController.update,
+)
+router.delete(
+    "/sub-panitia/:id",
+    validate(pengurusSubOrganisasiIdSchema, "params"),
+    requireTenant(),
+    pengurusSubOrganisasiController.delete,
+)
+
+// KOMPONEN (OVERRIDE TARIF) SUB ORGANISASI
+router.get(
+    "/sub-organisasi/:sub_organisasi_id/komponen",
+    validate(subOrganisasiParentParamsSchema, "params"),
+    requireTenant(),
+    komponenSubOrganisasiController.list,
+)
+router.post(
+    "/sub-organisasi/:sub_organisasi_id/komponen",
+    validate(subOrganisasiParentParamsSchema, "params"),
+    validate(createKomponenSubOrganisasiSchema, "body"),
+    requireTenant(),
+    komponenSubOrganisasiController.create,
+)
+router.patch(
+    "/sub-komponen/:id",
+    validate(komponenSubOrganisasiIdSchema, "params"),
+    validate(updateKomponenSubOrganisasiSchema, "body"),
+    requireTenant(),
+    komponenSubOrganisasiController.update,
+)
+router.delete(
+    "/sub-komponen/:id",
+    validate(komponenSubOrganisasiIdSchema, "params"),
+    requireTenant(),
+    komponenSubOrganisasiController.delete,
 )

@@ -32,12 +32,18 @@ mock.module("../src/prisma/db.ts", () => ({
 
 const { detailPesertaService } = await import("../src/services/detail_peserta.service.ts")
 
+// Fixture harus berbentuk baris utuh: Bun menurunkan tipe parameter
+// `toBe`/`toEqual` dari nilai aktual, sedangkan `db.orm` mengembalikan baris
+// lengkap termasuk kolom yang diurus database (createdAt/updatedAt).
+// `as const` menjaga `status_keluarga` tetap literal, bukan melebar ke `string`.
 const existingDetailPeserta = {
     id: 1,
     peserta_id: 1,
     nama: "Budi",
-    status_keluarga: "KEPALA_KELUARGA",
+    status_keluarga: "KEPALA_KELUARGA" as const,
     isActive: true,
+    createdAt: "2025-01-01T00:00:00.000Z",
+    updatedAt: "2025-01-01T00:00:00.000Z",
 }
 
 beforeEach(() => {
@@ -193,9 +199,7 @@ describe("DetailPesertaService", () => {
                 .mockResolvedValueOnce({ id: 1 })
                 .mockResolvedValue(null)
 
-            await expect(
-                detailPesertaService.update(1, 7, { peserta_id: 999 }),
-            ).rejects.toThrow(
+            await expect(detailPesertaService.update(1, 7, { peserta_id: 999 })).rejects.toThrow(
                 new HttpError(404, "Peserta tujuan tidak ditemukan / sudah tidak aktif."),
             )
             expect(mockUpdate).not.toHaveBeenCalled()
@@ -223,9 +227,12 @@ describe("DetailPesertaService", () => {
     describe("delete", () => {
         it("menghapus saat data ditemukan", async () => {
             mockFirst.mockResolvedValue(existingDetailPeserta)
-            mockDelete.mockResolvedValue({ id: 1 })
+            // `.delete()` mengembalikan baris utuh, bukan `{ id }` saja.
+            mockDelete.mockResolvedValue(existingDetailPeserta)
 
-            await expect(detailPesertaService.delete(1, 7)).resolves.toEqual({ id: 1 })
+            const deleted = await detailPesertaService.delete(1, 7)
+
+            expect(deleted).toBe(existingDetailPeserta)
             expect(mockWhere).toHaveBeenCalledWith({ id: 1, organisasi_id: 7, isActive: true })
             expect(mockDelete).toHaveBeenCalled()
         })
