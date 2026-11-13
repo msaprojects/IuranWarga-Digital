@@ -25,10 +25,7 @@ export type UpdateKomponenSubOrganisasiInput = {
  */
 class KomponenSubOrganisasiService {
     async list(sub_organisasi_id: number, organisasi_id: number) {
-        await subOrganisasiService.assertSubOrganisasiDalamTenant(
-            sub_organisasi_id,
-            organisasi_id,
-        )
+        await subOrganisasiService.assertSubOrganisasiDalamTenant(sub_organisasi_id, organisasi_id)
         return db.orm.public.komponen_sub_organisasi.where({ sub_organisasi_id }).all()
     }
 
@@ -37,10 +34,7 @@ class KomponenSubOrganisasiService {
         organisasi_id: number,
         input: CreateKomponenSubOrganisasiInput,
     ) {
-        await subOrganisasiService.assertSubOrganisasiDalamTenant(
-            sub_organisasi_id,
-            organisasi_id,
-        )
+        await subOrganisasiService.assertSubOrganisasiDalamTenant(sub_organisasi_id, organisasi_id)
         // Jenis iuran milik organisasi lain tetap valid secara global, jadi
         // scope tenant + isActive wajib dicek seperti pada `tagihan_iuran`.
         await this.assertJenisIuranDalamTenant(input.jenis_iuran_id, organisasi_id)
@@ -54,11 +48,7 @@ class KomponenSubOrganisasiService {
         })
     }
 
-    async update(
-        id: number,
-        organisasi_id: number,
-        input: UpdateKomponenSubOrganisasiInput,
-    ) {
+    async update(id: number, organisasi_id: number, input: UpdateKomponenSubOrganisasiInput) {
         const existing = await this.assertEksis(id)
         await subOrganisasiService.assertSubOrganisasiDalamTenant(
             existing.sub_organisasi_id,

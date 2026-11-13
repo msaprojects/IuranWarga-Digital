@@ -32,7 +32,7 @@ const transactionLedgerSchemas = {
                 type: "string",
                 nullable: true,
                 description: "Jejak asal jurnal (JSON string), mis. nomor transaksi pembayaran.",
-                example: "{\"sumber\":\"PEMBAYARAN_IURAN\",\"nomor_transaksi\":\"PAY-202610-1AB12\"}",
+                example: '{"sumber":"PEMBAYARAN_IURAN","nomor_transaksi":"PAY-202610-1AB12"}',
             },
             createdAt: { type: "string", format: "date-time" },
         },

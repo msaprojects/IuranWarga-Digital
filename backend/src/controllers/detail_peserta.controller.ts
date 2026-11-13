@@ -39,11 +39,7 @@ export const DetailPesertaController = {
     async update(_req: Request, res: Response<unknown, UpdateLocals>) {
         const { id } = res.locals.validated.params
         const { organisasi_id } = res.locals.tenant
-        const data = await detailPesertaService.update(
-            id,
-            organisasi_id,
-            res.locals.validated.body,
-        )
+        const data = await detailPesertaService.update(id, organisasi_id, res.locals.validated.body)
         resHandler.success(res, 200, "Detail peserta berhasil diperbarui", data)
     },
     async delete(_req: Request, res: Response<unknown, ByIdLocals>) {

@@ -25,9 +25,8 @@ mock.module("../src/prisma/db.ts", () => ({
     },
 }))
 
-const { komponenSubOrganisasiService } = await import(
-    "../src/services/komponen_sub_organisasi.service.ts"
-)
+const { komponenSubOrganisasiService } =
+    await import("../src/services/komponen_sub_organisasi.service.ts")
 
 const subOrganisasiInduk = { id: 1, organisasi_id: 7, nama: "PKK", isActive: true }
 const jenisIuranTenant = { id: 2, organisasi_id: 7, isActive: true }
@@ -137,7 +136,9 @@ describe("KomponenSubOrganisasiService", () => {
 
     describe("update", () => {
         it("mengubah nominal tanpa menyentuh pasangan identitas", async () => {
-            mockFirst.mockResolvedValueOnce(existingKomponen).mockResolvedValueOnce(subOrganisasiInduk)
+            mockFirst
+                .mockResolvedValueOnce(existingKomponen)
+                .mockResolvedValueOnce(subOrganisasiInduk)
             mockUpdate.mockResolvedValue({ ...existingKomponen, nominal: "80000" })
 
             await komponenSubOrganisasiService.update(4, 7, { nominal: "80000" })
@@ -155,7 +156,9 @@ describe("KomponenSubOrganisasiService", () => {
         })
 
         it("mengizinkan override dihentikan lewat isActive: false", async () => {
-            mockFirst.mockResolvedValueOnce(existingKomponen).mockResolvedValueOnce(subOrganisasiInduk)
+            mockFirst
+                .mockResolvedValueOnce(existingKomponen)
+                .mockResolvedValueOnce(subOrganisasiInduk)
             mockUpdate.mockResolvedValue({ ...existingKomponen, isActive: false })
 
             await komponenSubOrganisasiService.update(4, 7, { isActive: false })
@@ -186,7 +189,9 @@ describe("KomponenSubOrganisasiService", () => {
 
     describe("delete", () => {
         it("menghapus baris komponen (hard delete)", async () => {
-            mockFirst.mockResolvedValueOnce(existingKomponen).mockResolvedValueOnce(subOrganisasiInduk)
+            mockFirst
+                .mockResolvedValueOnce(existingKomponen)
+                .mockResolvedValueOnce(subOrganisasiInduk)
             mockDelete.mockResolvedValue({ id: 4 })
 
             const deleted = await komponenSubOrganisasiService.delete(4, 7)

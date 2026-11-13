@@ -80,9 +80,12 @@ class TagihanIuranService {
         const billedPesertaIds = new Set(existingTagihan.map((tagihan) => tagihan.peserta_id))
         const pesertaBelumDitagih = peserta.filter((data) => !billedPesertaIds.has(data.id))
         if (pesertaBelumDitagih.length === 0) {
-            throw new ConflictError("Semua peserta aktif sudah memiliki tagihan pada periode ini.", {
-                code: "TAGIHAN.ALREADY_ISSUED",
-            })
+            throw new ConflictError(
+                "Semua peserta aktif sudah memiliki tagihan pada periode ini.",
+                {
+                    code: "TAGIHAN.ALREADY_ISSUED",
+                },
+            )
         }
 
         const tanggalTerbit = Temporal.PlainDate.from(dayjs().format("YYYY-MM-DD"))

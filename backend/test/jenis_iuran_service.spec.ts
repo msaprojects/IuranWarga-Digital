@@ -32,14 +32,22 @@ mock.module("../src/prisma/db.ts", () => ({
 
 const { jenisIuranService } = await import("../src/services/jenis_iuran.service.ts")
 
+// Fixture harus berbentuk baris utuh. Bun menurunkan tipe parameter
+// `toBe`/`toEqual` dari nilai AKTUAL, dan nilai aktual di sini adalah baris
+// `db.orm` — yang menyertakan kolom urusan database (createdAt/updatedAt)
+// serta enum yang sudah menyempit. Tanpa `as const`, objek literal melebarkan
+// `periode_iuran`/`jenis_peserta` menjadi `string` dan tidak lagi cocok dengan
+// union enum pada tipe baris.
 const existingJenisIuran = {
     id: 1,
     judul: "Iuran Kebersihan",
-    periode_iuran: "BULANAN",
-    jenis_peserta: "RUMAH",
+    periode_iuran: "BULANAN" as const,
+    jenis_peserta: "RUMAH" as const,
     nominal: "50000",
     isActive: true,
     organisasi_id: 1,
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
 }
 
 beforeEach(() => {
@@ -57,7 +65,6 @@ afterEach(() => {
 
 describe("JenisIuranService", () => {
     describe("createJenisIuran", () => {
-
         it("meneruskan nominal sebagai string ke db setelah organisasi tervalidasi", async () => {
             mockFirst.mockResolvedValue({ id: 1 })
             mockCreate.mockResolvedValue(existingJenisIuran)
@@ -173,18 +180,18 @@ describe("JenisIuranService", () => {
         it("melempar 404 saat jenis iuran tidak ditemukan", async () => {
             mockFirst.mockResolvedValue(null)
 
-            await expect(
-                jenisIuranService.updateJenisIuran(99, 1, { judul: "X" }),
-            ).rejects.toThrow(new HttpError(404, "Jenis iuran tidak ditemukan."))
+            await expect(jenisIuranService.updateJenisIuran(99, 1, { judul: "X" })).rejects.toThrow(
+                new HttpError(404, "Jenis iuran tidak ditemukan."),
+            )
             expect(mockUpdate).not.toHaveBeenCalled()
         })
 
         it("melempar 404 saat jenis iuran milik organisasi lain", async () => {
             mockFirst.mockResolvedValue(null)
 
-            await expect(
-                jenisIuranService.updateJenisIuran(1, 7, { judul: "X" }),
-            ).rejects.toThrow(new HttpError(404, "Jenis iuran tidak ditemukan."))
+            await expect(jenisIuranService.updateJenisIuran(1, 7, { judul: "X" })).rejects.toThrow(
+                new HttpError(404, "Jenis iuran tidak ditemukan."),
+            )
             expect(mockWhere).toHaveBeenCalledWith({ id: 1, organisasi_id: 7 })
             expect(mockUpdate).not.toHaveBeenCalled()
         })
@@ -193,9 +200,10 @@ describe("JenisIuranService", () => {
     describe("deleteJenisIuran", () => {
         it("menghapus saat data ditemukan", async () => {
             mockFirst.mockResolvedValue(existingJenisIuran)
-            mockDelete.mockResolvedValue({ id: 1 })
+            // `.delete()` mengembalikan baris utuh, bukan `{ id }` saja.
+            mockDelete.mockResolvedValue(existingJenisIuran)
 
-            await expect(jenisIuranService.deleteJenisIuran(1, 1)).resolves.toEqual({ id: 1 })
+            await expect(jenisIuranService.deleteJenisIuran(1, 1)).resolves.toBe(existingJenisIuran)
             expect(mockWhere).toHaveBeenCalledWith({ id: 1, organisasi_id: 1 })
             expect(mockDelete).toHaveBeenCalled()
         })

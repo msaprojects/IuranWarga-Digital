@@ -21,7 +21,9 @@ const pengurusSubOrganisasiPaths = {
                     description: "Daftar pengurus berhasil diambil.",
                     content: {
                         "application/json": {
-                            schema: { $ref: "#/components/schemas/PengurusSubOrganisasiListSuccess" },
+                            schema: {
+                                $ref: "#/components/schemas/PengurusSubOrganisasiListSuccess",
+                            },
                         },
                     },
                 },
@@ -145,7 +147,8 @@ const pengurusSubOrganisasiPaths = {
                 },
                 "401": { $ref: "#/components/responses/Unauthorized" },
                 "404": {
-                    description: "Pengurus tidak ditemukan atau sub organisasi induknya bukan milik tenant.",
+                    description:
+                        "Pengurus tidak ditemukan atau sub organisasi induknya bukan milik tenant.",
                     content: {
                         "application/json": { schema: { $ref: "#/components/schemas/Error" } },
                     },
@@ -183,7 +186,8 @@ const pengurusSubOrganisasiPaths = {
                 },
                 "401": { $ref: "#/components/responses/Unauthorized" },
                 "404": {
-                    description: "Pengurus tidak ditemukan atau sub organisasi induknya bukan milik tenant.",
+                    description:
+                        "Pengurus tidak ditemukan atau sub organisasi induknya bukan milik tenant.",
                     content: {
                         "application/json": { schema: { $ref: "#/components/schemas/Error" } },
                     },

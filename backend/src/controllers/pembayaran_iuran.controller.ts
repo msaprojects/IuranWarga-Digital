@@ -33,7 +33,10 @@ export const pembayaranIuranController = {
         const data = await pembayaranIuranService.getAll(organisasi_id, query)
         resHandler.success(res, 200, "Success", data)
     },
-    async getById(_req: Request, res: Response<unknown, DetailPembayaranIuranLocal>): Promise<void> {
+    async getById(
+        _req: Request,
+        res: Response<unknown, DetailPembayaranIuranLocal>,
+    ): Promise<void> {
         const { organisasi_id } = res.locals.tenant
         const { params } = res.locals.validated
         const data = await pembayaranIuranService.getById(params.id, organisasi_id)
@@ -52,7 +55,10 @@ export const pembayaranIuranController = {
         const data = await pembayaranIuranService.cancel(params.id, organisasi_id)
         resHandler.success(res, 200, "Success", data)
     },
-    async posting(_req: Request, res: Response<unknown, PostingPembayaranIuranLocal>): Promise<void> {
+    async posting(
+        _req: Request,
+        res: Response<unknown, PostingPembayaranIuranLocal>,
+    ): Promise<void> {
         const { organisasi_id } = res.locals.tenant
         const { userId } = res.locals.user
         const { params, body } = res.locals.validated

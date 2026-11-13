@@ -20,7 +20,11 @@ const subOrganisasiSchemas = {
             },
             isActive: { type: "boolean", default: true },
         },
-        example: { nama: "PKK", deskripsi: "Pemberdayaan Kesejahteraan Keluarga", pisah_laporan: true },
+        example: {
+            nama: "PKK",
+            deskripsi: "Pemberdayaan Kesejahteraan Keluarga",
+            pisah_laporan: true,
+        },
     },
     UpdateSubOrganisasiInput: {
         type: "object",

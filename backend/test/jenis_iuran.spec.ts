@@ -191,9 +191,7 @@ describe("Jenis Iuran API", () => {
             expect(response.status).toBe(400)
             expect(response.body.message).toBe("Validation Error")
             expect(response.body.errors).toEqual(
-                expect.arrayContaining([
-                    expect.objectContaining({ field: "jenis_peserta" }),
-                ]),
+                expect.arrayContaining([expect.objectContaining({ field: "jenis_peserta" })]),
             )
             expect(jenisIuranService.createJenisIuran).not.toHaveBeenCalled()
         })

@@ -257,12 +257,7 @@ describe("Tagihan Iuran API", () => {
             expect(response.status).toBe(200)
             expect(response.body.data).toEqual(expect.objectContaining({ id: 1 }))
             // id = 1, organisasi_id = 1 dan userId = 1 dari token uji (test/auth.ts).
-            expect(tagihanIuranService.delete).toHaveBeenCalledWith(
-                1,
-                1,
-                1,
-                "Peserta pindah rumah",
-            )
+            expect(tagihanIuranService.delete).toHaveBeenCalledWith(1, 1, 1, "Peserta pindah rumah")
         })
 
         it("mengembalikan 400 untuk id yang tidak valid", async () => {

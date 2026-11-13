@@ -25,10 +25,7 @@ export type UpdatePengurusSubOrganisasiInput = {
  */
 class PengurusSubOrganisasiService {
     async list(sub_organisasi_id: number, organisasi_id: number) {
-        await subOrganisasiService.assertSubOrganisasiDalamTenant(
-            sub_organisasi_id,
-            organisasi_id,
-        )
+        await subOrganisasiService.assertSubOrganisasiDalamTenant(sub_organisasi_id, organisasi_id)
         return db.orm.public.pengurus_sub_organisasi.where({ sub_organisasi_id }).all()
     }
 
@@ -37,10 +34,7 @@ class PengurusSubOrganisasiService {
         organisasi_id: number,
         input: CreatePengurusSubOrganisasiInput,
     ) {
-        await subOrganisasiService.assertSubOrganisasiDalamTenant(
-            sub_organisasi_id,
-            organisasi_id,
-        )
+        await subOrganisasiService.assertSubOrganisasiDalamTenant(sub_organisasi_id, organisasi_id)
         await this.assertUserDalamTenant(input.user_id, organisasi_id)
         await this.assertBelumTerdaftar(sub_organisasi_id, input.user_id)
 
@@ -52,11 +46,7 @@ class PengurusSubOrganisasiService {
         })
     }
 
-    async update(
-        id: number,
-        organisasi_id: number,
-        input: UpdatePengurusSubOrganisasiInput,
-    ) {
+    async update(id: number, organisasi_id: number, input: UpdatePengurusSubOrganisasiInput) {
         const existing = await this.assertEksis(id)
         await subOrganisasiService.assertSubOrganisasiDalamTenant(
             existing.sub_organisasi_id,

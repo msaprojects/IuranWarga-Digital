@@ -55,9 +55,7 @@ mock.module("../src/prisma/db.ts", () => ({
     },
 }))
 
-const { pembayaranIuranService } = await import(
-    "../src/services/pembayaran_iuran.service.ts"
-)
+const { pembayaranIuranService } = await import("../src/services/pembayaran_iuran.service.ts")
 
 const tagihan = {
     id: 5,
@@ -131,9 +129,7 @@ describe("PembayaranIuranService", () => {
             expect(payload.user_id).toBe(9)
             expect(payload.tanggal_bayar.equals(Temporal.PlainDate.from("2026-11-10"))).toBe(true)
             expect(payload.nomor_transaksi).toMatch(/^PAY-202610-3[A-Z0-9]{4}$/)
-            expect(mockUpdate).toHaveBeenCalledWith(
-                expect.objectContaining({ status: "PARTIAL" }),
-            )
+            expect(mockUpdate).toHaveBeenCalledWith(expect.objectContaining({ status: "PARTIAL" }))
             expect(result).toBe(barisTersimpan)
         })
 
@@ -144,11 +140,7 @@ describe("PembayaranIuranService", () => {
                 .mockResolvedValueOnce({ total: "50000" })
             mockBuatPembayaran.mockResolvedValue(pembayaranLama())
 
-            await pembayaranIuranService.create(
-                { ...input, nominal_bayar: "50000" },
-                1,
-                9,
-            )
+            await pembayaranIuranService.create({ ...input, nominal_bayar: "50000" }, 1, 9)
 
             expect(mockUpdate).toHaveBeenCalledWith(
                 expect.objectContaining({ status: "SUDAH_BAYAR" }),
@@ -242,9 +234,7 @@ describe("PembayaranIuranService", () => {
         })
 
         it("menolak pembatalan pembayaran yang sudah diposting", async () => {
-            mockFirst.mockResolvedValue(
-                pembayaranLama({ postedAt: "2026-11-10T05:00:00.000Z" }),
-            )
+            mockFirst.mockResolvedValue(pembayaranLama({ postedAt: "2026-11-10T05:00:00.000Z" }))
 
             await expect(pembayaranIuranService.cancel(7, 1)).rejects.toThrow(
                 new ConflictError(
@@ -298,9 +288,7 @@ describe("PembayaranIuranService", () => {
             expect(jurnal.user_id).toBe(9)
             expect(jurnal.keterangan).toBe("Pembayaran PAY-202610-3AB12")
 
-            const detail = mockBuatDetailKeuangan.mock.calls[0]?.[0] as Array<
-                Record<string, any>
-            >
+            const detail = mockBuatDetailKeuangan.mock.calls[0]?.[0] as Array<Record<string, any>>
             expect(detail).toHaveLength(1)
             expect(detail[0]?.nominal).toBe("20000")
             // Rincian jurnal harus menunjuk balik ke pembayaran asalnya.
@@ -335,9 +323,7 @@ describe("PembayaranIuranService", () => {
         })
 
         it("menolak posting kedua kali", async () => {
-            mockFirst.mockResolvedValue(
-                pembayaranLama({ postedAt: "2026-11-10T05:00:00.000Z" }),
-            )
+            mockFirst.mockResolvedValue(pembayaranLama({ postedAt: "2026-11-10T05:00:00.000Z" }))
 
             await expect(pembayaranIuranService.posting(7, 1, 9)).rejects.toThrow(
                 new ConflictError("Pembayaran sudah pernah diposting.", {

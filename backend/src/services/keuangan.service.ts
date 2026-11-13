@@ -64,7 +64,10 @@ class KeuanganService {
             const batas = Temporal.PlainDate.from(sampai)
             collection = collection.where((m) => m.tanggal.lte(batas))
         }
-        return collection.orderBy((m) => m.tanggal.desc()).orderBy((m) => m.id.desc()).all()
+        return collection
+            .orderBy((m) => m.tanggal.desc())
+            .orderBy((m) => m.id.desc())
+            .all()
     }
 
     async getById(id: number, organisasi_id: number) {
@@ -131,7 +134,9 @@ class KeuanganService {
 
         // Double-entry: total jurnal dibukukan sebagai sepasang kaki DEBIT dan
         // KREDIT dengan nominal sama, sehingga buku selalu seimbang.
-        const total = fromCents(input.details.reduce((acc, item) => acc + toCents(item.nominal), 0n))
+        const total = fromCents(
+            input.details.reduce((acc, item) => acc + toCents(item.nominal), 0n),
+        )
 
         const ledger = await tx.orm.public.transaction_ledger.createAll(
             LEDGER_SIGN.map((tipe) => ({

@@ -39,7 +39,8 @@ const transactionLedgerPaths = {
                     name: "sampai",
                     in: "query",
                     required: false,
-                    description: "Batas atas createdAt (YYYY-MM-DD, inklusif sampai akhir hari UTC).",
+                    description:
+                        "Batas atas createdAt (YYYY-MM-DD, inklusif sampai akhir hari UTC).",
                     schema: { type: "string", format: "date" },
                 },
                 {

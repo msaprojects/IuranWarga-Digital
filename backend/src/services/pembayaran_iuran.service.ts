@@ -46,13 +46,14 @@ class PembayaranIuranService {
             const batas = Temporal.PlainDate.from(sampai)
             collection = collection.where((m) => m.tanggal_bayar.lte(batas))
         }
-        return collection.orderBy((m) => m.tanggal_bayar.desc()).orderBy((m) => m.id.desc()).all()
+        return collection
+            .orderBy((m) => m.tanggal_bayar.desc())
+            .orderBy((m) => m.id.desc())
+            .all()
     }
 
     async getById(id: number, organisasi_id: number) {
-        const pembayaran = await db.orm.public.pembayaran_iuran
-            .where({ id, organisasi_id })
-            .first()
+        const pembayaran = await db.orm.public.pembayaran_iuran.where({ id, organisasi_id }).first()
         if (!pembayaran) {
             throw new NotFoundError("Pembayaran iuran tidak ditemukan.", {
                 code: "PEMBAYARAN.NOT_FOUND",
@@ -98,7 +99,11 @@ class PembayaranIuranService {
             }
 
             const pembayaran = await tx.orm.public.pembayaran_iuran.create({
-                nomor_transaksi: this.nomorTransaksi(tagihan.tahun, tagihan.bulan, tagihan.peserta_id),
+                nomor_transaksi: this.nomorTransaksi(
+                    tagihan.tahun,
+                    tagihan.bulan,
+                    tagihan.peserta_id,
+                ),
                 organisasi_id,
                 tagihan_iuran_id: tagihan.id,
                 jenis_iuran_id: tagihan.jenis_iuran_id,
@@ -132,9 +137,12 @@ class PembayaranIuranService {
                 })
             }
             if (pembayaran.status !== "BERHASIL") {
-                throw new ConflictError("Hanya pembayaran berstatus BERHASIL yang dapat dibatalkan.", {
-                    code: "PEMBAYARAN.TIDAK_BERHASIL",
-                })
+                throw new ConflictError(
+                    "Hanya pembayaran berstatus BERHASIL yang dapat dibatalkan.",
+                    {
+                        code: "PEMBAYARAN.TIDAK_BERHASIL",
+                    },
+                )
             }
             if (pembayaran.postedAt !== null) {
                 throw new ConflictError(
@@ -166,12 +174,7 @@ class PembayaranIuranService {
      * gagal, keduanya batal sehingga tidak ada pembayaran yang tampak
      * terposting tanpa jurnal.
      */
-    async posting(
-        id: number,
-        organisasi_id: number,
-        user_id: number,
-        keterangan?: string,
-    ) {
+    async posting(id: number, organisasi_id: number, user_id: number, keterangan?: string) {
         return db.transaction(async (tx) => {
             const pembayaran = await tx.orm.public.pembayaran_iuran
                 .where({ id, organisasi_id })

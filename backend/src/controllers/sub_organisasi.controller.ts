@@ -49,10 +49,7 @@ export const subOrganisasiController = {
         resHandler.success(res, 200, "Sub organisasi berhasil diperbarui", data)
     },
 
-    async deactivate(
-        _req: Request,
-        res: Response<unknown, SubOrganisasiIdLocal>,
-    ): Promise<void> {
+    async deactivate(_req: Request, res: Response<unknown, SubOrganisasiIdLocal>): Promise<void> {
         const { organisasi_id } = res.locals.tenant
         const { id } = res.locals.validated.params
         const data = await subOrganisasiService.deactivate(id, organisasi_id)

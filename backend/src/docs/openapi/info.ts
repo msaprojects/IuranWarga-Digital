@@ -33,8 +33,7 @@ const apiInfo = {
         },
         {
             name: "Pengurus Sub Organisasi",
-            description:
-                "Pengangkatan pengurus/panitia sub organisasi beserta jabatannya.",
+            description: "Pengangkatan pengurus/panitia sub organisasi beserta jabatannya.",
         },
         {
             name: "Komponen Sub Organisasi",

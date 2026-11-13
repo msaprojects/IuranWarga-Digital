@@ -21,7 +21,6 @@ export type UpdateJenisIuranInput = Partial<
 >
 
 class JenisIuranService {
-
     async getJenisIuranByKodeOrganisasi(kode: string) {
         const organisasi = await orgService.getByKode(kode)
         if (!organisasi) {
@@ -59,7 +58,6 @@ class JenisIuranService {
         if (!jenisIuran) {
             throw new HttpError(404, "Jenis iuran tidak ditemukan.")
         }
-
 
         return db.orm.public.jenis_iuran.where(scope).update({
             judul: input.judul ?? jenisIuran.judul,

@@ -21,7 +21,9 @@ const anggotaSubOrganisasiPaths = {
                     description: "Daftar anggota berhasil diambil.",
                     content: {
                         "application/json": {
-                            schema: { $ref: "#/components/schemas/AnggotaSubOrganisasiListSuccess" },
+                            schema: {
+                                $ref: "#/components/schemas/AnggotaSubOrganisasiListSuccess",
+                            },
                         },
                     },
                 },
@@ -145,7 +147,8 @@ const anggotaSubOrganisasiPaths = {
                 },
                 "401": { $ref: "#/components/responses/Unauthorized" },
                 "404": {
-                    description: "Keanggotaan tidak ditemukan atau sub organisasi induknya bukan milik tenant.",
+                    description:
+                        "Keanggotaan tidak ditemukan atau sub organisasi induknya bukan milik tenant.",
                     content: {
                         "application/json": { schema: { $ref: "#/components/schemas/Error" } },
                     },
@@ -183,7 +186,8 @@ const anggotaSubOrganisasiPaths = {
                 },
                 "401": { $ref: "#/components/responses/Unauthorized" },
                 "404": {
-                    description: "Keanggotaan tidak ditemukan atau sub organisasi induknya bukan milik tenant.",
+                    description:
+                        "Keanggotaan tidak ditemukan atau sub organisasi induknya bukan milik tenant.",
                     content: {
                         "application/json": { schema: { $ref: "#/components/schemas/Error" } },
                     },

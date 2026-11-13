@@ -35,6 +35,12 @@ mock.module("../src/prisma/db.ts", () => ({
 
 const { pesertaService } = await import("../src/services/peserta.service.ts")
 
+// Fixture harus berbentuk baris utuh. Bun menurunkan tipe parameter
+// `toBe`/`toEqual` dari nilai AKTUAL, yaitu baris `db.orm`. List & detail
+// memakai `.select()` (boleh lebih sempit), tetapi `createPeserta` memakai
+// `create()` yang mengembalikan baris penuh — jadi fixture bersama ini wajib
+// memuat createdAt/updatedAt. Tanpa `as const`, `jenis_peserta` melebar ke
+// `string` dan tidak lagi cocok dengan union enum pada tipe baris.
 const existingPeserta = {
     id: 1,
     kode: "PST001",
@@ -47,7 +53,9 @@ const existingPeserta = {
     isActive: true,
     organisasi_id: 1,
     user_id: 2,
-    jenis_peserta: 'RUMAH',
+    jenis_peserta: "RUMAH" as const,
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
 }
 
 beforeEach(() => {
@@ -128,7 +136,7 @@ describe("PesertaService", () => {
                 isActive: true,
                 organisasi_id: 1,
                 user_id: 2,
-                jenis_peserta:'RUMAH'
+                jenis_peserta: "RUMAH",
             })
         })
 

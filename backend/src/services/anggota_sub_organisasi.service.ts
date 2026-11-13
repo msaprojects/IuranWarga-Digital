@@ -20,10 +20,7 @@ export type UpdateAnggotaSubOrganisasiInput = {
  */
 class AnggotaSubOrganisasiService {
     async list(sub_organisasi_id: number, organisasi_id: number) {
-        await subOrganisasiService.assertSubOrganisasiDalamTenant(
-            sub_organisasi_id,
-            organisasi_id,
-        )
+        await subOrganisasiService.assertSubOrganisasiDalamTenant(sub_organisasi_id, organisasi_id)
         return db.orm.public.anggota_sub_organisasi.where({ sub_organisasi_id }).all()
     }
 
@@ -32,10 +29,7 @@ class AnggotaSubOrganisasiService {
         organisasi_id: number,
         input: CreateAnggotaSubOrganisasiInput,
     ) {
-        await subOrganisasiService.assertSubOrganisasiDalamTenant(
-            sub_organisasi_id,
-            organisasi_id,
-        )
+        await subOrganisasiService.assertSubOrganisasiDalamTenant(sub_organisasi_id, organisasi_id)
         // Peserta dari organisasi lain tidak boleh didaftarkan, walau id-nya
         // valid secara global.
         await this.assertPesertaDalamTenant(input.peserta_id, organisasi_id)
@@ -48,11 +42,7 @@ class AnggotaSubOrganisasiService {
         })
     }
 
-    async update(
-        id: number,
-        organisasi_id: number,
-        input: UpdateAnggotaSubOrganisasiInput,
-    ) {
+    async update(id: number, organisasi_id: number, input: UpdateAnggotaSubOrganisasiInput) {
         const existing = await this.assertEksis(id)
         await subOrganisasiService.assertSubOrganisasiDalamTenant(
             existing.sub_organisasi_id,

@@ -59,9 +59,7 @@ describe("SubOrganisasiService", () => {
         it("melempar 404 saat sub organisasi bukan milik tenant", async () => {
             mockFirst.mockResolvedValue(null)
 
-            await expect(
-                subOrganisasiService.assertSubOrganisasiDalamTenant(1, 7),
-            ).rejects.toThrow(
+            await expect(subOrganisasiService.assertSubOrganisasiDalamTenant(1, 7)).rejects.toThrow(
                 new NotFoundError("Sub organisasi tidak ditemukan / sudah tidak aktif."),
             )
         })
@@ -125,9 +123,9 @@ describe("SubOrganisasiService", () => {
             // oleh constraint unik [organisasi_id, nama].
             mockFirst.mockResolvedValue({ ...existingSubOrganisasi, isActive: false })
 
-            await expect(
-                subOrganisasiService.create({ nama: "PKK" }, 7),
-            ).rejects.toThrow(ConflictError)
+            await expect(subOrganisasiService.create({ nama: "PKK" }, 7)).rejects.toThrow(
+                ConflictError,
+            )
             expect(mockWhere).toHaveBeenCalledWith({ organisasi_id: 7, nama: "PKK" })
             expect(mockCreate).not.toHaveBeenCalled()
         })

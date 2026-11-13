@@ -25,9 +25,8 @@ mock.module("../src/prisma/db.ts", () => ({
     },
 }))
 
-const { pengurusSubOrganisasiService } = await import(
-    "../src/services/pengurus_sub_organisasi.service.ts"
-)
+const { pengurusSubOrganisasiService } =
+    await import("../src/services/pengurus_sub_organisasi.service.ts")
 
 const subOrganisasiInduk = { id: 1, organisasi_id: 7, nama: "PKK", isActive: true }
 const userTenant = { id: 3, organisasi_id: 7, isActive: true }
@@ -128,7 +127,9 @@ describe("PengurusSubOrganisasiService", () => {
 
     describe("update", () => {
         it("mengubah jabatan tanpa menyentuh pasangan identitas", async () => {
-            mockFirst.mockResolvedValueOnce(existingPengurus).mockResolvedValueOnce(subOrganisasiInduk)
+            mockFirst
+                .mockResolvedValueOnce(existingPengurus)
+                .mockResolvedValueOnce(subOrganisasiInduk)
             mockUpdate.mockResolvedValue({ ...existingPengurus, jabatan: "BENDAHARA" })
 
             await pengurusSubOrganisasiService.update(9, 7, { jabatan: "BENDAHARA" })
@@ -167,7 +168,9 @@ describe("PengurusSubOrganisasiService", () => {
 
     describe("delete", () => {
         it("menghapus baris pengurus (hard delete)", async () => {
-            mockFirst.mockResolvedValueOnce(existingPengurus).mockResolvedValueOnce(subOrganisasiInduk)
+            mockFirst
+                .mockResolvedValueOnce(existingPengurus)
+                .mockResolvedValueOnce(subOrganisasiInduk)
             mockDelete.mockResolvedValue({ id: 9 })
 
             const deleted = await pengurusSubOrganisasiService.delete(9, 7)

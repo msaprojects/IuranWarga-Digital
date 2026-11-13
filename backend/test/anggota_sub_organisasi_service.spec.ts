@@ -25,9 +25,8 @@ mock.module("../src/prisma/db.ts", () => ({
     },
 }))
 
-const { anggotaSubOrganisasiService } = await import(
-    "../src/services/anggota_sub_organisasi.service.ts"
-)
+const { anggotaSubOrganisasiService } =
+    await import("../src/services/anggota_sub_organisasi.service.ts")
 
 const subOrganisasiInduk = { id: 1, organisasi_id: 7, nama: "PKK", isActive: true }
 const pesertaTenant = { id: 10, organisasi_id: 7, isActive: true }
@@ -106,9 +105,9 @@ describe("AnggotaSubOrganisasiService", () => {
         it("menolak peserta milik organisasi lain", async () => {
             mockFirst.mockResolvedValueOnce(subOrganisasiInduk).mockResolvedValueOnce(null)
 
-            await expect(anggotaSubOrganisasiService.create(1, 7, { peserta_id: 10 })).rejects.toThrow(
-                new NotFoundError("Peserta tidak ditemukan / sudah tidak aktif."),
-            )
+            await expect(
+                anggotaSubOrganisasiService.create(1, 7, { peserta_id: 10 }),
+            ).rejects.toThrow(new NotFoundError("Peserta tidak ditemukan / sudah tidak aktif."))
             expect(mockCreate).not.toHaveBeenCalled()
         })
 
@@ -118,16 +117,18 @@ describe("AnggotaSubOrganisasiService", () => {
                 .mockResolvedValueOnce(pesertaTenant)
                 .mockResolvedValueOnce(existingAnggota)
 
-            await expect(anggotaSubOrganisasiService.create(1, 7, { peserta_id: 10 })).rejects.toThrow(
-                ConflictError,
-            )
+            await expect(
+                anggotaSubOrganisasiService.create(1, 7, { peserta_id: 10 }),
+            ).rejects.toThrow(ConflictError)
             expect(mockCreate).not.toHaveBeenCalled()
         })
     })
 
     describe("update", () => {
         it("mengubah isActive setelah induk terverifikasi", async () => {
-            mockFirst.mockResolvedValueOnce(existingAnggota).mockResolvedValueOnce(subOrganisasiInduk)
+            mockFirst
+                .mockResolvedValueOnce(existingAnggota)
+                .mockResolvedValueOnce(subOrganisasiInduk)
             mockUpdate.mockResolvedValue({ ...existingAnggota, isActive: false })
 
             await anggotaSubOrganisasiService.update(5, 7, { isActive: false })
@@ -146,25 +147,27 @@ describe("AnggotaSubOrganisasiService", () => {
         it("melempar 404 saat induk bukan milik tenant", async () => {
             mockFirst.mockResolvedValueOnce(existingAnggota).mockResolvedValue(null)
 
-            await expect(anggotaSubOrganisasiService.update(5, 7, { isActive: false })).rejects.toThrow(
-                NotFoundError,
-            )
+            await expect(
+                anggotaSubOrganisasiService.update(5, 7, { isActive: false }),
+            ).rejects.toThrow(NotFoundError)
             expect(mockUpdate).not.toHaveBeenCalled()
         })
 
         it("melempar 404 saat baris keanggotaan tidak ada", async () => {
             mockFirst.mockResolvedValue(null)
 
-            await expect(anggotaSubOrganisasiService.update(99, 7, { isActive: false })).rejects.toThrow(
-                new NotFoundError("Anggota sub organisasi tidak ditemukan."),
-            )
+            await expect(
+                anggotaSubOrganisasiService.update(99, 7, { isActive: false }),
+            ).rejects.toThrow(new NotFoundError("Anggota sub organisasi tidak ditemukan."))
             expect(mockUpdate).not.toHaveBeenCalled()
         })
     })
 
     describe("delete", () => {
         it("menghapus baris keanggotaan (hard delete)", async () => {
-            mockFirst.mockResolvedValueOnce(existingAnggota).mockResolvedValueOnce(subOrganisasiInduk)
+            mockFirst
+                .mockResolvedValueOnce(existingAnggota)
+                .mockResolvedValueOnce(subOrganisasiInduk)
             mockDelete.mockResolvedValue({ id: 5 })
 
             const deleted = await anggotaSubOrganisasiService.delete(5, 7)

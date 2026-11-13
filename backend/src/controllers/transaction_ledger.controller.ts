@@ -24,7 +24,10 @@ export const transactionLedgerController = {
         const data = await transactionLedgerService.getAll(organisasi_id, query)
         resHandler.success(res, 200, "Success", data)
     },
-    async getById(_req: Request, res: Response<unknown, DetailTransactionLedgerLocal>): Promise<void> {
+    async getById(
+        _req: Request,
+        res: Response<unknown, DetailTransactionLedgerLocal>,
+    ): Promise<void> {
         const { organisasi_id } = res.locals.tenant
         const { params } = res.locals.validated
         const data = await transactionLedgerService.getById(params.id, organisasi_id)

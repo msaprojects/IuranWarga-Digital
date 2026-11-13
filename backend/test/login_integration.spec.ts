@@ -67,7 +67,10 @@ async function seedUserThroughCreate(): Promise<string> {
 
     mockFirst.mockResolvedValueOnce({ id: 1 }) // organisasi aktif
     mockFirst.mockResolvedValueOnce(null) // username belum dipakai
-    mockCreate.mockImplementation(async (data: any) => ({ ...rowUser(data), password: data.password }))
+    mockCreate.mockImplementation(async (data: any) => ({
+        ...rowUser(data),
+        password: data.password,
+    }))
 
     await userService.createUser({
         username: "admin01",

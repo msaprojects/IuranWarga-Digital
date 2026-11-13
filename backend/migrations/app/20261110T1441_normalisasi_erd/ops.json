@@ -1,1578 +1,1461 @@
 [
-  {
-    "id": "dropIndex.tagihan_iuran.tagihan_iuran_status_idx_e98638ab",
-    "label": "Drop index \"tagihan_iuran_status_idx_e98638ab\"",
-    "operationClass": "destructive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "index",
-        "name": "tagihan_iuran_status_idx_e98638ab",
-        "table": "tagihan_iuran"
-      }
+    {
+        "id": "dropIndex.tagihan_iuran.tagihan_iuran_status_idx_e98638ab",
+        "label": "Drop index \"tagihan_iuran_status_idx_e98638ab\"",
+        "operationClass": "destructive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "index",
+                "name": "tagihan_iuran_status_idx_e98638ab",
+                "table": "tagihan_iuran"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure index \"tagihan_iuran_status_idx_e98638ab\" exists",
+                "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+                "params": ["\"public\".\"tagihan_iuran_status_idx_e98638ab\""]
+            }
+        ],
+        "execute": [
+            {
+                "description": "drop index \"tagihan_iuran_status_idx_e98638ab\"",
+                "sql": "DROP INDEX \"public\".\"tagihan_iuran_status_idx_e98638ab\"",
+                "params": []
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify index \"tagihan_iuran_status_idx_e98638ab\" does not exist",
+                "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+                "params": ["\"public\".\"tagihan_iuran_status_idx_e98638ab\""]
+            }
+        ]
     },
-    "precheck": [
-      {
-        "description": "ensure index \"tagihan_iuran_status_idx_e98638ab\" exists",
-        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
-        "params": [
-          "\"public\".\"tagihan_iuran_status_idx_e98638ab\""
+    {
+        "id": "dropIndex.tagihan_iuran.tagihan_iuran_tahun_bulan_idx_bc66ba83",
+        "label": "Drop index \"tagihan_iuran_tahun_bulan_idx_bc66ba83\"",
+        "operationClass": "destructive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "index",
+                "name": "tagihan_iuran_tahun_bulan_idx_bc66ba83",
+                "table": "tagihan_iuran"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure index \"tagihan_iuran_tahun_bulan_idx_bc66ba83\" exists",
+                "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+                "params": ["\"public\".\"tagihan_iuran_tahun_bulan_idx_bc66ba83\""]
+            }
+        ],
+        "execute": [
+            {
+                "description": "drop index \"tagihan_iuran_tahun_bulan_idx_bc66ba83\"",
+                "sql": "DROP INDEX \"public\".\"tagihan_iuran_tahun_bulan_idx_bc66ba83\"",
+                "params": []
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify index \"tagihan_iuran_tahun_bulan_idx_bc66ba83\" does not exist",
+                "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+                "params": ["\"public\".\"tagihan_iuran_tahun_bulan_idx_bc66ba83\""]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "drop index \"tagihan_iuran_status_idx_e98638ab\"",
-        "sql": "DROP INDEX \"public\".\"tagihan_iuran_status_idx_e98638ab\"",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify index \"tagihan_iuran_status_idx_e98638ab\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"tagihan_iuran_status_idx_e98638ab\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "dropIndex.tagihan_iuran.tagihan_iuran_tahun_bulan_idx_bc66ba83",
-    "label": "Drop index \"tagihan_iuran_tahun_bulan_idx_bc66ba83\"",
-    "operationClass": "destructive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "index",
-        "name": "tagihan_iuran_tahun_bulan_idx_bc66ba83",
-        "table": "tagihan_iuran"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure index \"tagihan_iuran_tahun_bulan_idx_bc66ba83\" exists",
-        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
-        "params": [
-          "\"public\".\"tagihan_iuran_tahun_bulan_idx_bc66ba83\""
+    {
+        "id": "table.anggota_sub_organisasi",
+        "label": "Create table \"anggota_sub_organisasi\"",
+        "summary": "Creates table \"anggota_sub_organisasi\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "table",
+                "name": "anggota_sub_organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure table \"anggota_sub_organisasi\" does not exist",
+                "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+                "params": ["\"public\".\"anggota_sub_organisasi\""]
+            }
+        ],
+        "execute": [
+            {
+                "description": "create table \"anggota_sub_organisasi\"",
+                "sql": "CREATE TABLE \"public\".\"anggota_sub_organisasi\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"isActive\" bool DEFAULT true NOT NULL,\n  \"peserta_id\" int4 NOT NULL,\n  \"sub_organisasi_id\" int4 NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+                "params": []
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify table \"anggota_sub_organisasi\" exists",
+                "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+                "params": ["\"public\".\"anggota_sub_organisasi\""]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "drop index \"tagihan_iuran_tahun_bulan_idx_bc66ba83\"",
-        "sql": "DROP INDEX \"public\".\"tagihan_iuran_tahun_bulan_idx_bc66ba83\"",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify index \"tagihan_iuran_tahun_bulan_idx_bc66ba83\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"tagihan_iuran_tahun_bulan_idx_bc66ba83\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "table.anggota_sub_organisasi",
-    "label": "Create table \"anggota_sub_organisasi\"",
-    "summary": "Creates table \"anggota_sub_organisasi\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "table",
-        "name": "anggota_sub_organisasi"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure table \"anggota_sub_organisasi\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"anggota_sub_organisasi\""
+    {
+        "id": "table.komponen_sub_organisasi",
+        "label": "Create table \"komponen_sub_organisasi\"",
+        "summary": "Creates table \"komponen_sub_organisasi\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "table",
+                "name": "komponen_sub_organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure table \"komponen_sub_organisasi\" does not exist",
+                "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+                "params": ["\"public\".\"komponen_sub_organisasi\""]
+            }
+        ],
+        "execute": [
+            {
+                "description": "create table \"komponen_sub_organisasi\"",
+                "sql": "CREATE TABLE \"public\".\"komponen_sub_organisasi\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"isActive\" bool DEFAULT true NOT NULL,\n  \"jenis_iuran_id\" int4 NOT NULL,\n  \"nominal\" numeric NOT NULL,\n  \"sub_organisasi_id\" int4 NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+                "params": []
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify table \"komponen_sub_organisasi\" exists",
+                "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+                "params": ["\"public\".\"komponen_sub_organisasi\""]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "create table \"anggota_sub_organisasi\"",
-        "sql": "CREATE TABLE \"public\".\"anggota_sub_organisasi\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"isActive\" bool DEFAULT true NOT NULL,\n  \"peserta_id\" int4 NOT NULL,\n  \"sub_organisasi_id\" int4 NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify table \"anggota_sub_organisasi\" exists",
-        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
-        "params": [
-          "\"public\".\"anggota_sub_organisasi\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "table.komponen_sub_organisasi",
-    "label": "Create table \"komponen_sub_organisasi\"",
-    "summary": "Creates table \"komponen_sub_organisasi\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "table",
-        "name": "komponen_sub_organisasi"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure table \"komponen_sub_organisasi\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"komponen_sub_organisasi\""
+    {
+        "id": "table.pengurus_sub_organisasi",
+        "label": "Create table \"pengurus_sub_organisasi\"",
+        "summary": "Creates table \"pengurus_sub_organisasi\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "table",
+                "name": "pengurus_sub_organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure table \"pengurus_sub_organisasi\" does not exist",
+                "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+                "params": ["\"public\".\"pengurus_sub_organisasi\""]
+            }
+        ],
+        "execute": [
+            {
+                "description": "create table \"pengurus_sub_organisasi\"",
+                "sql": "CREATE TABLE \"public\".\"pengurus_sub_organisasi\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"isActive\" bool DEFAULT true NOT NULL,\n  \"jabatan\" text NOT NULL,\n  \"sub_organisasi_id\" int4 NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"user_id\" int4 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+                "params": []
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify table \"pengurus_sub_organisasi\" exists",
+                "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+                "params": ["\"public\".\"pengurus_sub_organisasi\""]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "create table \"komponen_sub_organisasi\"",
-        "sql": "CREATE TABLE \"public\".\"komponen_sub_organisasi\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"isActive\" bool DEFAULT true NOT NULL,\n  \"jenis_iuran_id\" int4 NOT NULL,\n  \"nominal\" numeric NOT NULL,\n  \"sub_organisasi_id\" int4 NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify table \"komponen_sub_organisasi\" exists",
-        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
-        "params": [
-          "\"public\".\"komponen_sub_organisasi\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "table.pengurus_sub_organisasi",
-    "label": "Create table \"pengurus_sub_organisasi\"",
-    "summary": "Creates table \"pengurus_sub_organisasi\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "table",
-        "name": "pengurus_sub_organisasi"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure table \"pengurus_sub_organisasi\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"pengurus_sub_organisasi\""
+    {
+        "id": "table.sub_organisasi",
+        "label": "Create table \"sub_organisasi\"",
+        "summary": "Creates table \"sub_organisasi\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "table",
+                "name": "sub_organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure table \"sub_organisasi\" does not exist",
+                "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+                "params": ["\"public\".\"sub_organisasi\""]
+            }
+        ],
+        "execute": [
+            {
+                "description": "create table \"sub_organisasi\"",
+                "sql": "CREATE TABLE \"public\".\"sub_organisasi\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"deskripsi\" text,\n  \"id\" SERIAL NOT NULL,\n  \"isActive\" bool DEFAULT true NOT NULL,\n  \"nama\" text NOT NULL,\n  \"organisasi_id\" int4 NOT NULL,\n  \"pisah_laporan\" bool DEFAULT false NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+                "params": []
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify table \"sub_organisasi\" exists",
+                "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+                "params": ["\"public\".\"sub_organisasi\""]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "create table \"pengurus_sub_organisasi\"",
-        "sql": "CREATE TABLE \"public\".\"pengurus_sub_organisasi\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"isActive\" bool DEFAULT true NOT NULL,\n  \"jabatan\" text NOT NULL,\n  \"sub_organisasi_id\" int4 NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"user_id\" int4 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify table \"pengurus_sub_organisasi\" exists",
-        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
-        "params": [
-          "\"public\".\"pengurus_sub_organisasi\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "table.sub_organisasi",
-    "label": "Create table \"sub_organisasi\"",
-    "summary": "Creates table \"sub_organisasi\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "table",
-        "name": "sub_organisasi"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure table \"sub_organisasi\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"sub_organisasi\""
+    {
+        "id": "column.public.tagihan_iuran.sub_organisasi_id",
+        "label": "Add column \"sub_organisasi_id\" to \"tagihan_iuran\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "column",
+                "name": "sub_organisasi_id",
+                "table": "tagihan_iuran"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure column \"sub_organisasi_id\" is missing",
+                "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+                "params": ["public", "tagihan_iuran", "sub_organisasi_id"]
+            }
+        ],
+        "execute": [
+            {
+                "description": "add column \"sub_organisasi_id\"",
+                "sql": "ALTER TABLE \"public\".\"tagihan_iuran\" ADD COLUMN \"sub_organisasi_id\" int4"
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify column \"sub_organisasi_id\" exists",
+                "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+                "params": ["public", "tagihan_iuran", "sub_organisasi_id"]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "create table \"sub_organisasi\"",
-        "sql": "CREATE TABLE \"public\".\"sub_organisasi\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"deskripsi\" text,\n  \"id\" SERIAL NOT NULL,\n  \"isActive\" bool DEFAULT true NOT NULL,\n  \"nama\" text NOT NULL,\n  \"organisasi_id\" int4 NOT NULL,\n  \"pisah_laporan\" bool DEFAULT false NOT NULL,\n  \"updatedAt\" timestamptz DEFAULT (now()) NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify table \"sub_organisasi\" exists",
-        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
-        "params": [
-          "\"public\".\"sub_organisasi\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "column.public.tagihan_iuran.sub_organisasi_id",
-    "label": "Add column \"sub_organisasi_id\" to \"tagihan_iuran\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "column",
-        "name": "sub_organisasi_id",
-        "table": "tagihan_iuran"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure column \"sub_organisasi_id\" is missing",
-        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
-        "params": [
-          "public",
-          "tagihan_iuran",
-          "sub_organisasi_id"
+    {
+        "id": "column.public.transaction_ledger.sub_organisasi_id",
+        "label": "Add column \"sub_organisasi_id\" to \"transaction_ledger\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "column",
+                "name": "sub_organisasi_id",
+                "table": "transaction_ledger"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure column \"sub_organisasi_id\" is missing",
+                "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+                "params": ["public", "transaction_ledger", "sub_organisasi_id"]
+            }
+        ],
+        "execute": [
+            {
+                "description": "add column \"sub_organisasi_id\"",
+                "sql": "ALTER TABLE \"public\".\"transaction_ledger\" ADD COLUMN \"sub_organisasi_id\" int4"
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify column \"sub_organisasi_id\" exists",
+                "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+                "params": ["public", "transaction_ledger", "sub_organisasi_id"]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "add column \"sub_organisasi_id\"",
-        "sql": "ALTER TABLE \"public\".\"tagihan_iuran\" ADD COLUMN \"sub_organisasi_id\" int4"
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify column \"sub_organisasi_id\" exists",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
-        "params": [
-          "public",
-          "tagihan_iuran",
-          "sub_organisasi_id"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "column.public.transaction_ledger.sub_organisasi_id",
-    "label": "Add column \"sub_organisasi_id\" to \"transaction_ledger\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "column",
-        "name": "sub_organisasi_id",
-        "table": "transaction_ledger"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure column \"sub_organisasi_id\" is missing",
-        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
-        "params": [
-          "public",
-          "transaction_ledger",
-          "sub_organisasi_id"
+    {
+        "id": "alterNullability.dropNotNull.transaction_ledger.user_id",
+        "label": "Drop NOT NULL on \"transaction_ledger\".\"user_id\"",
+        "operationClass": "widening",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "column",
+                "name": "user_id",
+                "table": "transaction_ledger"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure column \"user_id\" exists",
+                "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+                "params": ["public", "transaction_ledger", "user_id"]
+            }
+        ],
+        "execute": [
+            {
+                "description": "drop NOT NULL on \"user_id\"",
+                "sql": "ALTER TABLE \"public\".\"transaction_ledger\" ALTER COLUMN \"user_id\" DROP NOT NULL"
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify column \"user_id\" is nullable",
+                "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+                "params": ["public", "transaction_ledger", "user_id", "YES"]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "add column \"sub_organisasi_id\"",
-        "sql": "ALTER TABLE \"public\".\"transaction_ledger\" ADD COLUMN \"sub_organisasi_id\" int4"
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify column \"sub_organisasi_id\" exists",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
-        "params": [
-          "public",
-          "transaction_ledger",
-          "sub_organisasi_id"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "alterNullability.dropNotNull.transaction_ledger.user_id",
-    "label": "Drop NOT NULL on \"transaction_ledger\".\"user_id\"",
-    "operationClass": "widening",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "column",
-        "name": "user_id",
-        "table": "transaction_ledger"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure column \"user_id\" exists",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
-        "params": [
-          "public",
-          "transaction_ledger",
-          "user_id"
+    {
+        "id": "unique.anggota_sub_organisasi.anggota_sub_organisasi_sub_organisasi_id_peserta_id_key",
+        "label": "Add unique constraint on \"anggota_sub_organisasi\" (sub_organisasi_id, peserta_id)",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "unique",
+                "name": "anggota_sub_organisasi_sub_organisasi_id_peserta_id_key",
+                "table": "anggota_sub_organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure constraint \"anggota_sub_organisasi_sub_organisasi_id_peserta_id_key\" does not exist",
+                "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "anggota_sub_organisasi_sub_organisasi_id_peserta_id_key",
+                    "public",
+                    "\"public\".\"anggota_sub_organisasi\""
+                ]
+            }
+        ],
+        "execute": [
+            {
+                "description": "add unique constraint \"anggota_sub_organisasi_sub_organisasi_id_peserta_id_key\"",
+                "sql": "ALTER TABLE \"public\".\"anggota_sub_organisasi\" ADD CONSTRAINT \"anggota_sub_organisasi_sub_organisasi_id_peserta_id_key\" UNIQUE (\"sub_organisasi_id\", \"peserta_id\")"
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify constraint \"anggota_sub_organisasi_sub_organisasi_id_peserta_id_key\" exists",
+                "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "anggota_sub_organisasi_sub_organisasi_id_peserta_id_key",
+                    "public",
+                    "\"public\".\"anggota_sub_organisasi\""
+                ]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "drop NOT NULL on \"user_id\"",
-        "sql": "ALTER TABLE \"public\".\"transaction_ledger\" ALTER COLUMN \"user_id\" DROP NOT NULL"
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify column \"user_id\" is nullable",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
-        "params": [
-          "public",
-          "transaction_ledger",
-          "user_id",
-          "YES"
-        ]
-      }
-    ]
-  },
-  {
-    "id": "unique.anggota_sub_organisasi.anggota_sub_organisasi_sub_organisasi_id_peserta_id_key",
-    "label": "Add unique constraint on \"anggota_sub_organisasi\" (sub_organisasi_id, peserta_id)",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "unique",
-        "name": "anggota_sub_organisasi_sub_organisasi_id_peserta_id_key",
-        "table": "anggota_sub_organisasi"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure constraint \"anggota_sub_organisasi_sub_organisasi_id_peserta_id_key\" does not exist",
-        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "anggota_sub_organisasi_sub_organisasi_id_peserta_id_key",
-          "public",
-          "\"public\".\"anggota_sub_organisasi\""
+    {
+        "id": "unique.jenis_iuran.jenis_iuran_organisasi_id_judul_key",
+        "label": "Add unique constraint on \"jenis_iuran\" (organisasi_id, judul)",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "unique",
+                "name": "jenis_iuran_organisasi_id_judul_key",
+                "table": "jenis_iuran"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure constraint \"jenis_iuran_organisasi_id_judul_key\" does not exist",
+                "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "jenis_iuran_organisasi_id_judul_key",
+                    "public",
+                    "\"public\".\"jenis_iuran\""
+                ]
+            }
+        ],
+        "execute": [
+            {
+                "description": "add unique constraint \"jenis_iuran_organisasi_id_judul_key\"",
+                "sql": "ALTER TABLE \"public\".\"jenis_iuran\" ADD CONSTRAINT \"jenis_iuran_organisasi_id_judul_key\" UNIQUE (\"organisasi_id\", \"judul\")"
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify constraint \"jenis_iuran_organisasi_id_judul_key\" exists",
+                "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "jenis_iuran_organisasi_id_judul_key",
+                    "public",
+                    "\"public\".\"jenis_iuran\""
+                ]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "add unique constraint \"anggota_sub_organisasi_sub_organisasi_id_peserta_id_key\"",
-        "sql": "ALTER TABLE \"public\".\"anggota_sub_organisasi\" ADD CONSTRAINT \"anggota_sub_organisasi_sub_organisasi_id_peserta_id_key\" UNIQUE (\"sub_organisasi_id\", \"peserta_id\")"
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify constraint \"anggota_sub_organisasi_sub_organisasi_id_peserta_id_key\" exists",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "anggota_sub_organisasi_sub_organisasi_id_peserta_id_key",
-          "public",
-          "\"public\".\"anggota_sub_organisasi\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "unique.jenis_iuran.jenis_iuran_organisasi_id_judul_key",
-    "label": "Add unique constraint on \"jenis_iuran\" (organisasi_id, judul)",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "unique",
-        "name": "jenis_iuran_organisasi_id_judul_key",
-        "table": "jenis_iuran"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure constraint \"jenis_iuran_organisasi_id_judul_key\" does not exist",
-        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "jenis_iuran_organisasi_id_judul_key",
-          "public",
-          "\"public\".\"jenis_iuran\""
+    {
+        "id": "unique.komponen_sub_organisasi.komponen_sub_organisasi_sub_organisasi_id_jenis_iuran_id_key",
+        "label": "Add unique constraint on \"komponen_sub_organisasi\" (sub_organisasi_id, jenis_iuran_id)",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "unique",
+                "name": "komponen_sub_organisasi_sub_organisasi_id_jenis_iuran_id_key",
+                "table": "komponen_sub_organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure constraint \"komponen_sub_organisasi_sub_organisasi_id_jenis_iuran_id_key\" does not exist",
+                "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "komponen_sub_organisasi_sub_organisasi_id_jenis_iuran_id_key",
+                    "public",
+                    "\"public\".\"komponen_sub_organisasi\""
+                ]
+            }
+        ],
+        "execute": [
+            {
+                "description": "add unique constraint \"komponen_sub_organisasi_sub_organisasi_id_jenis_iuran_id_key\"",
+                "sql": "ALTER TABLE \"public\".\"komponen_sub_organisasi\" ADD CONSTRAINT \"komponen_sub_organisasi_sub_organisasi_id_jenis_iuran_id_key\" UNIQUE (\"sub_organisasi_id\", \"jenis_iuran_id\")"
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify constraint \"komponen_sub_organisasi_sub_organisasi_id_jenis_iuran_id_key\" exists",
+                "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "komponen_sub_organisasi_sub_organisasi_id_jenis_iuran_id_key",
+                    "public",
+                    "\"public\".\"komponen_sub_organisasi\""
+                ]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "add unique constraint \"jenis_iuran_organisasi_id_judul_key\"",
-        "sql": "ALTER TABLE \"public\".\"jenis_iuran\" ADD CONSTRAINT \"jenis_iuran_organisasi_id_judul_key\" UNIQUE (\"organisasi_id\", \"judul\")"
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify constraint \"jenis_iuran_organisasi_id_judul_key\" exists",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "jenis_iuran_organisasi_id_judul_key",
-          "public",
-          "\"public\".\"jenis_iuran\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "unique.komponen_sub_organisasi.komponen_sub_organisasi_sub_organisasi_id_jenis_iuran_id_key",
-    "label": "Add unique constraint on \"komponen_sub_organisasi\" (sub_organisasi_id, jenis_iuran_id)",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "unique",
-        "name": "komponen_sub_organisasi_sub_organisasi_id_jenis_iuran_id_key",
-        "table": "komponen_sub_organisasi"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure constraint \"komponen_sub_organisasi_sub_organisasi_id_jenis_iuran_id_key\" does not exist",
-        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "komponen_sub_organisasi_sub_organisasi_id_jenis_iuran_id_key",
-          "public",
-          "\"public\".\"komponen_sub_organisasi\""
+    {
+        "id": "unique.pengurus_sub_organisasi.pengurus_sub_organisasi_sub_organisasi_id_user_id_key",
+        "label": "Add unique constraint on \"pengurus_sub_organisasi\" (sub_organisasi_id, user_id)",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "unique",
+                "name": "pengurus_sub_organisasi_sub_organisasi_id_user_id_key",
+                "table": "pengurus_sub_organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure constraint \"pengurus_sub_organisasi_sub_organisasi_id_user_id_key\" does not exist",
+                "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "pengurus_sub_organisasi_sub_organisasi_id_user_id_key",
+                    "public",
+                    "\"public\".\"pengurus_sub_organisasi\""
+                ]
+            }
+        ],
+        "execute": [
+            {
+                "description": "add unique constraint \"pengurus_sub_organisasi_sub_organisasi_id_user_id_key\"",
+                "sql": "ALTER TABLE \"public\".\"pengurus_sub_organisasi\" ADD CONSTRAINT \"pengurus_sub_organisasi_sub_organisasi_id_user_id_key\" UNIQUE (\"sub_organisasi_id\", \"user_id\")"
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify constraint \"pengurus_sub_organisasi_sub_organisasi_id_user_id_key\" exists",
+                "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "pengurus_sub_organisasi_sub_organisasi_id_user_id_key",
+                    "public",
+                    "\"public\".\"pengurus_sub_organisasi\""
+                ]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "add unique constraint \"komponen_sub_organisasi_sub_organisasi_id_jenis_iuran_id_key\"",
-        "sql": "ALTER TABLE \"public\".\"komponen_sub_organisasi\" ADD CONSTRAINT \"komponen_sub_organisasi_sub_organisasi_id_jenis_iuran_id_key\" UNIQUE (\"sub_organisasi_id\", \"jenis_iuran_id\")"
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify constraint \"komponen_sub_organisasi_sub_organisasi_id_jenis_iuran_id_key\" exists",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "komponen_sub_organisasi_sub_organisasi_id_jenis_iuran_id_key",
-          "public",
-          "\"public\".\"komponen_sub_organisasi\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "unique.pengurus_sub_organisasi.pengurus_sub_organisasi_sub_organisasi_id_user_id_key",
-    "label": "Add unique constraint on \"pengurus_sub_organisasi\" (sub_organisasi_id, user_id)",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "unique",
-        "name": "pengurus_sub_organisasi_sub_organisasi_id_user_id_key",
-        "table": "pengurus_sub_organisasi"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure constraint \"pengurus_sub_organisasi_sub_organisasi_id_user_id_key\" does not exist",
-        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "pengurus_sub_organisasi_sub_organisasi_id_user_id_key",
-          "public",
-          "\"public\".\"pengurus_sub_organisasi\""
+    {
+        "id": "unique.sub_organisasi.sub_organisasi_organisasi_id_nama_key",
+        "label": "Add unique constraint on \"sub_organisasi\" (organisasi_id, nama)",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "unique",
+                "name": "sub_organisasi_organisasi_id_nama_key",
+                "table": "sub_organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure constraint \"sub_organisasi_organisasi_id_nama_key\" does not exist",
+                "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "sub_organisasi_organisasi_id_nama_key",
+                    "public",
+                    "\"public\".\"sub_organisasi\""
+                ]
+            }
+        ],
+        "execute": [
+            {
+                "description": "add unique constraint \"sub_organisasi_organisasi_id_nama_key\"",
+                "sql": "ALTER TABLE \"public\".\"sub_organisasi\" ADD CONSTRAINT \"sub_organisasi_organisasi_id_nama_key\" UNIQUE (\"organisasi_id\", \"nama\")"
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify constraint \"sub_organisasi_organisasi_id_nama_key\" exists",
+                "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "sub_organisasi_organisasi_id_nama_key",
+                    "public",
+                    "\"public\".\"sub_organisasi\""
+                ]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "add unique constraint \"pengurus_sub_organisasi_sub_organisasi_id_user_id_key\"",
-        "sql": "ALTER TABLE \"public\".\"pengurus_sub_organisasi\" ADD CONSTRAINT \"pengurus_sub_organisasi_sub_organisasi_id_user_id_key\" UNIQUE (\"sub_organisasi_id\", \"user_id\")"
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify constraint \"pengurus_sub_organisasi_sub_organisasi_id_user_id_key\" exists",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "pengurus_sub_organisasi_sub_organisasi_id_user_id_key",
-          "public",
-          "\"public\".\"pengurus_sub_organisasi\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "unique.sub_organisasi.sub_organisasi_organisasi_id_nama_key",
-    "label": "Add unique constraint on \"sub_organisasi\" (organisasi_id, nama)",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "unique",
-        "name": "sub_organisasi_organisasi_id_nama_key",
-        "table": "sub_organisasi"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure constraint \"sub_organisasi_organisasi_id_nama_key\" does not exist",
-        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "sub_organisasi_organisasi_id_nama_key",
-          "public",
-          "\"public\".\"sub_organisasi\""
+    {
+        "id": "index.anggota_sub_organisasi.anggota_sub_organisasi_peserta_id_idx_52c9abf0",
+        "label": "Create index \"anggota_sub_organisasi_peserta_id_idx_52c9abf0\" on \"anggota_sub_organisasi\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "index",
+                "name": "anggota_sub_organisasi_peserta_id_idx_52c9abf0",
+                "table": "anggota_sub_organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure index \"anggota_sub_organisasi_peserta_id_idx_52c9abf0\" does not exist",
+                "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+                "params": ["\"public\".\"anggota_sub_organisasi_peserta_id_idx_52c9abf0\""]
+            }
+        ],
+        "execute": [
+            {
+                "description": "create index \"anggota_sub_organisasi_peserta_id_idx_52c9abf0\"",
+                "sql": "CREATE INDEX \"anggota_sub_organisasi_peserta_id_idx_52c9abf0\" ON \"public\".\"anggota_sub_organisasi\" (\"peserta_id\")",
+                "params": []
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify index \"anggota_sub_organisasi_peserta_id_idx_52c9abf0\" exists",
+                "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+                "params": ["\"public\".\"anggota_sub_organisasi_peserta_id_idx_52c9abf0\""]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "add unique constraint \"sub_organisasi_organisasi_id_nama_key\"",
-        "sql": "ALTER TABLE \"public\".\"sub_organisasi\" ADD CONSTRAINT \"sub_organisasi_organisasi_id_nama_key\" UNIQUE (\"organisasi_id\", \"nama\")"
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify constraint \"sub_organisasi_organisasi_id_nama_key\" exists",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "sub_organisasi_organisasi_id_nama_key",
-          "public",
-          "\"public\".\"sub_organisasi\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "index.anggota_sub_organisasi.anggota_sub_organisasi_peserta_id_idx_52c9abf0",
-    "label": "Create index \"anggota_sub_organisasi_peserta_id_idx_52c9abf0\" on \"anggota_sub_organisasi\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "index",
-        "name": "anggota_sub_organisasi_peserta_id_idx_52c9abf0",
-        "table": "anggota_sub_organisasi"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure index \"anggota_sub_organisasi_peserta_id_idx_52c9abf0\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"anggota_sub_organisasi_peserta_id_idx_52c9abf0\""
+    {
+        "id": "index.anggota_sub_organisasi.anggota_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e",
+        "label": "Create index \"anggota_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" on \"anggota_sub_organisasi\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "index",
+                "name": "anggota_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e",
+                "table": "anggota_sub_organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure index \"anggota_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" does not exist",
+                "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+                "params": ["\"public\".\"anggota_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\""]
+            }
+        ],
+        "execute": [
+            {
+                "description": "create index \"anggota_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\"",
+                "sql": "CREATE INDEX \"anggota_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" ON \"public\".\"anggota_sub_organisasi\" (\"sub_organisasi_id\")",
+                "params": []
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify index \"anggota_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" exists",
+                "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+                "params": ["\"public\".\"anggota_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\""]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "create index \"anggota_sub_organisasi_peserta_id_idx_52c9abf0\"",
-        "sql": "CREATE INDEX \"anggota_sub_organisasi_peserta_id_idx_52c9abf0\" ON \"public\".\"anggota_sub_organisasi\" (\"peserta_id\")",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify index \"anggota_sub_organisasi_peserta_id_idx_52c9abf0\" exists",
-        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
-        "params": [
-          "\"public\".\"anggota_sub_organisasi_peserta_id_idx_52c9abf0\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "index.anggota_sub_organisasi.anggota_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e",
-    "label": "Create index \"anggota_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" on \"anggota_sub_organisasi\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "index",
-        "name": "anggota_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e",
-        "table": "anggota_sub_organisasi"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure index \"anggota_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"anggota_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\""
+    {
+        "id": "index.komponen_sub_organisasi.komponen_sub_organisasi_jenis_iuran_id_idx_3ca5ef71",
+        "label": "Create index \"komponen_sub_organisasi_jenis_iuran_id_idx_3ca5ef71\" on \"komponen_sub_organisasi\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "index",
+                "name": "komponen_sub_organisasi_jenis_iuran_id_idx_3ca5ef71",
+                "table": "komponen_sub_organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure index \"komponen_sub_organisasi_jenis_iuran_id_idx_3ca5ef71\" does not exist",
+                "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+                "params": ["\"public\".\"komponen_sub_organisasi_jenis_iuran_id_idx_3ca5ef71\""]
+            }
+        ],
+        "execute": [
+            {
+                "description": "create index \"komponen_sub_organisasi_jenis_iuran_id_idx_3ca5ef71\"",
+                "sql": "CREATE INDEX \"komponen_sub_organisasi_jenis_iuran_id_idx_3ca5ef71\" ON \"public\".\"komponen_sub_organisasi\" (\"jenis_iuran_id\")",
+                "params": []
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify index \"komponen_sub_organisasi_jenis_iuran_id_idx_3ca5ef71\" exists",
+                "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+                "params": ["\"public\".\"komponen_sub_organisasi_jenis_iuran_id_idx_3ca5ef71\""]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "create index \"anggota_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\"",
-        "sql": "CREATE INDEX \"anggota_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" ON \"public\".\"anggota_sub_organisasi\" (\"sub_organisasi_id\")",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify index \"anggota_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" exists",
-        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
-        "params": [
-          "\"public\".\"anggota_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "index.komponen_sub_organisasi.komponen_sub_organisasi_jenis_iuran_id_idx_3ca5ef71",
-    "label": "Create index \"komponen_sub_organisasi_jenis_iuran_id_idx_3ca5ef71\" on \"komponen_sub_organisasi\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "index",
-        "name": "komponen_sub_organisasi_jenis_iuran_id_idx_3ca5ef71",
-        "table": "komponen_sub_organisasi"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure index \"komponen_sub_organisasi_jenis_iuran_id_idx_3ca5ef71\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"komponen_sub_organisasi_jenis_iuran_id_idx_3ca5ef71\""
+    {
+        "id": "index.komponen_sub_organisasi.komponen_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e",
+        "label": "Create index \"komponen_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" on \"komponen_sub_organisasi\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "index",
+                "name": "komponen_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e",
+                "table": "komponen_sub_organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure index \"komponen_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" does not exist",
+                "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+                "params": ["\"public\".\"komponen_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\""]
+            }
+        ],
+        "execute": [
+            {
+                "description": "create index \"komponen_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\"",
+                "sql": "CREATE INDEX \"komponen_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" ON \"public\".\"komponen_sub_organisasi\" (\"sub_organisasi_id\")",
+                "params": []
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify index \"komponen_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" exists",
+                "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+                "params": ["\"public\".\"komponen_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\""]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "create index \"komponen_sub_organisasi_jenis_iuran_id_idx_3ca5ef71\"",
-        "sql": "CREATE INDEX \"komponen_sub_organisasi_jenis_iuran_id_idx_3ca5ef71\" ON \"public\".\"komponen_sub_organisasi\" (\"jenis_iuran_id\")",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify index \"komponen_sub_organisasi_jenis_iuran_id_idx_3ca5ef71\" exists",
-        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
-        "params": [
-          "\"public\".\"komponen_sub_organisasi_jenis_iuran_id_idx_3ca5ef71\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "index.komponen_sub_organisasi.komponen_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e",
-    "label": "Create index \"komponen_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" on \"komponen_sub_organisasi\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "index",
-        "name": "komponen_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e",
-        "table": "komponen_sub_organisasi"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure index \"komponen_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"komponen_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\""
+    {
+        "id": "index.pengurus_sub_organisasi.pengurus_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e",
+        "label": "Create index \"pengurus_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" on \"pengurus_sub_organisasi\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "index",
+                "name": "pengurus_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e",
+                "table": "pengurus_sub_organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure index \"pengurus_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" does not exist",
+                "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+                "params": ["\"public\".\"pengurus_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\""]
+            }
+        ],
+        "execute": [
+            {
+                "description": "create index \"pengurus_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\"",
+                "sql": "CREATE INDEX \"pengurus_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" ON \"public\".\"pengurus_sub_organisasi\" (\"sub_organisasi_id\")",
+                "params": []
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify index \"pengurus_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" exists",
+                "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+                "params": ["\"public\".\"pengurus_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\""]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "create index \"komponen_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\"",
-        "sql": "CREATE INDEX \"komponen_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" ON \"public\".\"komponen_sub_organisasi\" (\"sub_organisasi_id\")",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify index \"komponen_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" exists",
-        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
-        "params": [
-          "\"public\".\"komponen_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "index.pengurus_sub_organisasi.pengurus_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e",
-    "label": "Create index \"pengurus_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" on \"pengurus_sub_organisasi\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "index",
-        "name": "pengurus_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e",
-        "table": "pengurus_sub_organisasi"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure index \"pengurus_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"pengurus_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\""
+    {
+        "id": "index.pengurus_sub_organisasi.pengurus_sub_organisasi_user_id_idx_6c952402",
+        "label": "Create index \"pengurus_sub_organisasi_user_id_idx_6c952402\" on \"pengurus_sub_organisasi\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "index",
+                "name": "pengurus_sub_organisasi_user_id_idx_6c952402",
+                "table": "pengurus_sub_organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure index \"pengurus_sub_organisasi_user_id_idx_6c952402\" does not exist",
+                "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+                "params": ["\"public\".\"pengurus_sub_organisasi_user_id_idx_6c952402\""]
+            }
+        ],
+        "execute": [
+            {
+                "description": "create index \"pengurus_sub_organisasi_user_id_idx_6c952402\"",
+                "sql": "CREATE INDEX \"pengurus_sub_organisasi_user_id_idx_6c952402\" ON \"public\".\"pengurus_sub_organisasi\" (\"user_id\")",
+                "params": []
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify index \"pengurus_sub_organisasi_user_id_idx_6c952402\" exists",
+                "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+                "params": ["\"public\".\"pengurus_sub_organisasi_user_id_idx_6c952402\""]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "create index \"pengurus_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\"",
-        "sql": "CREATE INDEX \"pengurus_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" ON \"public\".\"pengurus_sub_organisasi\" (\"sub_organisasi_id\")",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify index \"pengurus_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\" exists",
-        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
-        "params": [
-          "\"public\".\"pengurus_sub_organisasi_sub_organisasi_id_idx_8f7c5a0e\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "index.pengurus_sub_organisasi.pengurus_sub_organisasi_user_id_idx_6c952402",
-    "label": "Create index \"pengurus_sub_organisasi_user_id_idx_6c952402\" on \"pengurus_sub_organisasi\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "index",
-        "name": "pengurus_sub_organisasi_user_id_idx_6c952402",
-        "table": "pengurus_sub_organisasi"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure index \"pengurus_sub_organisasi_user_id_idx_6c952402\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"pengurus_sub_organisasi_user_id_idx_6c952402\""
+    {
+        "id": "index.sub_organisasi.sub_organisasi_isActive_idx_77fe3ba1",
+        "label": "Create index \"sub_organisasi_isActive_idx_77fe3ba1\" on \"sub_organisasi\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "index",
+                "name": "sub_organisasi_isActive_idx_77fe3ba1",
+                "table": "sub_organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure index \"sub_organisasi_isActive_idx_77fe3ba1\" does not exist",
+                "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+                "params": ["\"public\".\"sub_organisasi_isActive_idx_77fe3ba1\""]
+            }
+        ],
+        "execute": [
+            {
+                "description": "create index \"sub_organisasi_isActive_idx_77fe3ba1\"",
+                "sql": "CREATE INDEX \"sub_organisasi_isActive_idx_77fe3ba1\" ON \"public\".\"sub_organisasi\" (\"isActive\")",
+                "params": []
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify index \"sub_organisasi_isActive_idx_77fe3ba1\" exists",
+                "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+                "params": ["\"public\".\"sub_organisasi_isActive_idx_77fe3ba1\""]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "create index \"pengurus_sub_organisasi_user_id_idx_6c952402\"",
-        "sql": "CREATE INDEX \"pengurus_sub_organisasi_user_id_idx_6c952402\" ON \"public\".\"pengurus_sub_organisasi\" (\"user_id\")",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify index \"pengurus_sub_organisasi_user_id_idx_6c952402\" exists",
-        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
-        "params": [
-          "\"public\".\"pengurus_sub_organisasi_user_id_idx_6c952402\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "index.sub_organisasi.sub_organisasi_isActive_idx_77fe3ba1",
-    "label": "Create index \"sub_organisasi_isActive_idx_77fe3ba1\" on \"sub_organisasi\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "index",
-        "name": "sub_organisasi_isActive_idx_77fe3ba1",
-        "table": "sub_organisasi"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure index \"sub_organisasi_isActive_idx_77fe3ba1\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"sub_organisasi_isActive_idx_77fe3ba1\""
+    {
+        "id": "index.sub_organisasi.sub_organisasi_organisasi_id_idx_2f5facc4",
+        "label": "Create index \"sub_organisasi_organisasi_id_idx_2f5facc4\" on \"sub_organisasi\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "index",
+                "name": "sub_organisasi_organisasi_id_idx_2f5facc4",
+                "table": "sub_organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure index \"sub_organisasi_organisasi_id_idx_2f5facc4\" does not exist",
+                "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+                "params": ["\"public\".\"sub_organisasi_organisasi_id_idx_2f5facc4\""]
+            }
+        ],
+        "execute": [
+            {
+                "description": "create index \"sub_organisasi_organisasi_id_idx_2f5facc4\"",
+                "sql": "CREATE INDEX \"sub_organisasi_organisasi_id_idx_2f5facc4\" ON \"public\".\"sub_organisasi\" (\"organisasi_id\")",
+                "params": []
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify index \"sub_organisasi_organisasi_id_idx_2f5facc4\" exists",
+                "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+                "params": ["\"public\".\"sub_organisasi_organisasi_id_idx_2f5facc4\""]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "create index \"sub_organisasi_isActive_idx_77fe3ba1\"",
-        "sql": "CREATE INDEX \"sub_organisasi_isActive_idx_77fe3ba1\" ON \"public\".\"sub_organisasi\" (\"isActive\")",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify index \"sub_organisasi_isActive_idx_77fe3ba1\" exists",
-        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
-        "params": [
-          "\"public\".\"sub_organisasi_isActive_idx_77fe3ba1\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "index.sub_organisasi.sub_organisasi_organisasi_id_idx_2f5facc4",
-    "label": "Create index \"sub_organisasi_organisasi_id_idx_2f5facc4\" on \"sub_organisasi\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "index",
-        "name": "sub_organisasi_organisasi_id_idx_2f5facc4",
-        "table": "sub_organisasi"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure index \"sub_organisasi_organisasi_id_idx_2f5facc4\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"sub_organisasi_organisasi_id_idx_2f5facc4\""
+    {
+        "id": "index.tagihan_iuran.tagihan_iuran_deletedAt_idx_a39f721c",
+        "label": "Create index \"tagihan_iuran_deletedAt_idx_a39f721c\" on \"tagihan_iuran\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "index",
+                "name": "tagihan_iuran_deletedAt_idx_a39f721c",
+                "table": "tagihan_iuran"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure index \"tagihan_iuran_deletedAt_idx_a39f721c\" does not exist",
+                "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+                "params": ["\"public\".\"tagihan_iuran_deletedAt_idx_a39f721c\""]
+            }
+        ],
+        "execute": [
+            {
+                "description": "create index \"tagihan_iuran_deletedAt_idx_a39f721c\"",
+                "sql": "CREATE INDEX \"tagihan_iuran_deletedAt_idx_a39f721c\" ON \"public\".\"tagihan_iuran\" (\"deletedAt\")",
+                "params": []
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify index \"tagihan_iuran_deletedAt_idx_a39f721c\" exists",
+                "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+                "params": ["\"public\".\"tagihan_iuran_deletedAt_idx_a39f721c\""]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "create index \"sub_organisasi_organisasi_id_idx_2f5facc4\"",
-        "sql": "CREATE INDEX \"sub_organisasi_organisasi_id_idx_2f5facc4\" ON \"public\".\"sub_organisasi\" (\"organisasi_id\")",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify index \"sub_organisasi_organisasi_id_idx_2f5facc4\" exists",
-        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
-        "params": [
-          "\"public\".\"sub_organisasi_organisasi_id_idx_2f5facc4\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "index.tagihan_iuran.tagihan_iuran_deletedAt_idx_a39f721c",
-    "label": "Create index \"tagihan_iuran_deletedAt_idx_a39f721c\" on \"tagihan_iuran\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "index",
-        "name": "tagihan_iuran_deletedAt_idx_a39f721c",
-        "table": "tagihan_iuran"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure index \"tagihan_iuran_deletedAt_idx_a39f721c\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"tagihan_iuran_deletedAt_idx_a39f721c\""
+    {
+        "id": "index.tagihan_iuran.tagihan_iuran_deletedBy_idx_4d24a1c3",
+        "label": "Create index \"tagihan_iuran_deletedBy_idx_4d24a1c3\" on \"tagihan_iuran\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "index",
+                "name": "tagihan_iuran_deletedBy_idx_4d24a1c3",
+                "table": "tagihan_iuran"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure index \"tagihan_iuran_deletedBy_idx_4d24a1c3\" does not exist",
+                "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+                "params": ["\"public\".\"tagihan_iuran_deletedBy_idx_4d24a1c3\""]
+            }
+        ],
+        "execute": [
+            {
+                "description": "create index \"tagihan_iuran_deletedBy_idx_4d24a1c3\"",
+                "sql": "CREATE INDEX \"tagihan_iuran_deletedBy_idx_4d24a1c3\" ON \"public\".\"tagihan_iuran\" (\"deletedBy\")",
+                "params": []
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify index \"tagihan_iuran_deletedBy_idx_4d24a1c3\" exists",
+                "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+                "params": ["\"public\".\"tagihan_iuran_deletedBy_idx_4d24a1c3\""]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "create index \"tagihan_iuran_deletedAt_idx_a39f721c\"",
-        "sql": "CREATE INDEX \"tagihan_iuran_deletedAt_idx_a39f721c\" ON \"public\".\"tagihan_iuran\" (\"deletedAt\")",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify index \"tagihan_iuran_deletedAt_idx_a39f721c\" exists",
-        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
-        "params": [
-          "\"public\".\"tagihan_iuran_deletedAt_idx_a39f721c\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "index.tagihan_iuran.tagihan_iuran_deletedBy_idx_4d24a1c3",
-    "label": "Create index \"tagihan_iuran_deletedBy_idx_4d24a1c3\" on \"tagihan_iuran\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "index",
-        "name": "tagihan_iuran_deletedBy_idx_4d24a1c3",
-        "table": "tagihan_iuran"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure index \"tagihan_iuran_deletedBy_idx_4d24a1c3\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"tagihan_iuran_deletedBy_idx_4d24a1c3\""
+    {
+        "id": "index.tagihan_iuran.tagihan_iuran_organisasi_id_status_idx_6301355e",
+        "label": "Create index \"tagihan_iuran_organisasi_id_status_idx_6301355e\" on \"tagihan_iuran\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "index",
+                "name": "tagihan_iuran_organisasi_id_status_idx_6301355e",
+                "table": "tagihan_iuran"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure index \"tagihan_iuran_organisasi_id_status_idx_6301355e\" does not exist",
+                "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+                "params": ["\"public\".\"tagihan_iuran_organisasi_id_status_idx_6301355e\""]
+            }
+        ],
+        "execute": [
+            {
+                "description": "create index \"tagihan_iuran_organisasi_id_status_idx_6301355e\"",
+                "sql": "CREATE INDEX \"tagihan_iuran_organisasi_id_status_idx_6301355e\" ON \"public\".\"tagihan_iuran\" (\"organisasi_id\", \"status\")",
+                "params": []
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify index \"tagihan_iuran_organisasi_id_status_idx_6301355e\" exists",
+                "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+                "params": ["\"public\".\"tagihan_iuran_organisasi_id_status_idx_6301355e\""]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "create index \"tagihan_iuran_deletedBy_idx_4d24a1c3\"",
-        "sql": "CREATE INDEX \"tagihan_iuran_deletedBy_idx_4d24a1c3\" ON \"public\".\"tagihan_iuran\" (\"deletedBy\")",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify index \"tagihan_iuran_deletedBy_idx_4d24a1c3\" exists",
-        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
-        "params": [
-          "\"public\".\"tagihan_iuran_deletedBy_idx_4d24a1c3\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "index.tagihan_iuran.tagihan_iuran_organisasi_id_status_idx_6301355e",
-    "label": "Create index \"tagihan_iuran_organisasi_id_status_idx_6301355e\" on \"tagihan_iuran\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "index",
-        "name": "tagihan_iuran_organisasi_id_status_idx_6301355e",
-        "table": "tagihan_iuran"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure index \"tagihan_iuran_organisasi_id_status_idx_6301355e\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"tagihan_iuran_organisasi_id_status_idx_6301355e\""
+    {
+        "id": "index.tagihan_iuran.tagihan_iuran_organisasi_id_tahun_bulan_idx_2e715dee",
+        "label": "Create index \"tagihan_iuran_organisasi_id_tahun_bulan_idx_2e715dee\" on \"tagihan_iuran\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "index",
+                "name": "tagihan_iuran_organisasi_id_tahun_bulan_idx_2e715dee",
+                "table": "tagihan_iuran"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure index \"tagihan_iuran_organisasi_id_tahun_bulan_idx_2e715dee\" does not exist",
+                "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+                "params": ["\"public\".\"tagihan_iuran_organisasi_id_tahun_bulan_idx_2e715dee\""]
+            }
+        ],
+        "execute": [
+            {
+                "description": "create index \"tagihan_iuran_organisasi_id_tahun_bulan_idx_2e715dee\"",
+                "sql": "CREATE INDEX \"tagihan_iuran_organisasi_id_tahun_bulan_idx_2e715dee\" ON \"public\".\"tagihan_iuran\" (\"organisasi_id\", \"tahun\", \"bulan\")",
+                "params": []
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify index \"tagihan_iuran_organisasi_id_tahun_bulan_idx_2e715dee\" exists",
+                "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+                "params": ["\"public\".\"tagihan_iuran_organisasi_id_tahun_bulan_idx_2e715dee\""]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "create index \"tagihan_iuran_organisasi_id_status_idx_6301355e\"",
-        "sql": "CREATE INDEX \"tagihan_iuran_organisasi_id_status_idx_6301355e\" ON \"public\".\"tagihan_iuran\" (\"organisasi_id\", \"status\")",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify index \"tagihan_iuran_organisasi_id_status_idx_6301355e\" exists",
-        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
-        "params": [
-          "\"public\".\"tagihan_iuran_organisasi_id_status_idx_6301355e\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "index.tagihan_iuran.tagihan_iuran_organisasi_id_tahun_bulan_idx_2e715dee",
-    "label": "Create index \"tagihan_iuran_organisasi_id_tahun_bulan_idx_2e715dee\" on \"tagihan_iuran\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "index",
-        "name": "tagihan_iuran_organisasi_id_tahun_bulan_idx_2e715dee",
-        "table": "tagihan_iuran"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure index \"tagihan_iuran_organisasi_id_tahun_bulan_idx_2e715dee\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"tagihan_iuran_organisasi_id_tahun_bulan_idx_2e715dee\""
+    {
+        "id": "index.tagihan_iuran.tagihan_iuran_sub_organisasi_id_idx_8f7c5a0e",
+        "label": "Create index \"tagihan_iuran_sub_organisasi_id_idx_8f7c5a0e\" on \"tagihan_iuran\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "index",
+                "name": "tagihan_iuran_sub_organisasi_id_idx_8f7c5a0e",
+                "table": "tagihan_iuran"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure index \"tagihan_iuran_sub_organisasi_id_idx_8f7c5a0e\" does not exist",
+                "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+                "params": ["\"public\".\"tagihan_iuran_sub_organisasi_id_idx_8f7c5a0e\""]
+            }
+        ],
+        "execute": [
+            {
+                "description": "create index \"tagihan_iuran_sub_organisasi_id_idx_8f7c5a0e\"",
+                "sql": "CREATE INDEX \"tagihan_iuran_sub_organisasi_id_idx_8f7c5a0e\" ON \"public\".\"tagihan_iuran\" (\"sub_organisasi_id\")",
+                "params": []
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify index \"tagihan_iuran_sub_organisasi_id_idx_8f7c5a0e\" exists",
+                "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+                "params": ["\"public\".\"tagihan_iuran_sub_organisasi_id_idx_8f7c5a0e\""]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "create index \"tagihan_iuran_organisasi_id_tahun_bulan_idx_2e715dee\"",
-        "sql": "CREATE INDEX \"tagihan_iuran_organisasi_id_tahun_bulan_idx_2e715dee\" ON \"public\".\"tagihan_iuran\" (\"organisasi_id\", \"tahun\", \"bulan\")",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify index \"tagihan_iuran_organisasi_id_tahun_bulan_idx_2e715dee\" exists",
-        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
-        "params": [
-          "\"public\".\"tagihan_iuran_organisasi_id_tahun_bulan_idx_2e715dee\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "index.tagihan_iuran.tagihan_iuran_sub_organisasi_id_idx_8f7c5a0e",
-    "label": "Create index \"tagihan_iuran_sub_organisasi_id_idx_8f7c5a0e\" on \"tagihan_iuran\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "index",
-        "name": "tagihan_iuran_sub_organisasi_id_idx_8f7c5a0e",
-        "table": "tagihan_iuran"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure index \"tagihan_iuran_sub_organisasi_id_idx_8f7c5a0e\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"tagihan_iuran_sub_organisasi_id_idx_8f7c5a0e\""
+    {
+        "id": "index.transaction_ledger.transaction_ledger_organisasi_id_createdAt_idx_7da82646",
+        "label": "Create index \"transaction_ledger_organisasi_id_createdAt_idx_7da82646\" on \"transaction_ledger\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "index",
+                "name": "transaction_ledger_organisasi_id_createdAt_idx_7da82646",
+                "table": "transaction_ledger"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure index \"transaction_ledger_organisasi_id_createdAt_idx_7da82646\" does not exist",
+                "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+                "params": ["\"public\".\"transaction_ledger_organisasi_id_createdAt_idx_7da82646\""]
+            }
+        ],
+        "execute": [
+            {
+                "description": "create index \"transaction_ledger_organisasi_id_createdAt_idx_7da82646\"",
+                "sql": "CREATE INDEX \"transaction_ledger_organisasi_id_createdAt_idx_7da82646\" ON \"public\".\"transaction_ledger\" (\"organisasi_id\", \"createdAt\")",
+                "params": []
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify index \"transaction_ledger_organisasi_id_createdAt_idx_7da82646\" exists",
+                "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+                "params": ["\"public\".\"transaction_ledger_organisasi_id_createdAt_idx_7da82646\""]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "create index \"tagihan_iuran_sub_organisasi_id_idx_8f7c5a0e\"",
-        "sql": "CREATE INDEX \"tagihan_iuran_sub_organisasi_id_idx_8f7c5a0e\" ON \"public\".\"tagihan_iuran\" (\"sub_organisasi_id\")",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify index \"tagihan_iuran_sub_organisasi_id_idx_8f7c5a0e\" exists",
-        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
-        "params": [
-          "\"public\".\"tagihan_iuran_sub_organisasi_id_idx_8f7c5a0e\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "index.transaction_ledger.transaction_ledger_organisasi_id_createdAt_idx_7da82646",
-    "label": "Create index \"transaction_ledger_organisasi_id_createdAt_idx_7da82646\" on \"transaction_ledger\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "index",
-        "name": "transaction_ledger_organisasi_id_createdAt_idx_7da82646",
-        "table": "transaction_ledger"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure index \"transaction_ledger_organisasi_id_createdAt_idx_7da82646\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"transaction_ledger_organisasi_id_createdAt_idx_7da82646\""
+    {
+        "id": "index.transaction_ledger.transaction_ledger_sub_organisasi_id_idx_8f7c5a0e",
+        "label": "Create index \"transaction_ledger_sub_organisasi_id_idx_8f7c5a0e\" on \"transaction_ledger\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "index",
+                "name": "transaction_ledger_sub_organisasi_id_idx_8f7c5a0e",
+                "table": "transaction_ledger"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure index \"transaction_ledger_sub_organisasi_id_idx_8f7c5a0e\" does not exist",
+                "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+                "params": ["\"public\".\"transaction_ledger_sub_organisasi_id_idx_8f7c5a0e\""]
+            }
+        ],
+        "execute": [
+            {
+                "description": "create index \"transaction_ledger_sub_organisasi_id_idx_8f7c5a0e\"",
+                "sql": "CREATE INDEX \"transaction_ledger_sub_organisasi_id_idx_8f7c5a0e\" ON \"public\".\"transaction_ledger\" (\"sub_organisasi_id\")",
+                "params": []
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify index \"transaction_ledger_sub_organisasi_id_idx_8f7c5a0e\" exists",
+                "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+                "params": ["\"public\".\"transaction_ledger_sub_organisasi_id_idx_8f7c5a0e\""]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "create index \"transaction_ledger_organisasi_id_createdAt_idx_7da82646\"",
-        "sql": "CREATE INDEX \"transaction_ledger_organisasi_id_createdAt_idx_7da82646\" ON \"public\".\"transaction_ledger\" (\"organisasi_id\", \"createdAt\")",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify index \"transaction_ledger_organisasi_id_createdAt_idx_7da82646\" exists",
-        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
-        "params": [
-          "\"public\".\"transaction_ledger_organisasi_id_createdAt_idx_7da82646\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "index.transaction_ledger.transaction_ledger_sub_organisasi_id_idx_8f7c5a0e",
-    "label": "Create index \"transaction_ledger_sub_organisasi_id_idx_8f7c5a0e\" on \"transaction_ledger\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "index",
-        "name": "transaction_ledger_sub_organisasi_id_idx_8f7c5a0e",
-        "table": "transaction_ledger"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure index \"transaction_ledger_sub_organisasi_id_idx_8f7c5a0e\" does not exist",
-        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
-        "params": [
-          "\"public\".\"transaction_ledger_sub_organisasi_id_idx_8f7c5a0e\""
+    {
+        "id": "foreignKey.anggota_sub_organisasi.anggota_sub_organisasi_sub_organisasi_id_fkey",
+        "label": "Add foreign key \"anggota_sub_organisasi_sub_organisasi_id_fkey\" on \"anggota_sub_organisasi\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "foreignKey",
+                "name": "anggota_sub_organisasi_sub_organisasi_id_fkey",
+                "table": "anggota_sub_organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure FK \"anggota_sub_organisasi_sub_organisasi_id_fkey\" does not exist",
+                "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "anggota_sub_organisasi_sub_organisasi_id_fkey",
+                    "public",
+                    "\"public\".\"anggota_sub_organisasi\""
+                ]
+            }
+        ],
+        "execute": [
+            {
+                "description": "add FK \"anggota_sub_organisasi_sub_organisasi_id_fkey\"",
+                "sql": "ALTER TABLE \"public\".\"anggota_sub_organisasi\"\nADD CONSTRAINT \"anggota_sub_organisasi_sub_organisasi_id_fkey\"\nFOREIGN KEY (\"sub_organisasi_id\")\nREFERENCES \"public\".\"sub_organisasi\" (\"id\")"
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify FK \"anggota_sub_organisasi_sub_organisasi_id_fkey\" exists",
+                "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "anggota_sub_organisasi_sub_organisasi_id_fkey",
+                    "public",
+                    "\"public\".\"anggota_sub_organisasi\""
+                ]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "create index \"transaction_ledger_sub_organisasi_id_idx_8f7c5a0e\"",
-        "sql": "CREATE INDEX \"transaction_ledger_sub_organisasi_id_idx_8f7c5a0e\" ON \"public\".\"transaction_ledger\" (\"sub_organisasi_id\")",
-        "params": []
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify index \"transaction_ledger_sub_organisasi_id_idx_8f7c5a0e\" exists",
-        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
-        "params": [
-          "\"public\".\"transaction_ledger_sub_organisasi_id_idx_8f7c5a0e\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "foreignKey.anggota_sub_organisasi.anggota_sub_organisasi_sub_organisasi_id_fkey",
-    "label": "Add foreign key \"anggota_sub_organisasi_sub_organisasi_id_fkey\" on \"anggota_sub_organisasi\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "foreignKey",
-        "name": "anggota_sub_organisasi_sub_organisasi_id_fkey",
-        "table": "anggota_sub_organisasi"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure FK \"anggota_sub_organisasi_sub_organisasi_id_fkey\" does not exist",
-        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "anggota_sub_organisasi_sub_organisasi_id_fkey",
-          "public",
-          "\"public\".\"anggota_sub_organisasi\""
+    {
+        "id": "foreignKey.anggota_sub_organisasi.anggota_sub_organisasi_peserta_id_fkey",
+        "label": "Add foreign key \"anggota_sub_organisasi_peserta_id_fkey\" on \"anggota_sub_organisasi\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "foreignKey",
+                "name": "anggota_sub_organisasi_peserta_id_fkey",
+                "table": "anggota_sub_organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure FK \"anggota_sub_organisasi_peserta_id_fkey\" does not exist",
+                "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "anggota_sub_organisasi_peserta_id_fkey",
+                    "public",
+                    "\"public\".\"anggota_sub_organisasi\""
+                ]
+            }
+        ],
+        "execute": [
+            {
+                "description": "add FK \"anggota_sub_organisasi_peserta_id_fkey\"",
+                "sql": "ALTER TABLE \"public\".\"anggota_sub_organisasi\"\nADD CONSTRAINT \"anggota_sub_organisasi_peserta_id_fkey\"\nFOREIGN KEY (\"peserta_id\")\nREFERENCES \"public\".\"peserta\" (\"id\")"
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify FK \"anggota_sub_organisasi_peserta_id_fkey\" exists",
+                "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "anggota_sub_organisasi_peserta_id_fkey",
+                    "public",
+                    "\"public\".\"anggota_sub_organisasi\""
+                ]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "add FK \"anggota_sub_organisasi_sub_organisasi_id_fkey\"",
-        "sql": "ALTER TABLE \"public\".\"anggota_sub_organisasi\"\nADD CONSTRAINT \"anggota_sub_organisasi_sub_organisasi_id_fkey\"\nFOREIGN KEY (\"sub_organisasi_id\")\nREFERENCES \"public\".\"sub_organisasi\" (\"id\")"
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify FK \"anggota_sub_organisasi_sub_organisasi_id_fkey\" exists",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "anggota_sub_organisasi_sub_organisasi_id_fkey",
-          "public",
-          "\"public\".\"anggota_sub_organisasi\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "foreignKey.anggota_sub_organisasi.anggota_sub_organisasi_peserta_id_fkey",
-    "label": "Add foreign key \"anggota_sub_organisasi_peserta_id_fkey\" on \"anggota_sub_organisasi\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "foreignKey",
-        "name": "anggota_sub_organisasi_peserta_id_fkey",
-        "table": "anggota_sub_organisasi"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure FK \"anggota_sub_organisasi_peserta_id_fkey\" does not exist",
-        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "anggota_sub_organisasi_peserta_id_fkey",
-          "public",
-          "\"public\".\"anggota_sub_organisasi\""
+    {
+        "id": "foreignKey.komponen_sub_organisasi.komponen_sub_organisasi_sub_organisasi_id_fkey",
+        "label": "Add foreign key \"komponen_sub_organisasi_sub_organisasi_id_fkey\" on \"komponen_sub_organisasi\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "foreignKey",
+                "name": "komponen_sub_organisasi_sub_organisasi_id_fkey",
+                "table": "komponen_sub_organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure FK \"komponen_sub_organisasi_sub_organisasi_id_fkey\" does not exist",
+                "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "komponen_sub_organisasi_sub_organisasi_id_fkey",
+                    "public",
+                    "\"public\".\"komponen_sub_organisasi\""
+                ]
+            }
+        ],
+        "execute": [
+            {
+                "description": "add FK \"komponen_sub_organisasi_sub_organisasi_id_fkey\"",
+                "sql": "ALTER TABLE \"public\".\"komponen_sub_organisasi\"\nADD CONSTRAINT \"komponen_sub_organisasi_sub_organisasi_id_fkey\"\nFOREIGN KEY (\"sub_organisasi_id\")\nREFERENCES \"public\".\"sub_organisasi\" (\"id\")"
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify FK \"komponen_sub_organisasi_sub_organisasi_id_fkey\" exists",
+                "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "komponen_sub_organisasi_sub_organisasi_id_fkey",
+                    "public",
+                    "\"public\".\"komponen_sub_organisasi\""
+                ]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "add FK \"anggota_sub_organisasi_peserta_id_fkey\"",
-        "sql": "ALTER TABLE \"public\".\"anggota_sub_organisasi\"\nADD CONSTRAINT \"anggota_sub_organisasi_peserta_id_fkey\"\nFOREIGN KEY (\"peserta_id\")\nREFERENCES \"public\".\"peserta\" (\"id\")"
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify FK \"anggota_sub_organisasi_peserta_id_fkey\" exists",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "anggota_sub_organisasi_peserta_id_fkey",
-          "public",
-          "\"public\".\"anggota_sub_organisasi\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "foreignKey.komponen_sub_organisasi.komponen_sub_organisasi_sub_organisasi_id_fkey",
-    "label": "Add foreign key \"komponen_sub_organisasi_sub_organisasi_id_fkey\" on \"komponen_sub_organisasi\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "foreignKey",
-        "name": "komponen_sub_organisasi_sub_organisasi_id_fkey",
-        "table": "komponen_sub_organisasi"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure FK \"komponen_sub_organisasi_sub_organisasi_id_fkey\" does not exist",
-        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "komponen_sub_organisasi_sub_organisasi_id_fkey",
-          "public",
-          "\"public\".\"komponen_sub_organisasi\""
+    {
+        "id": "foreignKey.komponen_sub_organisasi.komponen_sub_organisasi_jenis_iuran_id_fkey",
+        "label": "Add foreign key \"komponen_sub_organisasi_jenis_iuran_id_fkey\" on \"komponen_sub_organisasi\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "foreignKey",
+                "name": "komponen_sub_organisasi_jenis_iuran_id_fkey",
+                "table": "komponen_sub_organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure FK \"komponen_sub_organisasi_jenis_iuran_id_fkey\" does not exist",
+                "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "komponen_sub_organisasi_jenis_iuran_id_fkey",
+                    "public",
+                    "\"public\".\"komponen_sub_organisasi\""
+                ]
+            }
+        ],
+        "execute": [
+            {
+                "description": "add FK \"komponen_sub_organisasi_jenis_iuran_id_fkey\"",
+                "sql": "ALTER TABLE \"public\".\"komponen_sub_organisasi\"\nADD CONSTRAINT \"komponen_sub_organisasi_jenis_iuran_id_fkey\"\nFOREIGN KEY (\"jenis_iuran_id\")\nREFERENCES \"public\".\"jenis_iuran\" (\"id\")"
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify FK \"komponen_sub_organisasi_jenis_iuran_id_fkey\" exists",
+                "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "komponen_sub_organisasi_jenis_iuran_id_fkey",
+                    "public",
+                    "\"public\".\"komponen_sub_organisasi\""
+                ]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "add FK \"komponen_sub_organisasi_sub_organisasi_id_fkey\"",
-        "sql": "ALTER TABLE \"public\".\"komponen_sub_organisasi\"\nADD CONSTRAINT \"komponen_sub_organisasi_sub_organisasi_id_fkey\"\nFOREIGN KEY (\"sub_organisasi_id\")\nREFERENCES \"public\".\"sub_organisasi\" (\"id\")"
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify FK \"komponen_sub_organisasi_sub_organisasi_id_fkey\" exists",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "komponen_sub_organisasi_sub_organisasi_id_fkey",
-          "public",
-          "\"public\".\"komponen_sub_organisasi\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "foreignKey.komponen_sub_organisasi.komponen_sub_organisasi_jenis_iuran_id_fkey",
-    "label": "Add foreign key \"komponen_sub_organisasi_jenis_iuran_id_fkey\" on \"komponen_sub_organisasi\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "foreignKey",
-        "name": "komponen_sub_organisasi_jenis_iuran_id_fkey",
-        "table": "komponen_sub_organisasi"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure FK \"komponen_sub_organisasi_jenis_iuran_id_fkey\" does not exist",
-        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "komponen_sub_organisasi_jenis_iuran_id_fkey",
-          "public",
-          "\"public\".\"komponen_sub_organisasi\""
+    {
+        "id": "foreignKey.pengurus_sub_organisasi.pengurus_sub_organisasi_sub_organisasi_id_fkey",
+        "label": "Add foreign key \"pengurus_sub_organisasi_sub_organisasi_id_fkey\" on \"pengurus_sub_organisasi\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "foreignKey",
+                "name": "pengurus_sub_organisasi_sub_organisasi_id_fkey",
+                "table": "pengurus_sub_organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure FK \"pengurus_sub_organisasi_sub_organisasi_id_fkey\" does not exist",
+                "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "pengurus_sub_organisasi_sub_organisasi_id_fkey",
+                    "public",
+                    "\"public\".\"pengurus_sub_organisasi\""
+                ]
+            }
+        ],
+        "execute": [
+            {
+                "description": "add FK \"pengurus_sub_organisasi_sub_organisasi_id_fkey\"",
+                "sql": "ALTER TABLE \"public\".\"pengurus_sub_organisasi\"\nADD CONSTRAINT \"pengurus_sub_organisasi_sub_organisasi_id_fkey\"\nFOREIGN KEY (\"sub_organisasi_id\")\nREFERENCES \"public\".\"sub_organisasi\" (\"id\")"
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify FK \"pengurus_sub_organisasi_sub_organisasi_id_fkey\" exists",
+                "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "pengurus_sub_organisasi_sub_organisasi_id_fkey",
+                    "public",
+                    "\"public\".\"pengurus_sub_organisasi\""
+                ]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "add FK \"komponen_sub_organisasi_jenis_iuran_id_fkey\"",
-        "sql": "ALTER TABLE \"public\".\"komponen_sub_organisasi\"\nADD CONSTRAINT \"komponen_sub_organisasi_jenis_iuran_id_fkey\"\nFOREIGN KEY (\"jenis_iuran_id\")\nREFERENCES \"public\".\"jenis_iuran\" (\"id\")"
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify FK \"komponen_sub_organisasi_jenis_iuran_id_fkey\" exists",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "komponen_sub_organisasi_jenis_iuran_id_fkey",
-          "public",
-          "\"public\".\"komponen_sub_organisasi\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "foreignKey.pengurus_sub_organisasi.pengurus_sub_organisasi_sub_organisasi_id_fkey",
-    "label": "Add foreign key \"pengurus_sub_organisasi_sub_organisasi_id_fkey\" on \"pengurus_sub_organisasi\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "foreignKey",
-        "name": "pengurus_sub_organisasi_sub_organisasi_id_fkey",
-        "table": "pengurus_sub_organisasi"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure FK \"pengurus_sub_organisasi_sub_organisasi_id_fkey\" does not exist",
-        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "pengurus_sub_organisasi_sub_organisasi_id_fkey",
-          "public",
-          "\"public\".\"pengurus_sub_organisasi\""
+    {
+        "id": "foreignKey.pengurus_sub_organisasi.pengurus_sub_organisasi_user_id_fkey",
+        "label": "Add foreign key \"pengurus_sub_organisasi_user_id_fkey\" on \"pengurus_sub_organisasi\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "foreignKey",
+                "name": "pengurus_sub_organisasi_user_id_fkey",
+                "table": "pengurus_sub_organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure FK \"pengurus_sub_organisasi_user_id_fkey\" does not exist",
+                "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "pengurus_sub_organisasi_user_id_fkey",
+                    "public",
+                    "\"public\".\"pengurus_sub_organisasi\""
+                ]
+            }
+        ],
+        "execute": [
+            {
+                "description": "add FK \"pengurus_sub_organisasi_user_id_fkey\"",
+                "sql": "ALTER TABLE \"public\".\"pengurus_sub_organisasi\"\nADD CONSTRAINT \"pengurus_sub_organisasi_user_id_fkey\"\nFOREIGN KEY (\"user_id\")\nREFERENCES \"public\".\"user\" (\"id\")"
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify FK \"pengurus_sub_organisasi_user_id_fkey\" exists",
+                "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "pengurus_sub_organisasi_user_id_fkey",
+                    "public",
+                    "\"public\".\"pengurus_sub_organisasi\""
+                ]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "add FK \"pengurus_sub_organisasi_sub_organisasi_id_fkey\"",
-        "sql": "ALTER TABLE \"public\".\"pengurus_sub_organisasi\"\nADD CONSTRAINT \"pengurus_sub_organisasi_sub_organisasi_id_fkey\"\nFOREIGN KEY (\"sub_organisasi_id\")\nREFERENCES \"public\".\"sub_organisasi\" (\"id\")"
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify FK \"pengurus_sub_organisasi_sub_organisasi_id_fkey\" exists",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "pengurus_sub_organisasi_sub_organisasi_id_fkey",
-          "public",
-          "\"public\".\"pengurus_sub_organisasi\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "foreignKey.pengurus_sub_organisasi.pengurus_sub_organisasi_user_id_fkey",
-    "label": "Add foreign key \"pengurus_sub_organisasi_user_id_fkey\" on \"pengurus_sub_organisasi\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "foreignKey",
-        "name": "pengurus_sub_organisasi_user_id_fkey",
-        "table": "pengurus_sub_organisasi"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure FK \"pengurus_sub_organisasi_user_id_fkey\" does not exist",
-        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "pengurus_sub_organisasi_user_id_fkey",
-          "public",
-          "\"public\".\"pengurus_sub_organisasi\""
+    {
+        "id": "foreignKey.sub_organisasi.sub_organisasi_organisasi_id_fkey",
+        "label": "Add foreign key \"sub_organisasi_organisasi_id_fkey\" on \"sub_organisasi\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "foreignKey",
+                "name": "sub_organisasi_organisasi_id_fkey",
+                "table": "sub_organisasi"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure FK \"sub_organisasi_organisasi_id_fkey\" does not exist",
+                "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "sub_organisasi_organisasi_id_fkey",
+                    "public",
+                    "\"public\".\"sub_organisasi\""
+                ]
+            }
+        ],
+        "execute": [
+            {
+                "description": "add FK \"sub_organisasi_organisasi_id_fkey\"",
+                "sql": "ALTER TABLE \"public\".\"sub_organisasi\"\nADD CONSTRAINT \"sub_organisasi_organisasi_id_fkey\"\nFOREIGN KEY (\"organisasi_id\")\nREFERENCES \"public\".\"organisasi\" (\"id\")"
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify FK \"sub_organisasi_organisasi_id_fkey\" exists",
+                "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "sub_organisasi_organisasi_id_fkey",
+                    "public",
+                    "\"public\".\"sub_organisasi\""
+                ]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "add FK \"pengurus_sub_organisasi_user_id_fkey\"",
-        "sql": "ALTER TABLE \"public\".\"pengurus_sub_organisasi\"\nADD CONSTRAINT \"pengurus_sub_organisasi_user_id_fkey\"\nFOREIGN KEY (\"user_id\")\nREFERENCES \"public\".\"user\" (\"id\")"
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify FK \"pengurus_sub_organisasi_user_id_fkey\" exists",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "pengurus_sub_organisasi_user_id_fkey",
-          "public",
-          "\"public\".\"pengurus_sub_organisasi\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "foreignKey.sub_organisasi.sub_organisasi_organisasi_id_fkey",
-    "label": "Add foreign key \"sub_organisasi_organisasi_id_fkey\" on \"sub_organisasi\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "foreignKey",
-        "name": "sub_organisasi_organisasi_id_fkey",
-        "table": "sub_organisasi"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure FK \"sub_organisasi_organisasi_id_fkey\" does not exist",
-        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "sub_organisasi_organisasi_id_fkey",
-          "public",
-          "\"public\".\"sub_organisasi\""
+    {
+        "id": "foreignKey.tagihan_iuran.tagihan_iuran_deletedBy_fkey",
+        "label": "Add foreign key \"tagihan_iuran_deletedBy_fkey\" on \"tagihan_iuran\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "foreignKey",
+                "name": "tagihan_iuran_deletedBy_fkey",
+                "table": "tagihan_iuran"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure FK \"tagihan_iuran_deletedBy_fkey\" does not exist",
+                "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": ["tagihan_iuran_deletedBy_fkey", "public", "\"public\".\"tagihan_iuran\""]
+            }
+        ],
+        "execute": [
+            {
+                "description": "add FK \"tagihan_iuran_deletedBy_fkey\"",
+                "sql": "ALTER TABLE \"public\".\"tagihan_iuran\"\nADD CONSTRAINT \"tagihan_iuran_deletedBy_fkey\"\nFOREIGN KEY (\"deletedBy\")\nREFERENCES \"public\".\"user\" (\"id\")"
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify FK \"tagihan_iuran_deletedBy_fkey\" exists",
+                "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": ["tagihan_iuran_deletedBy_fkey", "public", "\"public\".\"tagihan_iuran\""]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "add FK \"sub_organisasi_organisasi_id_fkey\"",
-        "sql": "ALTER TABLE \"public\".\"sub_organisasi\"\nADD CONSTRAINT \"sub_organisasi_organisasi_id_fkey\"\nFOREIGN KEY (\"organisasi_id\")\nREFERENCES \"public\".\"organisasi\" (\"id\")"
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify FK \"sub_organisasi_organisasi_id_fkey\" exists",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "sub_organisasi_organisasi_id_fkey",
-          "public",
-          "\"public\".\"sub_organisasi\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "foreignKey.tagihan_iuran.tagihan_iuran_deletedBy_fkey",
-    "label": "Add foreign key \"tagihan_iuran_deletedBy_fkey\" on \"tagihan_iuran\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "foreignKey",
-        "name": "tagihan_iuran_deletedBy_fkey",
-        "table": "tagihan_iuran"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure FK \"tagihan_iuran_deletedBy_fkey\" does not exist",
-        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "tagihan_iuran_deletedBy_fkey",
-          "public",
-          "\"public\".\"tagihan_iuran\""
+    {
+        "id": "foreignKey.tagihan_iuran.tagihan_iuran_sub_organisasi_id_fkey",
+        "label": "Add foreign key \"tagihan_iuran_sub_organisasi_id_fkey\" on \"tagihan_iuran\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "foreignKey",
+                "name": "tagihan_iuran_sub_organisasi_id_fkey",
+                "table": "tagihan_iuran"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure FK \"tagihan_iuran_sub_organisasi_id_fkey\" does not exist",
+                "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "tagihan_iuran_sub_organisasi_id_fkey",
+                    "public",
+                    "\"public\".\"tagihan_iuran\""
+                ]
+            }
+        ],
+        "execute": [
+            {
+                "description": "add FK \"tagihan_iuran_sub_organisasi_id_fkey\"",
+                "sql": "ALTER TABLE \"public\".\"tagihan_iuran\"\nADD CONSTRAINT \"tagihan_iuran_sub_organisasi_id_fkey\"\nFOREIGN KEY (\"sub_organisasi_id\")\nREFERENCES \"public\".\"sub_organisasi\" (\"id\")"
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify FK \"tagihan_iuran_sub_organisasi_id_fkey\" exists",
+                "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "tagihan_iuran_sub_organisasi_id_fkey",
+                    "public",
+                    "\"public\".\"tagihan_iuran\""
+                ]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "add FK \"tagihan_iuran_deletedBy_fkey\"",
-        "sql": "ALTER TABLE \"public\".\"tagihan_iuran\"\nADD CONSTRAINT \"tagihan_iuran_deletedBy_fkey\"\nFOREIGN KEY (\"deletedBy\")\nREFERENCES \"public\".\"user\" (\"id\")"
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify FK \"tagihan_iuran_deletedBy_fkey\" exists",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "tagihan_iuran_deletedBy_fkey",
-          "public",
-          "\"public\".\"tagihan_iuran\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "foreignKey.tagihan_iuran.tagihan_iuran_sub_organisasi_id_fkey",
-    "label": "Add foreign key \"tagihan_iuran_sub_organisasi_id_fkey\" on \"tagihan_iuran\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "foreignKey",
-        "name": "tagihan_iuran_sub_organisasi_id_fkey",
-        "table": "tagihan_iuran"
-      }
     },
-    "precheck": [
-      {
-        "description": "ensure FK \"tagihan_iuran_sub_organisasi_id_fkey\" does not exist",
-        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "tagihan_iuran_sub_organisasi_id_fkey",
-          "public",
-          "\"public\".\"tagihan_iuran\""
+    {
+        "id": "foreignKey.transaction_ledger.transaction_ledger_sub_organisasi_id_fkey",
+        "label": "Add foreign key \"transaction_ledger_sub_organisasi_id_fkey\" on \"transaction_ledger\"",
+        "operationClass": "additive",
+        "target": {
+            "id": "postgres",
+            "details": {
+                "schema": "public",
+                "objectType": "foreignKey",
+                "name": "transaction_ledger_sub_organisasi_id_fkey",
+                "table": "transaction_ledger"
+            }
+        },
+        "precheck": [
+            {
+                "description": "ensure FK \"transaction_ledger_sub_organisasi_id_fkey\" does not exist",
+                "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "transaction_ledger_sub_organisasi_id_fkey",
+                    "public",
+                    "\"public\".\"transaction_ledger\""
+                ]
+            }
+        ],
+        "execute": [
+            {
+                "description": "add FK \"transaction_ledger_sub_organisasi_id_fkey\"",
+                "sql": "ALTER TABLE \"public\".\"transaction_ledger\"\nADD CONSTRAINT \"transaction_ledger_sub_organisasi_id_fkey\"\nFOREIGN KEY (\"sub_organisasi_id\")\nREFERENCES \"public\".\"sub_organisasi\" (\"id\")"
+            }
+        ],
+        "postcheck": [
+            {
+                "description": "verify FK \"transaction_ledger_sub_organisasi_id_fkey\" exists",
+                "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+                "params": [
+                    "transaction_ledger_sub_organisasi_id_fkey",
+                    "public",
+                    "\"public\".\"transaction_ledger\""
+                ]
+            }
         ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "add FK \"tagihan_iuran_sub_organisasi_id_fkey\"",
-        "sql": "ALTER TABLE \"public\".\"tagihan_iuran\"\nADD CONSTRAINT \"tagihan_iuran_sub_organisasi_id_fkey\"\nFOREIGN KEY (\"sub_organisasi_id\")\nREFERENCES \"public\".\"sub_organisasi\" (\"id\")"
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify FK \"tagihan_iuran_sub_organisasi_id_fkey\" exists",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "tagihan_iuran_sub_organisasi_id_fkey",
-          "public",
-          "\"public\".\"tagihan_iuran\""
-        ]
-      }
-    ]
-  },
-  {
-    "id": "foreignKey.transaction_ledger.transaction_ledger_sub_organisasi_id_fkey",
-    "label": "Add foreign key \"transaction_ledger_sub_organisasi_id_fkey\" on \"transaction_ledger\"",
-    "operationClass": "additive",
-    "target": {
-      "id": "postgres",
-      "details": {
-        "schema": "public",
-        "objectType": "foreignKey",
-        "name": "transaction_ledger_sub_organisasi_id_fkey",
-        "table": "transaction_ledger"
-      }
-    },
-    "precheck": [
-      {
-        "description": "ensure FK \"transaction_ledger_sub_organisasi_id_fkey\" does not exist",
-        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "transaction_ledger_sub_organisasi_id_fkey",
-          "public",
-          "\"public\".\"transaction_ledger\""
-        ]
-      }
-    ],
-    "execute": [
-      {
-        "description": "add FK \"transaction_ledger_sub_organisasi_id_fkey\"",
-        "sql": "ALTER TABLE \"public\".\"transaction_ledger\"\nADD CONSTRAINT \"transaction_ledger_sub_organisasi_id_fkey\"\nFOREIGN KEY (\"sub_organisasi_id\")\nREFERENCES \"public\".\"sub_organisasi\" (\"id\")"
-      }
-    ],
-    "postcheck": [
-      {
-        "description": "verify FK \"transaction_ledger_sub_organisasi_id_fkey\" exists",
-        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
-        "params": [
-          "transaction_ledger_sub_organisasi_id_fkey",
-          "public",
-          "\"public\".\"transaction_ledger\""
-        ]
-      }
-    ]
-  }
+    }
 ]

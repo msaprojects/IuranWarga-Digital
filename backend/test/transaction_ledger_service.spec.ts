@@ -20,9 +20,7 @@ mock.module("../src/prisma/db.ts", () => ({
     },
 }))
 
-const { transactionLedgerService } = await import(
-    "../src/services/transaction_ledger.service.ts"
-)
+const { transactionLedgerService } = await import("../src/services/transaction_ledger.service.ts")
 
 const ledger = {
     id: "0192f0c4-8f0a-7c31-9a5e-2f6c1d4b8e70",

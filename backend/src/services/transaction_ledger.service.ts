@@ -51,9 +51,7 @@ class TransactionLedgerService {
     }
 
     async getById(id: string, organisasi_id: number) {
-        const ledger = await db.orm.public.transaction_ledger
-            .where({ id, organisasi_id })
-            .first()
+        const ledger = await db.orm.public.transaction_ledger.where({ id, organisasi_id }).first()
         if (!ledger) {
             throw new NotFoundError("Entri log transaksi tidak ditemukan.", {
                 code: "LEDGER.NOT_FOUND",

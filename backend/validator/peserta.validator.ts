@@ -39,7 +39,7 @@ export const updatePesertaSchema = z.strictObject({
     qr_token: z.string().trim().min(3).max(256).nullable().optional(),
     isActive: z.boolean().optional(),
     user_id: z.coerce.number().int().positive().nullable().optional(),
-    jenis_peserta: z.enum(JENIS_PESERTA).optional()
+    jenis_peserta: z.enum(JENIS_PESERTA).optional(),
 })
 
 export const downloadQrCodePesertaSchema = z.strictObject({

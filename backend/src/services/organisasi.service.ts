@@ -40,9 +40,7 @@ type CreateOrganisasiWithUserInput = {
 
 class OrganisasiService {
     async getByKode(kode: string) {
-        const organisasi = await db.orm.public.organisasi
-            .where({ kode, isActive: true })
-            .first()
+        const organisasi = await db.orm.public.organisasi.where({ kode, isActive: true }).first()
         if (!organisasi) {
             throw new NotFoundError("Organisasi tidak ditemukan / sudah tidak aktif.", {
                 code: "ORG.NOT_FOUND",

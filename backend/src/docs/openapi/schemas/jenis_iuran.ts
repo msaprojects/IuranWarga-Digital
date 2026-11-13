@@ -4,13 +4,7 @@ const jenisIuranSchemas = {
     CreateJenisIuranInput: {
         type: "object",
         additionalProperties: false,
-        required: [
-            "judul",
-            "periode_iuran",
-            "jenis_peserta",
-            "nominal",
-            "organisasi_id",
-        ],
+        required: ["judul", "periode_iuran", "jenis_peserta", "nominal", "organisasi_id"],
         properties: {
             judul: { type: "string", minLength: 3, maxLength: 45, example: "Iuran Kebersihan" },
             periode_iuran: { type: "string", enum: [...PERIODE_IURAN], example: "BULANAN" },

@@ -21,7 +21,9 @@ const komponenSubOrganisasiPaths = {
                     description: "Daftar komponen berhasil diambil.",
                     content: {
                         "application/json": {
-                            schema: { $ref: "#/components/schemas/KomponenSubOrganisasiListSuccess" },
+                            schema: {
+                                $ref: "#/components/schemas/KomponenSubOrganisasiListSuccess",
+                            },
                         },
                     },
                 },
@@ -81,7 +83,8 @@ const komponenSubOrganisasiPaths = {
                 },
                 "401": { $ref: "#/components/responses/Unauthorized" },
                 "404": {
-                    description: "Sub organisasi induk atau jenis iuran tidak ditemukan / nonaktif.",
+                    description:
+                        "Sub organisasi induk atau jenis iuran tidak ditemukan / nonaktif.",
                     content: {
                         "application/json": { schema: { $ref: "#/components/schemas/Error" } },
                     },
@@ -145,7 +148,8 @@ const komponenSubOrganisasiPaths = {
                 },
                 "401": { $ref: "#/components/responses/Unauthorized" },
                 "404": {
-                    description: "Komponen tidak ditemukan atau sub organisasi induknya bukan milik tenant.",
+                    description:
+                        "Komponen tidak ditemukan atau sub organisasi induknya bukan milik tenant.",
                     content: {
                         "application/json": { schema: { $ref: "#/components/schemas/Error" } },
                     },
@@ -183,7 +187,8 @@ const komponenSubOrganisasiPaths = {
                 },
                 "401": { $ref: "#/components/responses/Unauthorized" },
                 "404": {
-                    description: "Komponen tidak ditemukan atau sub organisasi induknya bukan milik tenant.",
+                    description:
+                        "Komponen tidak ditemukan atau sub organisasi induknya bukan milik tenant.",
                     content: {
                         "application/json": { schema: { $ref: "#/components/schemas/Error" } },
                     },
